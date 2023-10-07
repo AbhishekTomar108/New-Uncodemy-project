@@ -1,0 +1,3335 @@
+const express = require("express");
+const mongoose = require('mongoose')
+const router = express.Router();
+const app = express();
+const uploadFile = require("../middleware/upload");
+const controller = require("../controller/file.controller");
+const users = require("../models/userSchema");
+const oldStudent = require("../models/OldStudent");
+const oldCounselor = require("../models/OldCounselor")
+const document = require("../models/Document");
+const uploads = require("../models/teachermodal");
+const oldtrainer = require("../models/OldTrainer");
+const StudentFee = require("../models/FeeSchema");
+const uploaditem = require("../models/UploadedItem");
+const submititem = require("../models/Submitteditem");
+const messagemodel = require("../models/Messagemodel");
+const Studentmessagemodel = require("../models/StudentMessage");
+const runningBatches = require("../models/RunningBatch");
+const deletedBatches = require("../models/DeletedBatch");
+const FixDemo = require("../models/FixDemo");
+const NewDemo = require("../models/DemoList");
+const DemoStudent = require("../models/DemoStudent");
+const inst = require("../models/inst");
+const DataModel = require('../models/filterdata');
+const multer = require("multer");
+const bodyParser = require('body-parser');
+var jwt = require("jsonwebtoken");
+const fetchuser = require("../middleware/fetchuser");
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+const fs = require("fs");
+const path = require('path');
+const baseUrl = "http://localhost:8000/files/";
+const sendmail = require('../controller/sendmail');
+const resetpassword = require("../controller/resetpassword");
+const admins = require("../models/Admin")
+const attendance = require("../models/Attendance")
+const Studentattendance = require("../models/StudentAttendance")
+const compiler = require('compilex');
+const batches = require("../models/BatchCourse");
+const runningBatch = require("../models/RunningBatch");
+const registerStudent = require("../models/RegisteredStudent");
+const counselors = require("../models/Counselor")
+const uploadfiles = require('../models/UploadedItem')
+const uploadclassurl = require('../models/UploadClassUrl')
+const uploadvideourl = require('../models/VideoUrl')
+const Notes = require('../models/Notes')
+const options = { stats: true }
+compiler.init(options)
+
+const jwt_secret = "uuu"
+
+router.post("/register", controller.upload, async (req, res) => {
+    // console.log('url =',req.body,req.url,req.file)  
+
+    const lastStudent = await users
+    .findOne({}, {}, { sort: { _id: -1 } }) // Sort by the default ObjectId in descending order
+    .exec();
+
+    let newEnrollment;
+    console.log('last student =',lastStudent)
+
+    if (lastStudent && lastStudent.EnrollmentNo) {
+      const lastStudentEnrollment = lastStudent.EnrollmentNo;
+      const currentYear = new Date().getFullYear();
+      
+      // Check if the last enrollment number belongs to the current year
+      if (lastStudentEnrollment.startsWith(currentYear.toString())) {
+        const lastEnrollmentNumber = parseInt(lastStudentEnrollment.substr(4), 10);
+        const nextEnrollmentNumber = lastEnrollmentNumber + 1;
+        
+         newEnrollment = `${currentYear}${nextEnrollmentNumber.toString().padStart(2, '0')}`;
+        console.log(newEnrollment);
+      } else {
+        // Start a new enrollment for the current year
+         newEnrollment = `${currentYear}01`; // Assuming it starts from 01
+        console.log(newEnrollment);
+      }
+    } else {
+      // If there are no previous enrollments, start a new one for the current year
+      const currentYear = new Date().getFullYear();
+       newEnrollment = `${currentYear}01`; // Assuming it starts from 01
+      console.log(newEnrollment);
+    }
+    
+    req.body.EnrollmentNo = newEnrollment
+
+    sendmail(req, res)
+    req.body.url = req.url
+    req.body.file = req.file
+    req.body.CollectionDate = []
+
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based, so add 1
+    const day = String(currentDate.getDate()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+
+    let tempRemark = [{
+        "date": formattedDate,
+        "message": req.body.Remark
+    }]
+
+    console.log('body remark =',req.body.Remark)
+    req.body.Remark = tempRemark
+
+    if (req.body.remainingFees <= 0) {
+        req.body.feesStatus = "Fees Completed"
+    }
+    else {
+        req.body.feesStatus = "Fees Incompleted"
+    }
+
+    const batchStartDate = new Date(req.body.BatchStartDate); // Assuming BatchStartDate is in a valid date format (e.g., 'YYYY-MM-DD')
+    batchStartDate.setDate(batchStartDate.getDate() + 3); // Add 3 days
+
+    if (batchStartDate.getDate() <= 3) {
+
+        batchStartDate.setMonth(batchStartDate.getMonth());
+        batchStartDate.setDate(3);
+    }
+
+    const dueDate = `${batchStartDate.getFullYear()}-${String(batchStartDate.getMonth() + 1).padStart(2, '0')}-${String(batchStartDate.getDate()).padStart(2, '0')}`;
+
+    req.body.DueDate = dueDate;
+
+    // console.log("req body =", req.body)
+    try {
+        const newUser = new users(req.body);
+
+        const savedUser = await newUser.save();
+        res.status(200).json(savedUser);
+        // sendmail(req, res)
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+
+router.get('/getlastData',async(req,res)=>{
+    const lastStudent = await users
+    .findOne({}, {}, { sort: { _id: -1 } }) // Sort by the default ObjectId in descending order
+    .exec();
+    console.log('last student',lastStudent)
+})
+
+router.get('/getTotalFees',async(req,res)=>{
+    let totalFees = await StudentFee.find();
+
+    let totalAmount = 0;
+
+    totalFees.map(data=>{
+        totalAmount = totalAmount + parseInt(data.amount)
+    })
+    console.log('total fees =',totalAmount)
+    const formattedFees = formatRupees(totalAmount);
+    const feesInWords = convertToWords(totalAmount);
+
+    console.log(`Formatted Amount (Rupees): ₹${formattedFees}`);
+    console.log(`Amount in English Words: ${feesInWords}`);
+
+    res.send({"formattedFees":formattedFees,"feesInWords":feesInWords})
+})
+
+// convert amount to rupees and in words
+
+
+function formatRupees(amount) {
+    // Function to convert a number to the Indian numbering system (with commas)
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+function convertToWords(amount) {
+    // Function to convert a number to English words
+    const ones = [
+      '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+      'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+      'Seventeen', 'Eighteen', 'Nineteen'
+    ];
+    
+    const tens = [
+      '', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'
+    ];
+  
+    function convertToWordsRecursive(number) {
+      if (number < 20) {
+        return ones[number];
+      } else if (number < 100) {
+        return tens[Math.floor(number / 10)] + ' ' + ones[number % 10];
+      } else if (number < 1000) {
+        return ones[Math.floor(number / 100)] + ' Hundred ' + convertToWordsRecursive(number % 100);
+      } else if (number < 100000) {
+        return convertToWordsRecursive(Math.floor(number / 1000)) + ' Thousand ' + convertToWordsRecursive(number % 1000);
+      } else if (number < 10000000) {
+        return convertToWordsRecursive(Math.floor(number / 100000)) + ' Lakh ' + convertToWordsRecursive(number % 100000);
+      } else {
+        return 'Number too large to convert';
+      }
+    }
+  
+    return convertToWordsRecursive(amount);
+  }
+  
+  
+
+  router.get("/getTotalFeeschart", async (req, res) => {
+    try {
+        const userdata = await StudentFee.find()
+        res.status(200).json(userdata);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+  
+
+
+
+// get userdata
+router.get("/getdata", async (req, res) => {
+    try {
+        const userdata = await users.find().select("-password");
+        // // console.log('user data =',userdata)
+        res.status(200).json(userdata);
+    } catch (error) {
+        // console.log('error =', error.message)
+        res.status(500).json(error);
+    }
+});
+
+// route to get running Student
+router.get("/getAllStudent", async (req, res) => {
+
+    let allStudent = await users.find()
+    
+    console.log('total Student =', allStudent.length)
+    res.send({ "totalStudent": allStudent.length })
+})
+
+const checkRunningBatchStudent = (batch, runningBatch) => {
+    let StudentStatus = false
+    runningBatch.map(data => {
+        if (data.Batch == batch) {
+            StudentStatus = true
+        }
+    })
+
+    return StudentStatus
+}
+
+// route to get student of current month
+
+router.get('/getNewStudent/:currentMonth',async(req,res)=>{
+  
+    const {currentMonth} = req.params
+    let allStudent = await users.find()
+
+    let newStudent = 0
+    allStudent.map(data=>{
+        console.log("data =",data.BatchStartDate, data._id)
+        let month = (data.BatchStartDate.split('-'))[1]
+
+        if(month == currentMonth){
+            newStudent = newStudent+1
+        }
+    })
+    console.log('new Student =',newStudent)
+    res.send({"newStudent":newStudent})
+})
+
+
+// route get trainer new student
+
+router.get('/getNewTrainerStudent/:id',async(req,res)=>{
+    const {id} = req.params
+    let currentMonth = req.header("month")
+    console.log("trainer id =",currentMonth,id)
+    
+    let allStudent = await users.find({TrainerID:id})
+
+    let newStudent = []
+
+    allStudent.map(data=>{
+        // console.log("data =",data.BatchStartDate, data._id)
+        let month = (data.BatchStartDate.split('-'))[1]
+
+        if(month == currentMonth){
+           newStudent.push(data)
+        }
+    })
+    console.log('new Student =',newStudent)
+    res.send({"newStudent":newStudent})
+})
+router.get('/getNewCounselorStudent/:id',async(req,res)=>{
+    console.log("new counselor student")
+    const {id} = req.params
+    let currentMonth = req.header("month")
+    // console.log("id =",currentMonth,id)
+    console.log("month =",currentMonth)
+    
+    let allStudent = await users.find({CounselorID:id})
+
+    let newStudent = []
+
+    allStudent.map(data=>{
+        // console.log("data =",data.BatchStartDate, data._id)
+        let month = (data.BatchStartDate.split('-'))[1]
+        
+        if(month == currentMonth){
+           newStudent.push(data)
+        }
+    })
+    console.log('new Student =',newStudent)
+    res.send({"newStudent":newStudent})
+})
+
+
+// register student
+
+router.post("/updateRegisterStudent/:id", async (req, res) => {
+    const {id} = req.params
+    console.log("register route =", req.body)
+
+    try {
+        const savedUser = await registerStudent.findByIdAndUpdate(id,req.body,{
+            new:true
+        });
+        res.status(200).json(savedUser);
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+
+router.post("/registerStudent", async (req, res) => {
+    console.log("register route =", req.body)
+
+    const lastStudent = await registerStudent
+    .findOne({}, {}, { sort: { _id: -1 } }) // Sort by the default ObjectId in descending order
+    .exec();
+
+    let newRegistration;
+    console.log('last student =',lastStudent)
+
+    if (lastStudent && lastStudent.RegistrationNo) {
+      const lastStudentEnrollment = lastStudent.RegistrationNo;
+      const currentYear = new Date().getFullYear();
+      
+      // Check if the last enrollment number belongs to the current year
+      if (lastStudentEnrollment.startsWith(`Reg${currentYear.toString()}`)) {
+        const lastEnrollmentNumber = parseInt(lastStudentEnrollment.substr(7), 10);
+        const nextEnrollmentNumber = lastEnrollmentNumber + 1;
+        
+         newRegistration = `Reg${currentYear}${nextEnrollmentNumber.toString().padStart(2, '0')}`;
+        console.log(newRegistration);
+      } else {
+        // Start a new enrollment for the current year
+         newRegistration = `Reg${currentYear}01`; // Assuming it starts from 01
+        console.log(newRegistration);
+      }
+    } else {
+      // If there are no previous enrollments, start a new one for the current year
+      const currentYear = new Date().getFullYear();
+       newRegistration = `Reg${currentYear}01`; // Assuming it starts from 01
+      console.log(newRegistration);
+    }
+
+    req.body.RegistrationNo = newRegistration
+
+
+    try {
+        const savedUser = await registerStudent.create(req.body);
+        res.status(200).json(savedUser);
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+
+router.get('/getCounselorRegisterStudent/:id',async(req,res)=>{
+    const {id} = req.params   
+
+    try {
+        const userdata = await registerStudent.find({CounselorId:id});
+        // console.log("user data =",userdata)
+        res.status(200).json(userdata);
+        
+    } catch (error) {
+        console.log('error =', error.message)
+        res.status(500).json(error);
+    }
+})
+
+//Get resister student
+
+router.get("/getregisterStudent", async (req, res) => {
+    try {
+        const userdata = await registerStudent.find();
+        res.status(200).json(userdata);
+    } catch (error) {
+        console.log('error =', error.message)
+        res.status(500).json(error);
+    }
+});
+
+router.post("/getStudentByCounselor", async (req, res) => {
+    console.log("get student =", req.body)
+    try {
+        const userdata = await users.find(req.body);
+        res.status(200).json(userdata);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+})
+
+router.get("/getStudentByCounselor/:id", async (req, res) => {
+    const {id} = req.params
+ 
+    try {
+        const userdata = await users.find({CounselorID:id});
+        res.status(200).json(userdata);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+})
+
+router.get("/scan", async (req, res) => {
+    const directoryPath = __basedir + "/uploads/";
+
+    fs.readdir(directoryPath, function (err, files) {
+        if (err) {
+            res.status(500).send({
+                message: "Unable to scan files!",
+            });
+        }
+
+        let fileInfos = [];
+
+        files.forEach((file) => {
+            const filePath = path.join(directoryPath, file);
+            const stats = fs.statSync(filePath);
+            const date = stats.mtime;
+            fileInfos.push({
+                file: file, // Change "name" to "file"
+                url: baseUrl + file,
+            });
+        });
+
+        res.status(200).send(fileInfos);
+    });
+});
+// get individual user
+router.get("/getuser/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const userindividual = await users.findById(id);
+        // // console.log("user individual =", userindividual);
+        res.send({ "status": "active", "userIndividual": userindividual });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+// update user data
+// router.post("/updateuser/:id", async (req, res) => {
+//     try {
+//         const { id } = req.params;
+
+//         // // console.log('req.body.user =', req.body)
+//         const updateduser = await users.findByIdAndUpdate(id, req.body, {
+//             new: true
+//         });
+
+//         // // console.log(updateduser);
+//         res.status(200).json(updateduser);
+//     } catch (error) {
+//         res.status(500).json(error);
+//     }
+// });
+
+router.post("/updateuser/:id", async (req, res) => {
+    const { id } = req.params;
+    console.log("update user")
+    const userindividual = await users.findById(id);
+
+ 
+
+    req.body.url = userindividual.url
+    req.body.file = userindividual.file
+    req.body.CollectionDate = userindividual.CollectionDate
+
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based, so add 1
+    const day = String(currentDate.getDate()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+
+    let tempRemark = {
+        "date": formattedDate,
+        "message": req.body.Remark
+    }
+
+    console.log('body remarks =',req.body.Remark)
+    let userRemark = userindividual.Remark
+    userRemark.push(tempRemark)
+    req.body.Remark = userRemark
+    console.log('remarks =',userRemark,req.body.Remark)
+
+    if (req.body.remainingFees <= 0) {
+        req.body.feesStatus = "Fees Completed"
+    }
+    else {
+        req.body.feesStatus = "Fees Inmpleted"
+    }
+
+    const batchStartDate = new Date(req.body.BatchStartDate); // Assuming BatchStartDate is in a valid date format (e.g., 'YYYY-MM-DD')
+    batchStartDate.setDate(batchStartDate.getDate() + 3); // Add 3 days
+
+    if (batchStartDate.getDate() <= 3) {
+
+        batchStartDate.setMonth(batchStartDate.getMonth());
+        batchStartDate.setDate(3);
+    }
+
+    const dueDate = `${batchStartDate.getFullYear()}-${String(batchStartDate.getMonth() + 1).padStart(2, '0')}-${String(batchStartDate.getDate()).padStart(2, '0')}`;
+
+    req.body.DueDate = dueDate;
+
+    console.log("req body =", req.body)
+    try {
+        const { id } = req.params;
+        console.log('user =', req.body)
+
+       
+        const updateduser = await users.findByIdAndUpdate(id, req.body, {
+            new: true
+        });
+
+        // // console.log(updateduser);
+        res.status(200).json(updateduser);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+// delete student
+router.delete("/deleteuser/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const deletedUser = await users.findByIdAndDelete(id);
+        
+        let {Name,Number,Pname,Pnumber,BatchStartDate,Course,Counselor,Fees,feesStatus,remainingFees,TrainerName,BatchTiming,BatchMode,Payment,Remark,file,url,status,password,email,Batch,RegistrationFees,RegistrationDate,CollectionDate,DueDate,EnrollmentNo,TrainerID,CounselorID,paymentStatus,lastCollectionDate}
+          = deletedUser
+
+          console.log('name=',Name,Number,Pname,Pnumber,BatchStartDate,Course,Counselor,Fees,feesStatus,remainingFees,TrainerName,BatchTiming,BatchMode,Payment,Remark,file,url,status,password,email,Batch,RegistrationFees,RegistrationDate,CollectionDate,DueDate,EnrollmentNo,TrainerID,CounselorID,paymentStatus,lastCollectionDate)
+
+     const old = await oldStudent.create( {Name,Number,Pname,Pnumber,BatchStartDate,Course,Counselor,Fees,feesStatus,remainingFees,TrainerName,BatchTiming,BatchMode,Payment,Remark,file,url,status,password,email,Batch,RegistrationFees,RegistrationDate,CollectionDate,DueDate,EnrollmentNo,TrainerID,CounselorID,paymentStatus,lastCollectionDate})
+     console.log("old user", old)
+        res.status(200).json(deletedUser);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+// delete Demo
+
+router.delete("/deleteDemo/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const deletedUser = await NewDemo.findByIdAndDelete(id);
+
+            console.log("demo id deleted=",id);
+            let candidateData = await DemoStudent.deleteMany({
+                DemoId: id
+            });
+          
+
+        res.status(200).json(deletedUser);
+    } catch (error) {
+        console.log("message error =",error.message)
+        res.status(500).json(error);
+    }
+});
+
+router.delete("/deletetrainer/:id", async (req, res) => {
+    const { id } = req.params;
+    console.log('delete trainer route =',id)
+    try {
+       
+        const deletedUser = await uploads.findByIdAndDelete(id);
+        
+        let {Name,Number,Email,Password,LinkedinId,Course,Batch,Headline,bio,file,url,Address,CompanyName}
+          = deletedUser
+
+
+     const old = await oldtrainer.create( {Name,Number,Email,Password,LinkedinId,Course,Batch,Headline,bio,file,url,Address,CompanyName})
+     console.log("old user", old)
+        res.status(200).json(deletedUser);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+router.delete("/deletecounselor/:id", async (req, res) => {
+    const { id } = req.params;
+    console.log('delete counselor route =',id)
+    try {
+       
+        const deletedUser = await counselors.findByIdAndDelete(id);
+        
+        let {Name,Number,Email,password,bio,file,url,Address}
+          = deletedUser
+
+
+     const old = await oldCounselor.create({Name,Number,Email,password,bio,file,url,Address})
+     console.log("old user", old)
+        res.status(200).json(deletedUser);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+router.delete("/deleteBatch/:id", async (req, res) => {
+    
+    try {
+        const { id } = req.params;
+
+        const deletedBatch = await runningBatches.findByIdAndDelete(id);
+        
+        console.log('running batch',deletedBatch)
+        const { Batch, Trainer, TrainerID, BatchTime, Days } = deletedBatch;
+
+        // Create a new document in deletedBatches
+        const savedDeletedBatch = await deletedBatches.create({
+          Batch,
+          Trainer,
+          TrainerID,
+          BatchTime,
+          Days,
+        });
+
+        console.log("before delete")
+        // const savedDeletedBatch = await deleteBatch.save();
+        console.log("after delete")
+
+        
+        // const addDeletedBatch = await deletedBatches.create(deletedBatch)
+        console.log("addDeletedBatch=",savedDeletedBatch)
+        res.status(200).json(deletedBatch);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+
+router.get("/getStudentPayment/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const paymentData = await StudentFee.find({ user: id });
+        res.status(200).json(paymentData);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+// Installment
+router.get("/ins", async (req, res) => {
+    try {
+        const installments = await inst.find({});
+        res.send(installments);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+
+// Teacher Assign
+router.post("/uploadfile", controller.upload, async (req, res) => {
+    req.body.url = req.url
+    req.body.file = req.file
+    console.log('upload route =',req.body)
+    try {
+        console.log('try block')
+        // const newUser = new document(req.body);
+        const savedUser = await uploadfiles.create(req.body);
+        // console.log("Fee Data",savedUser);
+        res.status(200).json(savedUser);
+    } catch (error) {
+          console.log('else block')
+        // console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+router.post("/uploadNotesPdf", controller.upload, async (req, res) => {
+    console.log('upload note pdf')
+    req.body.url = req.url
+    req.body.file = req.file
+    console.log('upload route =',req.body)
+    try {
+        console.log('try block')
+        // const newUser = new document(req.body);
+        const savedUser = await Notes.create(req.body);
+        // console.log("Fee Data",savedUser);
+        res.status(200).json(savedUser);
+    } catch (error) {
+          console.log('else block')
+        // console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+router.post("/uploadNotesLink", async(req, res) => {
+    console.log('upload note link')
+    try {
+        console.log('try block')
+        // const newUser = new document(req.body);
+        const savedUser = await Notes.create(req.body);
+        // console.log("Fee Data",savedUser);
+        res.status(200).json(savedUser);
+    } catch (error) {
+          console.log('else block')
+        // console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+router.post("/uploadClassUrl", async (req, res) => {
+    // console.log("class body",req.body)
+    
+
+    try {
+        // const newUser = new document(req.body);
+        const savedUser = await uploadclassurl.create(req.body);
+        // console.log("Fee Data",savedUser);
+        res.status(200).json(savedUser);
+    } catch (error) {
+        // console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+
+//trainer upload item url video 
+router.post("/uploadAssignmentUrl", async (req, res) => {
+    console.log("upload file", req.body)
+    try {
+        const savedUser = await uploaditem.create(req.body);
+        res.status(200).json(savedUser);
+    } catch (error) {
+        // console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+
+
+//Get by student upload item url video
+router.get("/getuploadAssignmentUrl", async (req, res) => {
+    try {
+        const item = await uploaditem.find({});
+        res.send(item);
+    } catch (error) {
+        // console.log(error.message);
+        res.status(500).json(error);
+    }
+});
+
+//Video
+
+router.post("/uploadVideoUrl", async (req, res) => {
+    console.log("video =", req.body)
+    try {
+        const savedUser = await uploadvideourl.create(req.body);
+        res.status(200).json(savedUser);
+    } catch (error) {
+        // console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+
+//get Video
+router.get("/getuploadVideoUrl", async (req, res) => {
+    const Batch = req.header('Batch')
+    console.log('batch =', Batch)
+    try {
+        const item = await uploadvideourl.find({ batch: Batch });
+        console.log('student item =', item)
+        res.send(item);
+    } catch (error) {
+        // console.log(error.message);
+        res.status(500).json(error);
+    }
+});
+
+
+// Document
+router.get("/document", async (req, res) => {
+    try {
+        const currentDate = new Date();
+        const docum = await document.find({});
+
+        const response = {
+            documents: docum,
+            date: currentDate
+        };
+        res.send(response);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+//  Student-profile
+router.get("/studentpro", async (req, res) => {
+    try {
+        const student = await users.find({});
+        console.log('student =', student)
+        res.send(student);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+router.get("/getTrainerBatch/:TrainerId", async (req, res) => {
+    const { TrainerId } = req.params
+
+    try {
+        let TrainerBatch = await runningBatch.find({ TrainerID: TrainerId })
+        res.send(TrainerBatch)
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+
+
+})
+
+router.post("/updatePaymentStatus/:id", async (req, res) => {
+    const { id } = req.params
+    try {
+        let paymentStatus = await users.updateOne({ _id: id }, { $set: { paymentStatus: req.body.paymentStatus } }, { upsert: true })
+
+        res.send({ "status": 200 })
+    }
+    catch (error) {
+        // console.log("error =",error.message)
+    }
+})
+
+router.post("/updatelastCollectionDate/:id", async (req, res) => {
+    const { id } = req.params
+    try {
+        let paymentStatus = await users.updateOne({ _id: id }, { $set: { lastCollectionDate: req.body.lastCollectionDate, paymentStatus: req.body.paymentStatus } }, { upsert: true })
+        // console.log("lastcollectionDate status =",paymentStatus)
+
+    }
+    catch (error) {
+        // console.log("error =",error.message)
+    }
+})
+
+//Student-profile display in Trainer Component
+router.get("/pro", async (req, res) => {
+    try {
+        const trainers = await users.find({});
+        res.send(trainers);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+
+// Trainer profile
+router.get("/trainer", async (req, res) => {
+    console.log('trainer =', req.body)
+
+    try {
+        const trainers = await uploads.find({});
+        // console.log("data =",trainers)
+        res.send(trainers)
+    }
+    catch (error) {
+        console.log('error =', error.message)
+        res.send({ "error": error.message })
+    }
+
+});
+
+
+router.get("/trainer/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        // console.log('id =',id)
+
+        const userindividual = await uploads.findById(id);
+        // // console.log("user individual =", userindividual);
+        res.send({ "status": "active", "userIndividual": userindividual });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+
+
+//Add Trainer
+
+
+router.post("/Alltrainer", controller.upload, async (req, res) => {
+    sendmail(req,res)
+    req.body.url = req.url
+    req.body.file = req.file
+    try {
+        const newUser = new uploads(req.body);
+        const savedUser = await newUser.save();
+        // console.log("Fee Data",savedUser)
+        res.status(200).json(savedUser);
+    } catch (error) {
+        // console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+router.post("/updatetrainer/:id", async (req, res) => {
+
+    const {id} = req.params
+
+    const trainerData = await uploads.findById(id)
+    console.log('trainer select =',trainerData)
+
+    req.body.url =  trainerData.url?trainerData.url:""
+    req.body.file = trainerData.file
+    try {
+        const updateTrainer = await uploads.findByIdAndUpdate(id,req.body,{
+            new:true
+        })
+        
+        // console.log("Fee Data",savedUser)
+        res.status(200).json(updateTrainer);
+    } catch (error) {
+        // console.log(error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+router.post("/updateCounselor/:id", async (req, res) => {
+
+    const {id} = req.params
+
+    const counselorData = await counselors.findById(id)
+    console.log('trainer select =',counselorData)
+
+    req.body.url =  counselorData.url?counselorData.url:""
+    req.body.file = counselorData.file?counselorData.file:""
+    req.body.password = counselorData.password
+    try {
+        const updateCounselor = await counselors.findByIdAndUpdate(id,req.body,{
+            new:true
+        })
+        
+        // console.log("Fee Data",savedUser)
+        res.status(200).json(updateCounselor);
+    } catch (error) {
+        // console.log(error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+//filter date wise data
+router.get('/filterByMonth', async (req, res) => {
+    const month = req.query.month;
+    try {
+        const filteredData = await DataModel.find({ JoiningDate: { $regex: month, $options: 'i' } }).exec();
+        res.json(filteredData);
+    } catch (error) {
+        // // console.error('Error executing query:', error);
+        res.status(500).send('Error executing query');
+    }
+});
+
+
+//Login router for student
+
+router.post("/student", async (req, res) => {
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+
+        const username = await users.findOne({ email: email, password: password }).lean();
+        // // console.log('status =', username.status, username)
+
+        if (username) {
+
+            if (username.status === "active") {
+                const data = {
+                    user: {
+                        id: username._id
+                    },
+                }
+
+                delete username.password;
+                // // console.log('trim user =', username)
+                const authtoken = await jwt.sign(data, jwt_secret)
+                res.send({ "status": "active", "authtoken": authtoken, "username": username })
+            }
+
+            else {
+                res.send({ "status": "deactive" })
+
+            }
+        }
+        else {
+            res.send({ "status": "false" })
+        }
+
+    } catch (error) {
+        res.status(404).send({ "invalid Password": error.message })
+    }
+})
+router.post("/counsellor", async (req, res) => {
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+        // console.log('email =',email, password)
+
+        const username = await counselors.findOne({ Email: email, password: password }).lean();
+        // console.log('status =', username)
+
+        if (username) {
+
+
+            const data = {
+                user: {
+                    id: username._id
+                },
+            }
+
+            delete username.password;
+            // // console.log('trim user =', username)
+            const authtoken = await jwt.sign(data, jwt_secret)
+            res.send({ "status": "active", "authtoken": authtoken, "username": username })
+
+
+        }
+        else {
+            res.send({ "status": "false" })
+        }
+
+    } catch (error) {
+        res.status(404).send({ "invalid Password": error.message })
+    }
+})
+
+
+router.post("/addCounselor", controller.upload, async (req, res) => {
+    sendmail(req, res)
+
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+        req.body.file = req.file
+        const url = req.url
+        // console.log('email =',email, password)
+
+        const username = await counselors.create({ Email: email, password: password, Number: req.body.Number, Address: req.body.Address, Name: req.body.Name, url: url });
+        // console.log('status =', username)
+
+        if (username) {
+            const data = {
+                user: {
+                    id: username._id
+                },
+            }
+            delete username.password;
+            // // console.log('trim user =', username)
+            const authtoken = await jwt.sign(data, jwt_secret)
+            res.send({ "status": "active", "authtoken": authtoken, "username": username })
+        }
+        else {
+            res.send({ "status": "false" })
+        }
+
+    } catch (error) {
+        res.status(404).send({ "invalid Password": error.message })
+    }
+})
+
+
+
+
+// Login router for Trainer
+
+router.post("/trainer", async (req, res) => {
+
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+
+        const username = await uploads.findOne({ Email: email, Password: password }).lean();
+
+
+        if (username) {
+
+            const data = {
+                user: {
+                    id: username._id
+                },
+            }
+
+            delete username.password;
+            // // console.log('trim user =', username)
+            const authtoken = await jwt.sign(data, jwt_secret)
+            res.send({ "status": "active", "authtoken": authtoken, "username": username })
+        }
+
+        else {
+            res.send({ "status": "false" })
+        }
+
+    } catch (error) {
+        res.status(404).send({ "invalid ": error.message })
+    }
+})
+
+router.post("/counselor", async (req, res) => {
+    console.log('counselor')
+
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+
+        const username = await counselors.findOne({ Email: email, Password: password }).lean();
+
+
+        if (username) {
+
+            const data = {
+                user: {
+                    id: username._id
+                },
+            }
+
+            delete username.password;
+            // // console.log('trim user =', username)
+            const authtoken = await jwt.sign(data, jwt_secret)
+            res.send({ "status": "active", "authtoken": authtoken, "username": username })
+        }
+
+        else {
+            res.send({ "status": "false" })
+        }
+
+    } catch (error) {
+        res.status(404).send({ "invalid ": error.message })
+    }
+})
+
+router.post("/admin", async (req, res) => {
+    console.log('admin =', req.body)
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+
+        const username = await admins.findOne({ email: email, password: password }).lean();
+        console.log('status =', username)
+
+        if (username) {
+
+            if (username.status === "active") {
+                const data = {
+                    user: {
+                        id: username._id
+                    },
+                }
+
+                delete username.password;
+                // // console.log('trim user =', username)
+                const authtoken = await jwt.sign(data, jwt_secret)
+                res.send({ "status": "active", "authtoken": authtoken, "username": username })
+            }
+
+            else {
+                res.send({ "status": "deactive" })
+
+            }
+        }
+        else {
+            res.send({ "status": "false" })
+        }
+
+    } catch (error) {
+        console.log('error =', error.message)
+        res.status(404).send({ "invalid Password": error.message })
+    }
+})
+
+
+
+router.post("/uploaditem", async (req, res) => {
+    const itemName = req.body.fileName;
+    const trainer = req.body.Name;
+    const batch = req.body.batch;
+    const course = req.body.course;
+
+    try {
+        let data = await uploaditem.create({
+            itemName: itemName,
+            trainer: trainer,
+            batch: batch,
+            course: course
+        })
+        res.send({ "success": true, "data": data })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+
+
+router.get('/fetchuploadeditems', async (req, res) => {
+
+    try {
+        let fetchedItem = await uploaditem.find({})
+
+        res.send({ "success": "true", "fetchData": fetchedItem })
+    }
+
+    catch (error) {
+        res.send(error.message)
+    }
+})
+
+
+router.post('/submititem', controller.upload, async (req, res) => {
+    req.body.url = req.url
+    req.body.file = req.file
+
+    try {
+
+        let submitItem = await submititem.create(req.body);
+
+        res.send({ "success": true, "data": submitItem });
+    } catch (error) {
+        // // console.log("Error submitting item:", error);
+        res.status(500).send({ "success": false, "error": "Error submitting item" });
+    }
+});
+
+
+router.get('/getStudentPendingAssignment/:id',async(req,res)=>{
+    const {id} = req.params
+    const Batch = req.header('batch')
+    console.log('batch =',Batch)
+
+    let submittedAssigment = await submititem.find({studentId:id})
+
+    let pendingAssignment = await uploaditem.find({batch:Batch})
+
+    // console.log('pending assignment before filter=',pendingAssignment)
+    // console.log('submit assignment before filter=',submittedAssigment)
+
+    let Assignment = pendingAssignment.filter(data=>{
+        let pendingStatus =true;
+        submittedAssigment.map(element=>{
+           
+            console.log("data =",data._id.toString(),element.assignmentId.toString())
+            if(data._id.toString()==element.assignmentId.toString())
+         
+            {
+                console.log('if ')
+                pendingStatus=false
+            }
+        })
+       console.log('pending status =',pendingStatus)
+        return pendingStatus
+    })
+
+    console.log('pending assignment =',Assignment)
+    res.send(Assignment)
+
+})
+
+
+
+router.get('/getStudentSubmittedAssignment/:id',async(req,res)=>{
+    const {id} = req.params
+    let submittedAssigment = await submititem.find({studentId:id})
+    console.log("submit student =",id,submittedAssigment)
+    res.send(submittedAssigment)
+
+})
+router.get('/getTrainerAssignment',async(req,res)=>{
+    const batch = req.header("batch")
+    let submittedAssigment = await uploaditem.find({batch:batch})
+    
+    res.send(submittedAssigment)
+
+})
+router.get('/getTrainerNotesPdf',async(req,res)=>{
+    const batch = req.header("batch")
+    let submittedAssigment = await Notes.find({batch:batch, filetype:"pdf"})
+    
+    res.send(submittedAssigment)
+
+})
+router.get('/getTrainerNotesLink',async(req,res)=>{
+    const batch = req.header("batch")
+    let submittedAssigment = await Notes.find({batch:batch, filetype:"link"})
+    
+    res.send(submittedAssigment)
+
+})
+
+
+router.delete('/deleteTrainerAssignment/:id',async(req,res)=>{
+    const {id} = req.params
+    console.log(" delete id  =",id)
+    try{
+    let submittedAssigment = await uploaditem.findByIdAndDelete(id)
+    
+    res.send(submittedAssigment)
+    }
+    catch(error){
+        console.log('error =',error.message)
+    }
+
+})
+router.delete('/deleteVideo/:id',async(req,res)=>{
+    const {id} = req.params
+    console.log(" delete id  =",id)
+    try{
+    let deletedVideo = await uploadvideourl.findByIdAndDelete(id)
+    
+    res.send(deletedVideo   )
+    }
+    catch(error){
+        console.log('error =',error.message)
+    }
+
+})
+router.delete('/deleteNotes/:id',async(req,res)=>{
+    const {id} = req.params
+    console.log(" delete id  =",id)
+    try{
+    let deletedNotes = await Notes.findByIdAndDelete(id)
+    
+    res.send(deletedNotes)
+    }
+    catch(error){
+        console.log('error =',error.message)
+    }
+
+})
+
+
+router.get('/fetchsubmititem', async (req, res) => {
+
+    try {
+        let fetchedItem = await submititem.find({})
+        // // console.log(fetchedItem)
+
+        res.send({ "success": "true", "fetchData": fetchedItem })
+    }
+
+    catch (error) {
+        res.send(error.message)
+    }
+})
+
+
+// --------- Send message By Admin to batch ------------
+
+router.post('/sendmessage', async (req, res) => {
+    // console.log("req body =",req.body)
+    const message = req.body.message;
+    const from = req.body.from;
+    const checkid = req.body.checkid;
+    const file = req.body.fileName;
+    // // console.log('check id =', checkid, message, req.body)
+
+    const data = {
+        user: {
+            id: checkid
+        },
+    }
+
+    // // // console.log('data =', data.user)
+    // // console.log('file type =', typeof (file), file)
+    const messageauthtoken = await jwt.sign(data, jwt_secret)
+
+
+    try {
+        let senddata = await messagemodel.create({
+            message,
+            from,
+            messageid: messageauthtoken,
+            file: file
+        })
+
+        res.send(senddata)
+    }
+    catch (error) {
+        res.send(error.message)
+    }
+})
+
+router.post('/Studentsendmessage', async (req, res) => {
+    // console.log("req body =",req.body)
+    const message = req.body.message;
+    const from = req.body.from;
+    const checkid = req.body.checkid;
+    const file = req.body.fileName;
+    const EnrollmentNo = req.body.EnrollmentNo;
+    const batch = req.body.batch
+    // // console.log('check id =', checkid, message, req.body)
+
+    const data = {
+        user: {
+            id: checkid
+        },
+    }
+
+    // // // console.log('data =', data.user)
+    // // console.log('file type =', typeof (file), file)
+    const messageauthtoken = await jwt.sign(data, jwt_secret)
+
+
+    try {
+        let senddata = await Studentmessagemodel.create({
+            message,
+            from,
+            messageid: messageauthtoken,
+            file: file,
+            EnrollmentNo,
+            batch
+        })
+
+        res.send(senddata)
+    }
+    catch (error) {
+        res.send(error.message)
+    }
+})
+
+
+
+
+router.post('/sendStudentMessage', async (req, res) => {
+    // console.log("req body =",req.body)
+    const message = req.body.message;
+    const from = req.body.from;
+    const checkid = req.body.checkid;
+    const file = req.body.fileName;
+    // // console.log('check id =', checkid, message, req.body)
+
+    const data = {
+        user: {
+            id: checkid
+        },
+    }
+
+    // // // console.log('data =', data.user)
+    // // console.log('file type =', typeof (file), file)
+    const messageauthtoken = await jwt.sign(data, jwt_secret)
+
+
+    try {
+        let senddata = await messagemodel.create({
+            message,
+            from,
+            messageid: messageauthtoken,
+            file: file
+        })
+
+        res.send(senddata)
+    }
+    catch (error) {
+        res.send(error.message)
+    }
+})
+
+
+// router.get('/receivemessage/:id', async (req, res) => {
+//     let {id} = req.params
+
+
+//     try {
+//         let fetchedItem = await messagemodel.find({})
+//         let message =[];
+//         fetchedItem.map((data,index)=>{
+
+//             const fetchData = jwt.verify(data.messageid, jwt_secret);
+//             // // console.log('message =',data.messageid)
+
+
+//             fetchData.user.id.filter(element=>{
+
+//                 if(id===element.id){
+
+//                     message.push(fetchedItem[index].message)
+//                 }
+//                 else{
+//                     false
+//                 }
+//             })
+
+//         })
+//        // // console.log('message =',message)
+
+
+//         res.send({ "success": "true", "message": "message" })
+//     }
+//     catch (error) {
+//         res.send(error.message)
+//     }
+// });
+
+
+router.get('/receivemessage/:id', async (req, res) => {
+    let { id } = req.params
+    console.log('receive message id =',id)
+
+    try {
+        let fetchedItem = await messagemodel.find({})
+        let message = [];
+        // console.log('message =',fetchedItem)
+        fetchedItem.map((data, index) => {
+
+            const fetchData = jwt.verify(data.messageid, jwt_secret);
+
+            // console.log('message =',fetchData, id)
+
+            // // console.log("user id type =", typeof (fetchData.user.id), index)
+            fetchData.user.id.filter(element => {
+
+                if (id === element.id) {
+                    message.push({
+                        message: fetchedItem[index].message,
+                        from: fetchedItem[index].from,
+                        date: fetchedItem[index].date
+                    })
+                }
+                else {
+                    false
+                }
+            })
+        })
+        // console.log('message 2 =', message)
+
+
+        res.send({ "success": "true", "message": message })
+    }
+    catch (error) {
+        res.send(error.message)
+    }
+});
+router.get('/Studentreceivemessage/:id', async (req, res) => {
+    let { id } = req.params
+    console.log('student receive message id in route =',id)
+
+    try {
+        let fetchedItem = await Studentmessagemodel.find({})
+        let message = [];
+        // console.log('message =',fetchedItem)
+        fetchedItem.map((data, index) => {
+
+            const fetchData = jwt.verify(data.messageid, jwt_secret);
+
+            // console.log('message =',fetchData, id)
+
+            // // console.log("user id type =", typeof (fetchData.user.id), index)
+            fetchData.user.id.filter(element => {
+
+                if (id === element.id) {
+                    message.push({
+                        message: fetchedItem[index].message,
+                        from: fetchedItem[index].from,
+                        date: fetchedItem[index].date,
+                        batch: fetchedItem[index].batch,
+                        EnrollmentNo: fetchedItem[index].EnrollmentNo
+                    })
+                }
+                else {
+                    false
+                }
+            })
+        })
+        // console.log('message 2 =', message)
+
+
+        console.log("message =",message)
+        res.send({ "success": "true", "message": message })
+    }
+    catch (error) {
+        res.send(error.message)
+    }
+});
+
+router.get('/getAdminId',async(req,res)=>{
+    console.log("get admin id")
+    let admin = await admins.find();
+
+    console.log('admin = ',admin._id)
+    res.send({"id":admin})
+})
+
+router.post('/sendotp', async (req, res) => {
+    res.send('hello')
+})
+
+router.post('/sendmail', async (req, res) => {
+    // // console.log('from router =', req.body)
+    sendmail(req, res)
+})
+
+router.post('/resetpassword', async (req, res) => {
+    // // console.log('email =', req.body.email)
+    try {
+        const username = await users.findOne({ email: req.body.email });
+        // // console.log('email username =', username)
+        if (username) {
+            resetpassword(req, res)
+
+            const data = {
+                user: {
+                    email: username.email
+                },
+            }
+
+            const authtoken = await jwt.sign(data, jwt_secret)
+            res.send({ "send": "true", "resetlink": `http://localhost:3000/resetpassword?token=${authtoken}&user=${req.body.user}` })
+
+        }
+        else {
+            res.send({ "send": "false" })
+        }
+
+    }
+    catch (error) {
+        // // console.log('error =', error)
+        res.send({ "error": error })
+    }
+
+
+})
+
+router.post('/newpassword', fetchuser, async (req, res) => {
+    // // console.log("password =", req.body.newpassword, req.body.user)
+
+    let fetchuserModel;
+    if (req.body.user === "student") {
+        fetchuserModel = users
+    }
+
+
+    try {
+        let user = await fetchuserModel.findOne({ email: req.user.email });
+
+        if (user) {
+            let userPassword = await users.updateOne({ email: req.user.email }, { $set: { password: req.body.newpassword } })
+
+            res.send({ "userpassword": userPassword })
+        }
+        else {
+            res.send({ "response": "no user exist" })
+        }
+    } catch (error) {
+        res.send({ "error": error.message })
+    }
+
+})
+
+// --------compiler----
+router.post('/compile', async (req, res) => {
+    var code = req.body.code;
+    var input = req.body.input;
+    var lang = req.body.lang
+
+    try {
+        if (lang === "Cpp") {
+
+            if (!input) {
+                var envData = { OS: "windows", cmd: "g++" }; // (uses g++ command to compile )
+                //else
+                var envData = { OS: "linux", cmd: "gcc" }; // ( uses gcc command to compile )
+                compiler.compileCPP(envData, code, function (data) {
+                    if (data.output) {
+                        res.send(data);
+                    }
+                    else {
+                        res.send({ output: "error" });
+                    }
+                    //data.error = error message 
+                    //data.output = output value
+                });
+
+            }
+            else {
+                var envData = { OS: "windows", cmd: "g++" }; // (uses g++ command to compile )
+                //else
+                var envData = { OS: "linux", cmd: "gcc" }; // ( uses gcc command to compile )
+                compiler.compileCPPWithInput(envData, code, input, function (data) {
+                    if (data.output) {
+                        res.send(data);
+                    }
+                    else {
+                        res.send({ output: "error" });
+                    }
+                });
+
+            }
+        }
+        else if (lang === "Java") {
+            if (!input) {
+                var envData = { OS: "windows" };
+
+                var envData = { OS: "linux" }; // (Support for Linux in Next version)
+                compiler.compileJava(envData, code, function (data) {
+                    if (data.output) {
+                        res.send(data);
+                    }
+                    else {
+                        res.send({ output: "error" });
+                    }
+                });
+
+            }
+            else {
+                var envData = { OS: "windows" };
+                var envData = { OS: "linux" }; // (Support for Linux in Next version)
+                compiler.compileJavaWithInput(envData, code, input, function (data) {
+                    if (data.output) {
+                        res.send(data);
+                    }
+                    else {
+                        res.send({ output: "error" });
+                    }
+                });
+            }
+        }
+
+
+        else if (lang === "Python") {
+            if (!input) {
+                var envData = { OS: "windows" };
+                //else
+                var envData = { OS: "linux" };
+                compiler.compilePython(envData, code, function (data) {
+                    if (data.output) {
+                        res.send(data);
+                    }
+                    else {
+                        res.send({ output: "error" });
+                    }
+                });
+            }
+            else {
+                var envData = { OS: "windows" };
+                //else
+                var envData = { OS: "linux" };
+                compiler.compilePythonWithInput(envData, code, input, function (data) {
+                    if (data.output) {
+                        res.send(data);
+                    }
+                    else {
+                        res.send({ output: "error" });
+                    }
+                });
+
+            }
+        }
+    }
+    catch (error) {
+
+    }
+    //if windows  
+
+})
+
+router.post('/addAttendance', async (req, res) => {
+    const { fullDate, date, month, year, presentId, absentId, Batch, trainerId } = req.body;
+
+
+    const presentdata = {
+        user: {
+            id: presentId
+        },
+    }
+    const absentdata = {
+        user: {
+            id: absentId
+        },
+    }
+
+    const presentauthtoken = await jwt.sign(presentdata, jwt_secret)
+    const absentauthtoken = await jwt.sign(absentdata, jwt_secret)
+    const addAttendance = await attendance.create({
+        fullDate,
+        date,
+        month,
+        year,
+        presentId: presentauthtoken,
+        absentId: absentauthtoken,
+        Batch: [Batch],
+        trainerId: [trainerId]
+    })
+
+    console.log("add attendance =", req.body, addAttendance)
+    res.send({ "status": "true", "attendance": addAttendance })
+})
+
+
+router.post('/updateAttendance', async (req, res) => {
+    const { fullDate, date, month, year, presentId, absentId, Batch, trainerId } = req.body;
+    // console.log("req body =", req.body)
+
+    // // console.log('batch  =',Batch)
+    let existAttendance = await attendance.find({ fullDate });
+    // console.log('exist attendance ', existAttendance, fullDate)
+
+    // check exist attendance of given date
+
+    if (existAttendance.length != 0) {
+
+        let presentStudentId = jwt.verify(existAttendance[0].presentId, jwt_secret)
+        let absentStudentId = jwt.verify(existAttendance[0].absentId, jwt_secret)
+
+        let tempAbsentID = absentStudentId.user.id;
+        let tempPresentID = presentStudentId.user.id;
+
+        let removeabsentId = [];
+        let removepresentId = [];
+
+        let newPresentidStatus = false;
+        absentStudentId.user.id.map((data, index) => {
+            let status = false;
+            presentId.map(element => {
+                if (data === element) {
+                    newPresentidStatus = true
+                    status = true
+                    tempPresentID.push(data)
+                    removeabsentId.push(data)
+                }
+            }
+            )
+            // status === false ? tempAbsentID.push(data) : false
+        })
+
+        if (newPresentidStatus === false)
+            presentId.map(data => {
+                tempPresentID.push(data)
+            })
+
+        let newAbsentidStatus = false;
+        presentStudentId.user.id.map((data, index) => {
+            let status = false;
+            absentId.map(element => {
+                if (data === element) {
+                    newAbsentidStatus = true
+                    status = true;
+                    tempAbsentID.push(data)
+                    removepresentId.push(data)
+                }
+            }
+            )
+            // status === false ? tempPresentID.push(data) : false
+
+        })
+
+        if (newAbsentidStatus === false)
+            absentId.map(data => {
+                tempAbsentID.push(data)
+            })
+
+        // // // console.log('length of absent =', tempAbsentID.length)
+        // // // console.log('length of present =', tempPresentID.length)
+
+        presentStudentId.user.id = tempPresentID.filter(data => {
+            matchStatus = false;
+            removepresentId.map(element => {
+                if (data === element) {
+                    matchStatus = true
+                }
+            })
+            return matchStatus === false ? data : false
+        });
+        absentStudentId.user.id = tempAbsentID.filter(data => {
+            matchStatus = false;
+            removeabsentId.map(element => {
+                if (data === element) {
+                    matchStatus = true
+                }
+            })
+            return matchStatus === false ? data : false
+        });;
+
+        // // // console.log('present =', presentStudentId)
+        // // // console.log('absent =', absentStudentId)
+
+
+
+        // // // console.log('absent id =', tempAbsentID, absentStudentId.user.id.length, tempPresentID, presentStudentId.user.id.length)
+
+        const presentauthtoken = await jwt.sign(presentStudentId, jwt_secret)
+        const absentauthtoken = await jwt.sign(absentStudentId, jwt_secret)
+
+        let trainerStatus = false;
+        existAttendance[0].trainerId.map(data => {
+            if (data === trainerId) {
+                trainerStatus = true
+            }
+        })
+        if (trainerStatus === true) {
+            let batchStatus = false
+            existAttendance[0].Batch.map(data => {
+                if (data === Batch) {
+                    batchStatus = true
+                }
+            })
+
+            if (batchStatus === true) {
+                let updateAttendance = await attendance.update({ fullDate: fullDate }, { $set: { absentId: absentauthtoken, presentId: presentauthtoken } })
+                // // // console.log('updateAttendance =', updateAttendance)
+                res.send({ "status": "true", "attendance": updateAttendance })
+            }
+
+
+
+            else {
+
+                let tempBatch = existAttendance[0].Batch;
+                tempBatch.push(
+                    Batch
+                )
+
+                let updateAttendance = await attendance.update({ fullDate: fullDate }, { $set: { absentId: absentauthtoken, presentId: presentauthtoken, Batch: tempBatch } })
+                // // // console.log('updateAttendance =', updateAttendance)
+                res.send({ "status": "true", "attendance": updateAttendance })
+
+            }
+        }
+
+        else {
+            let tempBatch = existAttendance[0].Batch;
+            tempBatch.push(
+                Batch
+            )
+
+            let tempTrainer = existAttendance[0].trainerId;
+            tempTrainer.push(
+                trainerId
+            )
+
+            let updateAttendance = await attendance.update({ fullDate: fullDate }, { $set: { absentId: absentauthtoken, presentId: presentauthtoken, Batch: tempBatch, trainerId: tempTrainer } })
+            // // // console.log('updateAttendance =', updateAttendance)
+            res.send({ "status": "true", "attendance": updateAttendance })
+
+        }
+    }
+
+
+})
+
+router.post('/addStudentAttendance',async(req,res)=>{
+    console.log('req body =',req.body)
+    try{
+
+        let attendance = await Studentattendance.create(req.body)
+
+    }
+    catch(error){
+        console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+router.post('/updateStudentAttendance',async(req,res)=>{
+    console.log('req body =',req.body)
+    try{
+
+        let updateAttendance = await Studentattendance.updateOne({fullDate:req.body.fullDate, Batch:req.body.Batch}, {$set:{studentId:req.body.studentId, attendanceStatus:req.body.attendanceStatus}})
+
+    }
+    catch(error){
+        console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+
+router.post('/getAttendance', async (req, res) => {
+    const { fullDate, Batch, trainerId } = req.body
+
+    try {
+        let attendanceData = await attendance.find({ fullDate, Batch, trainerId });
+        console.log('attendance =', attendanceData, req.body)
+        // console.log('attendance =', fullDate, attendanceData)
+
+        attendanceData = attendanceData.sort((a, b) => {
+            const dateA = new Date(`${a.fullDate}`);
+            const dateB = new Date(`${b.fullDate}`);
+            return dateA - dateB;
+        });
+
+        //   attendanceData = attendanceData.filter(data => {
+        //     // console.log('data =', data);
+        //     let batchStatus = false;
+        //     data.Batch.map(batchElement => { // Use batchElement instead of element
+        //         if (batchElement === Batch) { // Compare to the desired batch value
+        //             batchStatus = true;
+        //         }
+        //     });
+        //     return batchStatus; // Return data if batchStatus is true
+        // });
+
+        // attendanceData = attendanceData.filter(data => {
+        //     // console.log('data =', data);
+        //     let idStatus = false;
+        //     data.trainerId.map(trainerid => { // Use batchElement instead of element
+        //         if (trainerid === trainerId) { // Compare to the desired batch value
+        //             idStatus = true;
+        //         }
+        //     });
+        //     return idStatus; // Return data if batchStatus is true
+        // });
+
+        // console.log('attendance fetch =', attendanceData)
+        if (attendanceData.length !== 0) {
+
+            let presentStudentId = jwt.verify(attendanceData[0].presentId, jwt_secret)
+            let absentStudentId = jwt.verify(attendanceData[0].absentId, jwt_secret)
+
+            // // console.log('if')
+            res.send({ 'status': "filled", 'monthAttendance': attendanceData, 'presentId': presentStudentId.user.id, 'absentId': absentStudentId.user.id })
+        }
+
+        else {
+            res.send({ 'status': "empty" })
+            // // console.log('else attendance = ',fullDate,attendanceData)
+        }
+    }
+    catch (error) {
+
+    }
+
+
+
+})
+router.post('/getStudentAttendance', async (req, res) => {
+    const { fullDate, Batch, trainerId } = req.body
+
+    try {
+        let attendanceData = await Studentattendance.find({ fullDate, Batch, trainerId });
+        console.log('attendance =', attendanceData, req.body)
+        // console.log('attendance =', fullDate, attendanceData)
+
+        attendanceData = attendanceData.sort((a, b) => {
+            const dateA = new Date(`${a.fullDate}`);
+            const dateB = new Date(`${b.fullDate}`);
+            return dateA - dateB;
+        });
+
+        console.log("attendance =",attendanceData)
+        res.send(attendanceData)
+    }
+    catch (error) {
+
+    }
+
+
+
+})
+
+
+
+router.post('/getthreeDaysAttendance', async (req, res) => {
+    let { month, year, currentDate } = { ...req.body }
+    // // console.log('current date',currentDate)
+    try {
+        let getMonthAttendance = await attendance.find({
+            "year": year,
+            "month": month,
+            "date": { "$gte": currentDate, "$lte": ((currentDate - 2).toString()) }
+        });
+        // console.log('three days attendance =', getMonthAttendance, typeof (((currentDate - 2).toString())), ((currentDate - 2).toString()))
+        if (getMonthAttendance.length !== 0) {
+
+            let presentStudentId = []
+            let absentStudentId = []
+
+            getMonthAttendance.sort((a, b) => {
+                const dateA = new Date(`${a.fullDate}`);
+                const dateB = new Date(`${b.fullDate}`);
+                return dateA - dateB;
+            }); users
+            getMonthAttendance.map(data => {
+                presentStudentId.push(jwt.verify(data.presentId, jwt_secret))
+                absentStudentId.push(jwt.verify(data.absentId, jwt_secret))
+            })
+
+            // // console.log('month attendance =',getMonthAttendance)
+
+            // let data = getMonthAttendance
+
+
+            // // console.log("sorted data",getMonthAttendance);
+
+            res.send({ "status": "filled", "monthAttendance": getMonthAttendance, 'presentId': presentStudentId, 'absentId': absentStudentId })
+        }
+        else {
+
+            res.send({ "status": "empty" })
+        }
+
+
+    } catch (error) {
+        res.send('error', error.message)
+    }
+
+})
+
+// For Demo------
+router.post("/demo", async (req, res) => {
+    console.log('Demo', req.body)
+    try {
+        const demo = await NewDemo.create({
+            Trainer: req.body.Trainer,
+            TrainerId: req.body.TrainerId,
+            Course: req.body.Course,
+            Date: req.body.Date,
+            Time: req.body.Time,
+            month: req.body.month,
+            year: req.body.year,
+            day: req.body.day,
+            classLink: req.body.classLink,
+            CounselorId: req.body.CounselorId,
+            CounselorName: req.body.CounselorName
+        });
+        res.send(demo);
+    } catch (error) {
+        res.status(500).json(error.message);
+    }
+});
+router.post('/updateDemo/:id', async (req, res) => {
+    try {
+        console.log("req.body",req.body)
+      const { id } = req.params;
+      console.log('Updating Demo with ID:', id);
+  
+      // Update the user document
+      const updatedUser = await NewDemo.findByIdAndUpdate(id, req.body, {
+        new: true,
+      });
+  
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.send(updatedUser)
+  
+      // Update the FixDemo document
+    //   const demoUpdate = await FixDemo.findByIdAndUpdate(id, {
+    //     Name: req.body.Name,
+    //     Email: req.body.Email,
+    //     Trainer: req.body.Trainer,
+    //     TrainerId: req.body.TrainerId,
+    //     Course: req.body.Course,
+    //     Date: req.body.Date,
+    //     Time: req.body.Time,
+    //     Background: req.body.Background,
+    //     month: req.body.month,
+    //     year: req.body.year,
+    //     day: req.body.day,
+    //     classLink: req.body.classLink,
+    //     CounselorId: req.body.CounselorId,
+    //     CounselorName: req.body.CounselorName,
+    //     status: req.body.status,
+    //   }, {
+    //     new: true,
+    //   });
+  
+    //   if (!demoUpdate) {
+    //     return res.status(404).json({ error: 'Demo not found' });
+    //   }
+  
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+router.post('/updateDemoStudent/:id', async (req, res) => {
+    try {
+        console.log("req.body",req.body)
+      const { id } = req.params;
+      console.log('Updating Demo with ID:', id);
+  
+      // Update the user document
+      const updatedDemoStudent = await DemoStudent.findByIdAndUpdate(id, req.body, {
+        new: true,
+      });
+  
+      if (!updatedDemoStudent) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.send(updatedDemoStudent)
+      
+ 
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+
+router.post('/adddemoStudent/:id', async (req, res) => {
+    try {
+        console.log("req.body",req.body)
+      const { id } = req.params;
+      req.body.DemoId = id
+      console.log('Updating Demo with ID:', id);
+  
+      const demoStudent = await DemoStudent.create( req.body);
+  
+      if (!demoStudent) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.send(demoStudent)
+    
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  });
+
+
+router.get("/Getdemo", async (req, res) => {
+
+    let totalCandidate = []
+    let totalCandidateData = []
+    try {
+        const demo = await NewDemo.find({});
+
+        for (const data of demo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+     
+
+          res.send({Demo:demo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+
+router.get("/GetAlldemo", async (req, res) => {
+    
+    console.log("get all demo")
+
+    let totalCandidate = []
+    let totalCandidateData = []
+
+    try {
+        let demo = await NewDemo.find({});
+        
+        demo = filterDemo(demo)
+
+        for (const data of demo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+      
+          res.send({Demo:demo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+router.post('/getMonthAttendance', async (req, res) => {
+    let { year, month,batch } = req.body
+    console.log("getMonthAttendance ",req.body)
+
+    try {
+        let filterAttendance = await Studentattendance.find({
+            "year": year,
+            "month": month,
+            "Batch":batch
+        });
+        console.log('filter =', filterAttendance)
+
+
+        filterAttendance = filterAttendance.sort((a, b) => {
+            const dateA = new Date(`${a.fullDate}`);
+            const dateB = new Date(`${b.fullDate}`);
+            return dateA - dateB;
+        });
+
+
+        res.send({ "filterAttendance": filterAttendance })
+    }
+    catch (error) {
+        res.send(error.message)
+    }
+
+
+})
+
+router.post('/fetchadmin', fetchuser, async (req, res) => {
+    // // console.log('id =', req.user)
+
+    try {
+        let adminData = await admins.findOne({ _id: req.user.id })
+
+        if (adminData) {
+            res.send({ "status": "active", "data": adminData })
+        }
+
+        else {
+            res.send({ "status": "deactive" })
+        }
+    }
+    catch (error) {
+        res.send({ "status": "server error" })
+    }
+})
+
+router.post('/fetchtrainer', fetchuser, async (req, res) => {
+    // // console.log('id =', req.user)
+
+    try {
+        let trainerData = await uploads.findOne({ _id: req.user.id })
+
+        // // console.log('trainer data= ',trainerData)
+        if (trainerData) {
+            res.send({ "status": "active", "data": trainerData })
+        }
+
+        else {
+            res.send({ "status": "deactive" })
+        }
+    }
+    catch (error) {
+        res.send({ "status": "server error" })
+    }
+})
+
+router.post('/fetchcounselor', fetchuser, async (req, res) => {
+    // // console.log('id =', req.user)
+
+    try {
+        let counselorData = await counselors.findOne({ _id: req.user.id })
+
+        // // console.log('trainer data= ',trainerData)
+        if (counselorData) {
+            res.send({ "status": "active", "data": counselorData })
+        }
+
+        else {
+            res.send({ "status": "deactive" })
+        }
+    }
+    catch (error) {
+        res.send({ "status": "server error" })
+    }
+})
+router.get('/fetchcounselor/:id', async (req, res) => {
+    // // console.log('id =', req.user)
+    const {id}  = req.params
+    console.log("id  =",id)
+
+    try {
+        let counselorData = await counselors.findOne({ _id: id })
+
+        // // console.log('trainer data= ',trainerData)
+        if (counselorData) {
+            res.send({ "status": "active", "data": counselorData })
+        }
+
+        else {
+            res.send({ "status": "deactive" })
+        }
+    }
+    catch (error) {
+        res.send({ "status": "server error" })
+    }
+})
+
+router.post('/fetchstudent', fetchuser, async (req, res) => {
+    // // console.log('fetch id =', req.user)
+
+    try {
+        // // console.log("try fecth run")
+        let studentData = await users.findOne({ _id: req.user.id })
+        // // console.log('student data =',studentData)
+
+        if (studentData) {
+            res.send({ "status": "active", "data": studentData })
+        }
+
+        else {
+            res.send({ "status": "deactive" })
+        }
+    }
+    catch (error) {
+        // // console.log('fetch catch=',error.message)
+        res.send({ "status": "server error" })
+    }
+})
+
+
+router.post('/getTrainerUpcomingDemoes', async (req, res) => {
+    const { TrainerId, month, day, year } = { ...req.body }
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+    let totalCandidate = []
+    let totalCandidateData = []
+
+    try {
+
+        let demo = await NewDemo.find({
+            "TrainerId": TrainerId,
+            "month": month,
+            "year": year,
+            "day": { "$gte": day }
+        })
+
+        for (const data of demo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+
+        // // console.log('demo =',demo)
+        res.send({Demo:demo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+
+// filter demo function
+
+const filterDemo = (data) => {
+    console.log('filter demo function')
+    let sameDateTime = [];
+    let studentData = [];
+    data.map((demoData, demoIndex) => {
+        let sameDateStatus = false;
+        sameDateTime.map((dateTimeData, index) => {
+            console.log('demodata=', demoData.Time, dateTimeData.date, demoData.Date, dateTimeData.time, demoIndex)
+            if (demoData.Time === dateTimeData.time && demoData.Date === dateTimeData.date) {
+                console.log('if demo', demoIndex)
+                sameDateStatus = true;
+                studentData[index].push(demoData)
+            }
+        })
+        if (sameDateStatus === false) {
+            console.log('else demo')
+
+            sameDateTime.push({
+                date: demoData.Date,
+                time: demoData.Time,
+                link: demoData.classLink,
+                CounselorName: (demoData.CounselorName?demoData.CounselorName:""),
+                Trainer: (demoData.Trainer?demoData.Trainer:""),
+                TrainerId: (demoData.TrainerId?demoData.TrainerId:""),
+                CounselorId:(demoData.CounselorId?demoData.CounselorId:"")
+            })
+
+            studentData.push([demoData])
+        }
+    })
+
+    console.log('demo overview =',sameDateTime,studentData)
+    return {"demolist":sameDateTime, "demoStudent":studentData}
+   
+}
+
+router.get('/getRangeDemoes', async (req, res) => {
+    console.log("get range  demo")
+    let startDate = req.header("startDate");
+
+    let endDate = req.header("endDate");
+    console.log(' startDate  ',startDate,endDate)
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+  const endMonth = endDate.split('/')[1]
+  const startMonth = startDate.split('/')[1]
+
+ startDate = new Date(startDate);
+ endDate = new Date(endDate);
+
+  let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    try {
+
+        let demo = await NewDemo.find()
+        // console.log('demo =',demo)
+        
+        let totalCandidate = []
+        let totalCandidateData = []
+
+        let finalDemo = demo.filter(data=>{
+            const itemDateStr = data.Date;
+            const itemDate = new Date(itemDateStr);
+          
+            return itemDate >= startDate && itemDate <= endDate;
+        })
+
+        for (const data of finalDemo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+          res.send({Demo:finalDemo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+        // res.send(finalDemoData)
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+// router.get('/getRangeDemoes', async (req, res) => {
+//     console.log("get range  demo")
+//     let startDate = req.header("startDate");
+
+//     let endDate = req.header("endDate");
+//     console.log(' startDate  ',startDate,endDate)
+//     // // console.log('Trainer demo =', TrainerName, month, day, year)
+//   const endMonth = endDate.split('/')[1]
+//   const startMonth = startDate.split('/')[1]
+
+//  startDate = new Date(startDate);
+//  endDate = new Date(endDate);
+
+//   let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+//     try {
+
+//         let demo = await FixDemo.find()
+//         console.log('demo =',demo)
+
+//         let finalDemo = demo.filter(data=>{
+//             const itemDateStr = data.Date;
+//             const itemDate = new Date(itemDateStr);
+          
+//             return itemDate >= startDate && itemDate <= endDate;
+//         })
+
+//         let finalDemoData = filterDemo(finalDemo)
+
+//         res.send(finalDemoData)
+//     }
+
+//     catch (error) {
+//         // // console.log('error =',error.message)
+//         res.send(error.message)
+//     }
+// })
+router.get('/getRangeRegisteredStudent', async (req, res) => {
+   
+    let startDate = req.header("startDate");
+
+    let endDate = req.header("endDate");
+    console.log(' startDate  ',startDate,endDate)
+    // // console.log('Trainer demo =', TrainerName, month, day, year
+
+        startDate = new Date(startDate);
+        endDate = new Date(endDate);
+
+
+    try {
+
+        let register = await registerStudent.find()
+      
+            let finalRegister = register.filter(data=>{
+            const itemDateStr = data.RegistrationDate;
+            const itemDate    =    new Date(itemDateStr);
+          
+            return itemDate >= startDate && itemDate <= endDate;
+        })
+
+
+        console.log('final regsiter =',finalRegister)
+        res.send(finalRegister)
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+
+// need to replace it
+router.post('/getDemoesCounselor', async (req, res) => {
+    const { CounselorId, month, day, year } = { ...req.body }
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+
+    try {
+
+        let demo = await FixDemo.find({
+            "CounselorId": CounselorId,
+            "month": month,
+            "year": year,
+            "day": { "$gte": day }
+        })
+
+
+        // // console.log('demo =',demo)
+        res.send(demo)
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+router.get('/getCounselorDemo/:id', async (req, res) => {
+    const { id } = req.params
+    console.log("counselor id from func=",id)
+
+    try {
+
+
+        let totalCandidate = []
+        let totalCandidateData = []
+
+        let demo = await NewDemo.find({
+            "CounselorId": id,
+        })
+
+        // console.log("demo =",demo)
+
+        for (const data of demo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+        
+        // console.log("d =",totalCandidate,totalCandidateData)
+
+        res.send({Demo:demo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+
+router.post('/getupcomingDemoes', async (req, res) => {
+    const { month, day, year } = { ...req.body }
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+
+    
+    let totalCandidate = []
+    let totalCandidateData = []
+
+    try {
+
+        let demo = await NewDemo.find({
+            "month": month,
+            "year": year,
+            "day": { "$gte": day }
+        })
+
+        
+        for (const data of demo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+
+        // // console.log('demo =',demo)
+        res.send({Demo:demo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+router.post('/getupcomingtrainerDemoes/:id', async (req, res) => {
+    const {id} = req.params
+    const { month, day, year } = { ...req.body }
+    console.log('Trainer demo =', month, day, year,id)
+
+    try {
+
+        let demo = await FixDemo.find({
+            "month": month,
+            "year": year,
+            "TrainerId":id,
+            "day": { "$gte": day }
+        })
+
+
+        // console.log('demo =',demo)
+        demo = filterDemo(demo)
+        res.send(demo)
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+router.get('/getNewDemo/:month', async (req, res) => {
+    const month = req.params
+    console.log('state month =',month)
+    let totalCandidate = []
+    let totalCandidateData = []
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+
+    try {
+
+        let demo = await NewDemo.find(month)
+        // console.log('new demo =',demo)
+
+        for (const data of demo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+          res.send({Demo:demo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+    }
+
+    catch (error) {
+        res.send(error.message)
+    }
+})
+router.post('/getDemoesByCounselor', async (req, res) => {
+    const { CounselorId } = { ...req.body }
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+
+    try {
+
+        let demoCounselor = await FixDemo.find({
+            "CounselorId": CounselorId,
+        })
+
+
+        console.log('demoCounselor =',demoCounselor)
+        res.send(demoCounselor)
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+router.get('/getDemoesByTrainer/:id', async (req, res) => {
+    const { id } = req.params
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+    let totalCandidate = []
+    let totalCandidateData = []
+    try {
+
+        let demoTrainer = await NewDemo.find({
+            "TrainerId": id,
+        })
+
+        for (const data of demoTrainer) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+        res.send({Demo:demoTrainer, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+router.get('/getDemoesByCounselor/:id', async (req, res) => {
+    const { id } = req.params
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+    try {
+
+        let demoCounselor = await FixDemo.find({
+            "CounselorId": id,
+        })
+
+        console.log('demoCounselor =',demoCounselor)
+        res.send(demoCounselor)
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+router.get('/getNewDemoesByTrainer/:id', async (req, res) => {
+    console.log("new demoes route")
+    const { id } = req.params
+    const month = req.header("month")
+    console.log("month and id =",id,month)
+    
+    let totalCandidate = []
+    let totalCandidateData = []
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+    try {
+
+        let demoTrainer = await NewDemo.find({
+            "TrainerId": id,
+            "month":month
+        })
+
+        for (const data of demoTrainer) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+        
+        res.send({Demo:demoTrainer, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+router.get('/getNewDemoesByCounselor/:id', async (req, res) => {
+    let totalCandidate = []
+    let totalCandidateData = []
+    const { id } = req.params
+    console.log("new demoes route", id)
+    const month = req.header("month")
+    console.log("month and id =",id,month)
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+    try {
+
+        let demoCounselor = await NewDemo.find({
+            "CounselorId": id,
+            "month":month
+        })
+
+        
+        for (const data of demoCounselor) {
+
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+          res.send({Demo:demoCounselor, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+    }
+
+    catch (error) {
+        console.log('error new demo counselor=',error.message)
+        res.send(error.message)
+    }
+})
+// router.post('/getUpcomingDemoesByCounselor', async (req, res) => {
+//     let totalCandidate = []
+//     let totalCandidateData = []
+
+//     try {
+
+//         let demoCounselor = await NewDemo.find({
+//             "CounselorId": req.body.CounselorId,
+//             "day":req.body.day,
+//             "month":req.body.month,
+//             "year":req.body.year
+//         })
+
+        
+//         for (const data of demoCounselor) {
+
+//             let candidateData = await DemoStudent.find({
+//               DemoId: data._id
+//             });
+//             totalCandidate.push(candidateData.length);
+//             totalCandidateData.push(candidateData);
+//           }
+
+//           res.send({Demo:demoCounselor, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+//     }
+
+//     catch (error) {
+//         console.log('error new demo counselor=',error.message)
+//         res.send(error.message)
+//     }
+// })
+
+const getIntegerTime = (time)=>{
+    let timeParts = time.split(':');
+    let hours = parseInt(timeParts[0]);
+    let minutes = parseInt(timeParts[1].replace(/[^0-9]/g, '')); // Remove 'AM' or 'PM' if present
+    let isPM = time.includes('PM');
+  
+    // Convert to 24-hour format
+    if (isPM && hours < 12) {
+      hours += 12;
+    } else if (!isPM && hours === 12) {
+      hours = 0;
+    }
+  
+    const formattedTime = (hours < 10 ? '0' : '') + hours + (minutes < 10 ? '0' : '') + minutes;
+    console.log("Formatted time =", formattedTime);
+    return formattedTime
+}
+
+
+router.post('/getUpcomingDemoesByCounselor', async (req, res) => {
+    let totalCandidate = [];
+    let totalCandidateData = [];
+    console.log('req body of upcoming demoes =',req.body)
+  
+    try {
+      let demoCounselor = await NewDemo.find({
+        "CounselorId": req.body.CounselorId,
+        "day": req.body.day,
+        "month": req.body.month,
+        "year": req.body.year,
+ // Compare demo time with the current time
+      });
+
+      let checkTime = getIntegerTime(req.body.time)
+
+      demoCounselor = demoCounselor.filter(data => {
+        let time = getIntegerTime(data.Time)
+
+        return time>=checkTime
+      });
+      
+
+      console.log('demoCounselor upcoming demoes=',demoCounselor)
+  
+      for (const data of demoCounselor) {
+        let candidateData = await DemoStudent.find({
+          DemoId: data._id
+        });
+        totalCandidate.push(candidateData.length);
+        totalCandidateData.push(candidateData);
+      }
+  
+      res.send({
+        Demo: demoCounselor,
+        totalStudent: totalCandidate,
+        totalDemoStudent: totalCandidateData
+      });
+    } catch (error) {
+      console.log('error new demo counselor=', error.message)
+      res.send(error.message);
+    }
+  });
+  
+
+
+
+router.post('/getStudentByTrainer', async (req, res) => {
+    try {
+        let filterStudent = await users.find({ TrainerID: req.body.TrainerId }).select("-password -email -Number -Fees -Payment -status")
+        res.send({ "status": "ok", "data": filterStudent })
+    }
+    catch (error) {
+        res.send({ "status": "fail", "message": error.message })
+    }
+})
+
+router.get('/getrunningBatch', async (req, res) => {
+
+    try {
+        let runningBatches = await runningBatch.find({})
+        res.send({ "status": "active", "runningBatches": runningBatches })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+router.get('/getrunningBatchByTrainer/:id', async (req, res) => {
+
+const {id} = req.params
+    try {
+        let trainerRunningBatches = await runningBatch.find({"TrainerID":id})
+        res.send({ "status": "active", "trainerRunningBatches": trainerRunningBatches })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+
+router.get('/getRunningBatchStudent', async (req, res) => {
+
+const batch = req.header("batch")
+console.log('batch = ',batch)
+    try {
+        let studentRunningBatches = await users.find({"Batch":batch})
+        console.log("running student =",studentRunningBatches)
+        res.send({ "status": "active", "studentRunningBatches": studentRunningBatches })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+
+router.get("/getAllBatches", async (req, res) => {
+
+    try {
+        let BatchCourse = await batches.find({})
+        res.send({ "status": "active", "batchCourse": BatchCourse })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+router.post("/addNewCourse", async (req, res) => {
+
+    let course = req.body.course
+    console.log("course =",course)
+
+    try {
+        let batch = await batches.find()
+        console.log("batch =",batch)
+        let BatchCourse = await batches.updateOne({}, {$set:{Course:course}})
+        res.send({ "status": "active", "batchCourse": BatchCourse })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+router.post("/addNewWeekDayTiming", async (req, res) => {
+
+    let weekDays = req.body.weekDays
+    console.log("course =",weekDays)
+
+    try {
+        let batch = await batches.find()
+        console.log("batch =",batch)
+        let BatchCourse = await batches.updateOne({}, {$set:{WeekDaysBatch:weekDays}})
+        res.send({ "status": "active", "batchCourse": BatchCourse })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+
+router.post('/getRunningBatchTrainer', async (req, res) => {
+    try {
+        let runningbatchTrainer = await runningBatches.find({ Trainer: req.body.trainerName })
+        res.send({ "status": "active", "runningbatchTrainer": runningbatchTrainer })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+
+
+router.post('/addNewBatch', async (req, res) => {
+    try {
+        let addNewBatch = await runningBatches.create(req.body)
+
+        res.send({ 'status': 200 })
+        // // console.log('add new batch =',addNewBatch)
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+        // // console.log('error =',error.message)
+    }
+})
+
+
+// route to get all counselor data
+
+router.get('/getAllCounselor', async (req, res) => {
+    try {
+        const counselorData = await counselors.find({});
+        res.send({ "status": "active", "counselorData": counselorData })
+    }
+    catch (error) {
+        res.send({ "status": "error" })
+
+    }
+})
+
+
+// route to get trainer total Student
+
+// router.get('/getTrainerStudent',async(req,res)=>{
+//     let TrainerStudent = 
+// })
+
+router.get("/counselor/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        // console.log('id =',id)
+
+        const userindividual = await counselors.findById(id);
+        // // console.log("user individual =", userindividual);
+        res.send({ "status": "active", "userIndividual": userindividual });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+// get demo single student
+
+router.get("/getdemoStudent/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        // console.log('id =',id)
+
+        const userindividual = await FixDemo.findById(id);
+        // // console.log("user individual =", userindividual);
+        res.send({ "status": "active", "userIndividual": userindividual });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+
+
+router.get("/counselorStudent/:id", async (req, res) => {
+    const {id} = req.params
+    console.log('id= ',id)
+    // console.log('counselor =',req.headers.counselorname, req.headers)
+    try {
+
+        const studentData = await users.find({ CounselorID: id });
+        // // console.log("user individual =", userindividual);
+        res.send({ "status": "active", "counselorStudent": studentData });
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+//Fee Router----
+
+router.post("/AddFee/:id", controller.upload, async (req, res) => {
+    const { id } = req.params
+    const userindividual = await users.findById(id);
+    // console.log("ad fee router from =",req.params, req.body)
+    req.body.url = req.url
+    req.body.file = req.file
+    req.body.user = id
+    req.body.Name = userindividual.Name
+    req.body.EnrollmentNo = userindividual.EnrollmentNo
+    req.body.Batch = userindividual.Batch
+    req.body.CounselorId = userindividual.CounselorID
+    req.body.Counselor = userindividual.Counselor
+    req.body.Phone = parseInt(userindividual.Number)
+    // console.log("ad fee router =",req.params, req.body)
+    try {
+        const newUser = new StudentFee(req.body);
+        const savedUser = await newUser.save();
+        // console.log("Fee Data",savedUser)
+
+        if (savedUser) {
+          
+
+            let collectionDate = userindividual.CollectionDate
+            collectionDate.push(req.body.CollectionDate)
+            let remainingFees = userindividual.remainingFees - req.body.amount
+
+            const updateUser = await users.updateOne({ _id: id }, { $set: { CollectionDate: collectionDate, lastCollectionDate: req.body.CollectionDate, remainingFees: remainingFees } }, { upsert: true })
+            if (updateUser) {
+
+                await updateDueDate(req.body.CollectionDate, userindividual, id, remainingFees)
+            }
+
+            res.status(200).json(savedUser);
+        }
+
+
+    } catch (error) {
+        // console.log("error=",error.message);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+
+const updateDueDate = async (collection, student, id, remainingFees) => {
+    // Parse collection date and due date
+    const collectionDate = new Date(collection);
+    const dueDate = new Date(student.DueDate);
+
+    // Calculate the year and month for collection and due dates
+    const collectionDateYear = collectionDate.getFullYear();
+    const collectionDateMonth = collectionDate.getMonth() + 1;
+    const dueDateYear = dueDate.getFullYear();
+    const dueDateMonth = dueDate.getMonth() + 1;
+
+
+    console.log('collection month =', collectionDateMonth, dueDateMonth)
+
+    // Calculate the difference in months between collection and due dates
+    const monthDifference = (collectionDateYear - dueDateYear) * 12 + (collectionDateMonth - dueDateMonth);
+
+    console.log('remaining fees =', remainingFees)
+    if (remainingFees <= 0) {
+        console.log('less than zero')
+        // Fees are completed, set the payment status and remove DueDate
+        const updateUser = await users.updateOne(
+            { _id: id },
+            { $set: { paymentStatus: "Fees Completed", DueDate: "No Due Date", feesStatus: "Fees Completed" } },
+            { upsert: true }
+        );
+    } else {
+        if (collectionDateMonth === dueDateMonth) {
+            // If collection month is the same as the due date month, increment due date by 1 month
+            dueDate.setMonth(dueDate.getMonth() + 1);
+        } else if (collectionDateMonth > dueDateMonth && collectionDateYear === dueDateYear) {
+            // If collection month is greater than due date month and same year
+            if (collectionDate.getDate() <= dueDate.getDate() + 5 || collectionDate.getDate() > dueDate.getDat()) {
+                // If collection date is more than 5 days away from due date, increment due date by 1 month
+                dueDate.setMonth(collectionDate.getMonth() + 1);
+            }
+        }
+
+        // Format the nextDueDate
+        const nextDueDate = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${String(
+            dueDate.getDate()
+        ).padStart(2, '0')}`;
+
+        // Update the user's DueDate
+        const updateUser = await users.updateOne({ _id: id }, { $set: { DueDate: nextDueDate } }, { upsert: true });
+    }
+};
+
+
+router.get("/getfee/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const userindividual = await StudentFee.findById(id);
+        // // console.log("user individual =", userindividual);
+        res.status(200).json(userindividual);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+router.post("/FeeDetail/:id", async (req, res) => {
+
+    try {
+        const { id } = req.params;
+
+        // // console.log('req.body.user =', req.body)
+        const updateduser = await StudentFee.findByIdAndUpdate(id, req.body, {
+
+            new: true
+        });
+        // console.log("update user =",updateduser)
+
+        res.status(200).json(updateduser);
+    } catch (error) {
+        // console.log("error =",error.message)
+
+        res.status(500).json(error);
+    }
+
+});
+
+//----------get Fee
+router.get("/FeeTable", async (req, res) => {
+    try {
+        const userdata = await StudentFee.find()
+        // // console.log('user data =',userdata)
+        res.status(200).json(userdata);
+    } catch (error) {
+        // console.log('error =', error.message)
+        res.status(500).json(error);
+    }
+});
+
+// Delete fee
+router.delete("/deleteFee/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const deletedUser = await StudentFee.findByIdAndDelete(id);
+        res.status(200).json(deletedUser);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+router.get("/getOldStudent",async(req,res)=>{
+    let old = await oldStudent.find()  
+    res.send({"oldStudent":old})
+})
+
+router.get("/getOldBatch",async(req,res)=>{
+    let oldBatches = await deletedBatches.find()
+
+    console.log('old batch =',oldBatches)
+    res.send({"oldBatches":oldBatches})
+})
+
+module.exports = router;
+
+
+
+
+
+
