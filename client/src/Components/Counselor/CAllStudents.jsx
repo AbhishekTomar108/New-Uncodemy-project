@@ -61,14 +61,13 @@ export default function AllStudents() {
                             <table id="datatable" class="table table-striped table-bordered" cellspacing="0" width="100%">
                               <thead>
                                 <tr>
-                                  <th>No.</th>
+                                  <th>Enrollment No.</th>
                                   <th>Name</th>
                                   <th>Trainer</th>
                                   <th>Admission</th>
                                   <th>course</th>
                                   <th>Fees</th>
-                                  <th>Edit</th>
-                                  <th>Delete</th>
+                                 
                                 </tr>
                               </thead>
                               <tbody>
@@ -76,28 +75,13 @@ export default function AllStudents() {
 
                                   return (
                                     <tr>
-                                      <td>{index + 1}</td>
+                                      <td>{data.EnrollmentNo}</td>
                                       <td>{data.Name}</td>
                                       <td>{data.TrainerName}</td>
                                       <td>{data.BatchStartDate}</td>
                                       <td>{data.Course}</td>
                                       <td>{data.Fees}</td>
-                                      <td>
-                                        <a
-                                          href=""
-                                          className="btn btn-sm btn-primary"
-                                        >
-                                          <i className="la la-pencil" />
-                                        </a>
-                                      </td>
-                                      <td>
-                                        <a
-                                          href="#"
-                                          className="btn btn-sm btn-danger"
-                                        >
-                                          <i className="la la-trash-o" />
-                                        </a>
-                                      </td>
+                                    
 
                                     </tr>
                                   )

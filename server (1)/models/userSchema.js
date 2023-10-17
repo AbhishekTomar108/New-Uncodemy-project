@@ -100,6 +100,18 @@ const userSchema = new mongoose.Schema({
         type: Object,
 
     },
+     InstallmentDate: {
+        type: Object,
+
+    },
+     Installment: {
+        type: Number,
+
+    },
+     paidFees: {
+        type: Number,
+
+    },
 
      DueDate: {
         type: Object,

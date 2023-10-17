@@ -61,7 +61,7 @@ const EditRunningBatch = () => {
         <div className="card-header">
           <h5 className="card-title">Basic Info</h5>
         </div>
-        <div className="card-body">
+        <div className="card-body w-80">
           <form action="#" method="post">
             <div className="row">
               <div className="col-lg-6 col-md-6 col-sm-12">
@@ -78,6 +78,7 @@ const EditRunningBatch = () => {
                                                     type="select"
                                                     class="form-control"
                                                     value={inpval.Trainer}
+                                                    disabled
                                                     onChange={e => updateTrainer(e)}
                                                 >
                                                     <option disabled selected>--select Trainer--</option>

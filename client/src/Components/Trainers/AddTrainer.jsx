@@ -1,27 +1,35 @@
-import { useState, useHistory } from "react";
+import { useState, useHistory, useEffect, useContext } from "react";
 import { useNavigate } from 'react-router-dom'
 import React from 'react'
 import Sidebar from "../Sidebar";
 import Header from "../Header";
+import { StudentContext } from '../../context/StudentState';
 
 export default function AddTrainer() {
 
   document.title = "StudentDashboard - Add Trainer"
+  let ContextValue = useContext(StudentContext);
 
 
   const navigate = useNavigate();
 
+  const [allCourse, setAllCourse] = useState()
+  const [weekDaysBatch, setWeekDaysbatch]  =  useState()
+  const [WeekEndBatch, setWeekEndBatch]  = useState()
 
   const [inpval, setINP] = useState({
-    TrainerName: '',
-    trainernumber: '',
-    traineremail: '',
-    password: '',
-    Company: '',
-    Linkdin: '',
+    Name: '',
+    Number:'',
+    email:'',
+    CompanyName:'',
+    LinkedinId: '',
     Headline: '',
-    address: '',
+    Address: '',
     bio: '',
+    code: '',
+    Course:[],
+    weekDaysBatch:[],
+    WeekEndBatch:[],
     file: null, // Add a file state
   });
 
@@ -30,7 +38,12 @@ export default function AddTrainer() {
     setINP({ ...inpval, file: e.target.files[0] });
   };
 
+  useEffect(()=>{
+    getAllCourses()
+  },[])
+
   const addinpdata = async (e) => {
+    console.log('inpval trainer add =',inpval)
     e.preventDefault();
     const formData = new FormData();
     for (const field in inpval) {
@@ -38,9 +51,10 @@ export default function AddTrainer() {
     }
 
     try {
-      const res = await fetch('http://localhost:8000/AllTrainer', {
+      const res = await fetch('http://localhost:8000/addTrainer', {
         method: 'POST',
-        body: formData,
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(inpval),
       });
 
       const data = await res.json();
@@ -50,6 +64,60 @@ export default function AddTrainer() {
       console.log('error =', error.message)
     }
   };
+
+  const getAllCourses = async()=>{
+
+    let allCourse = await ContextValue.getAllBatchCourse()
+
+    console.log('all course =',allCourse.batchCourse[0])
+    setAllCourse(allCourse.batchCourse[0].Course)
+    setWeekDaysbatch(allCourse.batchCourse[0].WeekDaysBatch)
+    setWeekEndBatch(allCourse.batchCourse[0].WeekEndBatch)
+
+  }
+
+ 
+
+  const addCourse = (e)=>{
+    const courses = inpval.Course
+    console.log("setinp =",inpval,courses)
+    courses.push(e.target.value)
+    setINP({...inpval, ["Course"]:courses})
+
+  }
+
+  const removeCourse = (index)=>{
+    let tempCourse = inpval.Course
+    tempCourse.splice(index, 1);
+    setINP({...inpval, ["Course"]:inpval.Course})
+  }
+  const addWeekDays = (e)=>{
+    const weekDays = inpval.weekDaysBatch
+    console.log("setinp =",inpval,weekDays)
+    weekDays.push(e.target.value)
+    setINP({...inpval, ["weekDaysBatch"]:weekDays})
+
+  }
+
+  const removeWeekDays = (index)=>{
+    let tempWeekDays = inpval.weekDaysBatch
+    tempWeekDays.splice(index, 1);
+    setINP({...inpval, ["weekDaysBatch"]:inpval.weekDaysBatch})
+  }
+  const addWeekEndDays = (e)=>{
+    const weekEnds = inpval.WeekEndBatch
+    console.log("setinp =",inpval,weekEnds)
+    weekEnds.push(e.target.value)
+    setINP({...inpval, ["WeekEndBatch"]:weekEnds})
+
+  }
+
+  const removeWeekEnd = (index)=>{
+    let tempWeekEnd = inpval.WeekEndBatch
+    tempWeekEnd.splice(index, 1);
+    setINP({...inpval, ["WeekEndBatch"]:inpval.WeekEndBatch})
+  }
+
   return (
     <>
     <Header/>
@@ -104,7 +172,7 @@ export default function AddTrainer() {
                       <div className="col-lg-6 col-md-6 col-sm-12">
                         <div className="form-group">
                           <label className="form-label">Email</label>
-                          <input type="email" value={inpval.Email} onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} name="Email" class="form-control" id="exampleInputPassword1" />
+                          <input type="email" onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} name="email" class="form-control" id="exampleInputPassword1" />
                         </div>
                       </div>
                       <div className="col-lg-6 col-md-6 col-sm-12">
@@ -116,7 +184,7 @@ export default function AddTrainer() {
                       <div className="col-lg-6 col-md-6 col-sm-12">
                         <div className="form-group">
                           <label className="form-label">LinkedIn</label>
-                          <input type="text" value={inpval.LinkdinId} onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} name="LinkdinId" class="form-control" id="exampleInputPassword1" />
+                          <input type="text"  onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} name="LinkedinId" class="form-control" id="exampleInputPassword1" />
                         </div>
                       </div>
                       <div className="col-lg-6 col-md-6 col-sm-12">
@@ -131,30 +199,143 @@ export default function AddTrainer() {
                           <label className="form-label">Bio</label>
                           <input type="text" value={inpval.bio} onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} name="bio" class="form-control" id="exampleInputPassword1" />
                         </div>
+
+
+
                       </div>
+
+                     
+                      <div className="col-lg-6 col-md-6 col-sm-12">
+                                             <div className="form-group">
+
+                                                <label className="form-label">Course</label>
+                                                <div className="d-grid grid-col-2 col-gap-30">
+                                               
+                                                {allCourse && <select
+                                                    id="exampleInputPassword1"
+                                                    type="select"
+                                                    class="form-control"
+                                                   
+                                                    onChange={e => addCourse(e)}
+                                                >
+                                                    <option disabled selected>--select Course--</option>
+                                                    {allCourse.map((data, index) => {
+                                                                                                           
+                                                        return (
+                                                            <option value={data}  disabled={inpval.Course.includes(data)}>{data}</option>
+                                                        )
+                                                    })
+                                                    }
+                                                </select>
+                                                }
+
+                                                <div className="d-grid col-gap-30 grid-col-3">
+                                                {inpval.Course && inpval.Course.map((data,index)=>{
+                                                  console.log("course =",data)
+                                                  return(
+                                                    <div className="d-grid col-gap-20 grid-col-2">
+                                                 <p className="mb-0">{data}</p>
+                                                 <i class="fa-solid fa-xmark" onClick={e=>removeCourse(index)}></i>
+                                                 </div>
+                                                  )
+
+                                                })}
+                                                </div>
+                                            </div>
+                                            </div>
+                                            </div>
+                      <div className="col-lg-6 col-md-6 col-sm-12">
+                                             <div className="form-group">
+
+                                                <label className="form-label">Week Days Batch</label>
+                                                <div className="d-grid grid-col-2 col-gap-30">
+                                               
+                                                {weekDaysBatch && <select
+                                                    id="exampleInputPassword1"
+                                                    type="select"
+                                                    class="form-control"
+                                                   
+                                                    onChange={e => addWeekDays(e)}
+                                                >
+                                                    <option disabled selected>--select Course--</option>
+                                                    {weekDaysBatch.map((data, index) => {
+                                                                                                           
+                                                        return (
+                                                            <option value={data}  disabled={inpval.weekDaysBatch.includes(data)}>{data}</option>
+                                                        )
+                                                    })
+                                                    }
+                                                </select>
+                                                }
+
+                                                <div className="d-grid col-gap-30 grid-col-3">
+                                                {inpval.weekDaysBatch && inpval.weekDaysBatch.map((data,index)=>{
+                                                  console.log("course =",data)
+                                                  return(
+                                                    <div className="d-grid col-gap-20 grid-col-2">
+                                                 <p className="mb-0">{data}</p>
+                                                 <i class="fa-solid fa-xmark" onClick={e=>removeWeekDays(index)}></i>
+                                                 </div>
+                                                  )
+
+                                                })}
+                                                </div>
+                                            </div>
+                                            </div>
+                                            </div>
+                      <div className="col-lg-6 col-md-6 col-sm-12">
+                                             <div className="form-group">
+
+                                                <label className="form-label">Week Days Batch</label>
+                                                <div className="d-grid grid-col-2 col-gap-30">
+                                               
+                                                {WeekEndBatch && <select
+                                                    id="exampleInputPassword1"
+                                                    type="select"
+                                                    class="form-control"
+                                                   
+                                                    onChange={e => addWeekEndDays(e)}
+                                                >
+                                                    <option disabled selected>--select Course--</option>
+                                                    {WeekEndBatch.map((data, index) => {
+                                                                                                           
+                                                        return (
+                                                            <option value={data}  disabled={inpval.WeekEndBatch.includes(data)}>{data}</option>
+                                                        )
+                                                    })
+                                                    }
+                                                </select>
+                                                }
+
+                                                <div className="d-grid col-gap-30 grid-col-3">
+                                                {inpval.WeekEndBatch && inpval.WeekEndBatch.map((data,index)=>{
+                                                  console.log("course =",data)
+                                                  return(
+                                                    <div className="d-grid col-gap-20 grid-col-2">
+                                                 <p className="mb-0">{data}</p>
+                                                 <i class="fa-solid fa-xmark" onClick={e=>removeWeekEnd(index)}></i>
+                                                 </div>
+                                                  )
+
+                                                })}
+                                                </div>
+                                            </div>
+                                            </div>
+                                            </div>
                       <div className="col-lg-12 col-md-12 col-sm-12">
                         <div className="form-group">
                           <label className="form-label">Address</label>
                           <textarea
-                            value={inpval.address}
+    
                             onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })}
-                            name='address'
+                            name='Address'
                             className="form-control"
                             rows={5}
 
                           />
                         </div>
                       </div>
-                      {/* <div className="col-lg-12 col-md-12 col-sm-12">
-                        <div className="form-group fallback w-100">
-                          <input
-                            type="file"
-                            className="dropify"
-                            name="file"
-                            onChange={handleFileChange}
-                          />
-                        </div>
-                      </div> */}
+                    
                       <div className="col-lg-12 col-md-12 col-sm-12">
                         <button type="submit" onClick={addinpdata} className="btn btn-primary">
                           Submit

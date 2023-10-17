@@ -21,6 +21,14 @@ const SubmitItem = new Schema({
         type: String
 
     },
+    enrollmentNo: {
+        type: String
+
+    },
+    assignmentFile: {
+        type: String
+
+    },
     studentId: {
         type: String
 

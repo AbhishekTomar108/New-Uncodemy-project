@@ -351,13 +351,17 @@ const StudentState = (props) => {
         }
       } else if (currentDate > dueDate && currentDateMonth === dueDateMonth) {
         console.log("current date is greater")
+
         if (lastCollectionDateMonth === dueDateMonth) {
+          
           console.log("paid");
           let paymentStatus = await updatePaymentStatus("paid", allStudent[index]._id);
           console.log("Payment status =", paymentStatus);
 
+        } 
 
-        }  {
+        else{
+
           console.log("pending");
           let paymentStatus = await updatePaymentStatus("pending", allStudent[index]._id);
           console.log("Payment status =", paymentStatus);
@@ -376,8 +380,6 @@ const StudentState = (props) => {
         let paymentStatus = await updatePaymentStatus("paid", allStudent[index]._id);
         console.log("Payment status =", paymentStatus);
         
-
-
       }
     };
   };
@@ -392,6 +394,17 @@ const StudentState = (props) => {
       body: JSON.stringify({ lastCollectionDate: nextDueDate, paymentStatus: status })
     });
   }
+
+  const getStudentMonthFeeStatus = async(month, year)=>{
+    let getstudentFeesStatus = await fetch("http://localhost:8000/getStudentMonthFeesStatus",{
+      method:'GET',
+      headers:{"month":month,"year":year}
+    })
+
+    getstudentFeesStatus = await getstudentFeesStatus.json()
+    return getstudentFeesStatus
+  }
+
   const updatePaymentStatus = async (status, id) => {
     console.log('update payment')
     let updatePayment = await fetch(`http://localhost:8000/updatePaymentStatus/${id}`, {

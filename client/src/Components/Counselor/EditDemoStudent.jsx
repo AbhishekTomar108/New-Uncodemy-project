@@ -41,7 +41,7 @@ function Demo() {
     Time: data.Time,
     classLink: data.classLink,
     DemoId:data.DemoId,
-    status: "active",
+    status: "process",
   });
 
 
@@ -138,9 +138,9 @@ function Demo() {
   const TrainerData = {};
   return (
     <>
-      <Header />
+      
       <div className="sidebar-main-container">
-        <Cslidebar />
+      
         <div className="content-body">
           <div className="container-fluid">
             <div className="row page-titles mx-0">
@@ -220,7 +220,7 @@ function Demo() {
                               value={inpval.Trainer}
                               onChange={setdata}
                               name="Trainer"
-                              disabled={!submitStatus}
+                              disabled={true}
                             />
                           </div>
                         </div>

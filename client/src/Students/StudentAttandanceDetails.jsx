@@ -57,48 +57,7 @@ function StudentAttandanceDetails() {
   // const [fullDate, setFullDate] = useState(tempFullDate)
 
   let tempdate = date;
-  // const FullAttand = async () => {
 
-  //     // console.log('current month =', currentMonth, month[(new Date().getMonth())])
-  //     if (currentMonth !== month[(new Date().getMonth())]) {
-  //         // console.log('not current month')
-  //         tempdate = new Date(currentYear, month.indexOf(currentMonth) + 1, 0).getDate()
-  //         setDate(tempdate)
-  //         // // console.log('temp date =', tempdate, month.indexOf(currentMonth))
-  //     }
-  //     else {
-  //         tempdate = new Date().getDate()
-  //         setDate(tempdate)
-  //         // console.log('temp filter date', tempdate)
-  //     }
-  //     let monthAttendance = await fetch("http://localhost:8000/getMonthAttendance", {
-  //         method: 'POST',
-  //         headers: {
-  //             "Content-Type": "application/json"
-  //         },
-
-  //         body: JSON.stringify({ year: currentYear.toString(), month: currentMonth, currentDate: tempdate.toString() })
-
-  //     })
-  //     // // console.log('date =', date)
-
-  //     monthAttendance = await monthAttendance.json()
-
-  //     // console.log('month attendance =', monthAttendance)
-  //     checkDate = parseInt(monthAttendance.monthAttendance[0].date)
-  //     setStartDate(checkDate)
-
-  //     // // console.log("start at beginning", startDate)
-
-  //     setMonthAttendance(monthAttendance.monthAttendance)
-  //     tempMonthAttendance = monthAttendance.monthAttendance
-  //     presentId = monthAttendance.presentId;
-  //     absentId = monthAttendance.absentId;
-  //     // // console.log('present id =',monthAttendance.presentId)
-
-  //
-
-  // }
   useEffect(async () => {
     // FullAttand();
     getstudent();
@@ -107,13 +66,14 @@ function StudentAttandanceDetails() {
   }, []);
 
   const setMonth = (month) => {
-    console.log("month =", month);
+    console.log("month =", month, month-1,currentMonth);
     setFilteredMonth(month);
 
-    if ((month-1) == currentMonth) {
+    if (monthName[month-1] == currentMonth) {
       console.log("current month =", month);
       setLastDay(new Date().getDate());
-    } else {
+    } 
+    else {
       const lastDayOfMonth = new Date(
         currentYear,
         month,
@@ -140,8 +100,8 @@ function StudentAttandanceDetails() {
     let data = await filterStatus.json();
     console.log("data =", data);
 
-    // setAllAttendance(data);
-    // extractAttendance(data, student);
+    setAllAttendance(data);
+    extractAttendance(data, student);
   };
 
   const getstudent = async () => {
@@ -156,7 +116,7 @@ function StudentAttandanceDetails() {
     console.log("student =", res.userIndividual);
     setStudent(res.userIndividual);
     // fillAttendance(tempMonthAttendance, res)
-    getAttendance(res.userIndividual);
+    // getAttendance(res.userIndividual);
   };
 
   const extractAttendance = (data, currentStudent) => {
@@ -191,29 +151,25 @@ function StudentAttandanceDetails() {
         console.log("date by date", i, attendanceIndex);
         let presentStatus = false;
 
-        if (daysName === "fri") {
-          tempAttendanceRow.push(<td className="text-warning">H</td>);
-        } else {
+    
           // console.log("else ",currentStudent._id)
-          data.studentId[attendanceIndex].presentId.forEach((element) => {
-            if (currentStudent._id === element && !presentStatus) {
-              tempAttendanceRow.push(<td className="text-success">P</td>);
-              presentStatus = true;
-            }
-          });
+        
+          filterAttendance[0].studentId.map(data=>{
+            if(currentStudent._id===data.studentId){
+              tempAttendanceRow.push(<td className={`text-${data.status==="present"?"success":"danger"}`}>{data.status}</td>)
 
-          if (!presentStatus) {
-            tempAttendanceRow.push(<td className="text-danger">A</td>);
-          }
-        }
+            }
+
+          })
+
+       
+        
         attendanceIndex = attendanceIndex + 1;
-      } else {
-        if (daysName === "fri") {
-          tempAttendanceRow.push(<td className="text-warning">H</td>);
-        } else {
-          tempAttendanceRow.push(<td className="text-danger">N M</td>);
-        }
-      }
+      } else{
+           
+        tempAttendanceRow.push(<td className='text-warning'>NM</td>)
+
+    } 
     }
 
     // Update the state variables
@@ -223,7 +179,7 @@ function StudentAttandanceDetails() {
 
   const filterDateByDate = (attendance, i) => {
     return attendance.filter((data) => {
-      return data.date == i;
+      return data.day == i;
     });
   };
 
@@ -451,9 +407,7 @@ function StudentAttandanceDetails() {
 
   return (
     <>
-      <Header />
-      <div className="sidebar-main-container">
-        <StudentSlidebar />
+     
         <div className="content-body">
           <div className="container-fluid">
             <div className="row page-titles mx-0">
@@ -537,7 +491,7 @@ function StudentAttandanceDetails() {
             </div>
           </div>
         </div>
-      </div>
+      
     </>
   );
 }

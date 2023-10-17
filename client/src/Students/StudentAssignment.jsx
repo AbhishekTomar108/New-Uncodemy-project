@@ -1,35 +1,18 @@
-import React, { useEffect, useContext, useState } from 'react'
-import { useLocation  } from 'react-router-dom'
+import React from 'react'
+import { useLocation } from 'react-router-dom'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-import { StudentContext } from "../context/StudentState";
 
-const AssignmentStatus = () => {
-    const location = useLocation();
-    const { student } = location.state;
-  console.log('student assignment status =',student)
+const StudentAssignment = () => {
 
-  let ContextValue = useContext(StudentContext);
+    const location = useLocation()
+    const {data} = location.state
+    let submittedAssignment = data
+    const toggleDocument = (url) => {
+        window.open(url,'_blank')
+    };
+  return (
 
-  const [submittedAssignment, setSubmittedAssignment] = useState()
-
-
-    useEffect(()=>{
-        getSubmittedAssigment(student._id)
-    },[])
-
-    const getSubmittedAssigment = async(id)=>{
-        let submittedAssignment = await ContextValue.getSubmittedStudentAssignment(id)
-        setSubmittedAssignment(submittedAssignment)
-    }
-
-  const toggleDocument = (url) => {
-    window.open(url,'_blank')
-};
-
-    return (
-        <div><>
-
-<div className='main-link-div'>
+<div className='main-link-div w-80 ml-30 mt-30'>
                 <div className='link-container'>
                     <div className="assignment-link">
                         {/* <h1 className='first-heading'>Assignment</h1> */}
@@ -39,6 +22,8 @@ const AssignmentStatus = () => {
                                     <thead>
                                         <tr>
                                             <th>S.No.</th>
+                                            <th>Enrollment No.</th>
+                                            <th>Name</th>
                                             <th>File</th>
                                             <th>Assignment File</th>
                                             <th>Date</th>
@@ -50,6 +35,8 @@ const AssignmentStatus = () => {
                                         {submittedAssignment && submittedAssignment.map((data, index) => (
                                             <tr key={index}>
                                                 <td>{index + 1}</td>
+                                                <td>{data.enrollmentNo}</td>
+                                                <td>{data.student}</td>
                                                 <td>{data.file}</td>
                                                 <td>{data.assignmentFile}</td>
                                                 <td>{new Date(data.date).toLocaleString()}</td>
@@ -80,10 +67,7 @@ const AssignmentStatus = () => {
 
                 </div>
             </div>
-
-
-        </></div>
-    )
+  )
 }
 
-export default AssignmentStatus
+export default StudentAssignment

@@ -14,14 +14,15 @@ function AllDemo() {
  
     let sameDateTime = [];
     let studentData = [];
-    const [demoList, setDemoList] = useState()
-    const [totalCandidate, setTotalCandidate] = useState()
-    const [totalDemoStudent, setTotalDemoStudent] = useState()
+    // const [demoList, setDemoList] = useState()
+    // const [totalCandidate, setTotalCandidate] = useState()
+    // const [totalDemoStudent, setTotalDemoStudent] = useState()
     const [demoStudentData, setDemoStudentData] = useState()
     let ContextValue = useContext(StudentContext);
 
     const location = useLocation();
-  const { counselor } = location.state;
+  const { demoList,  totalDemoStudent} = location.state;
+   
 
     const navigation = useNavigate()
 
@@ -35,20 +36,8 @@ function AllDemo() {
     const month = date.getMonth();
     const year = date.getFullYear();
 
-
-    const getCounselordemo = async (id) => {
-        console.log("counselor id demo =",id)
-    
-        let counselorDemo = await ContextValue.getAllDemoListCounselor(id);
-
-        setDemoList(counselorDemo.Demo)
-        setTotalCandidate(counselorDemo.totalStudent)
-        setTotalDemoStudent(counselorDemo.totalDemoStudent)
-        console.log("counselor demo =",counselorDemo.totalDemoStudent)
-
-    }
     useEffect(() => {
-        getCounselordemo(counselor._id);
+        // getCounselordemo(counselor._id);
     }, [])
 
     const deleteuser = async (id) => {
@@ -113,9 +102,9 @@ function AllDemo() {
 
     return (
         <>
-            <Header />
+         
             <div className='sidebar-main-container'>
-            <Cslidebar/>
+            
          
             <div className='main-container'>
                 <div className="card-body w-80">
@@ -143,10 +132,10 @@ function AllDemo() {
                                             <td>{index+1}</td>
                                             <td>{data.Date}</td>
                                             <td>{data.Time}</td>
-                                            <td>{totalCandidate[index]}</td>
+                                            <td>{totalDemoStudent[index].length}</td>
                                             <td>{data.Trainer}</td>
                                             <td><Link to={data.classLink}><button className='btn btn-primary'>Class Link</button></Link ></td>
-                                            <td>  <button className="btn btn-success" onClick={e=>{navigation(`DemoStudent`,{state:{data:totalDemoStudent[index]}})}}  ><RemoveRedEyeIcon /></button>
+                                            <td>  <button className="btn btn-success" onClick={e=>{navigation(`DemoStudent`,{state:{demoStudentData:totalDemoStudent[index]}})}}  ><RemoveRedEyeIcon /></button>
                                      
                                             </td>
                                             <td> <button className="btn btn-warning" onClick={e=>{navigation(`EditDemo`,{state:{data}})}}><CreateIcon /></button></td>

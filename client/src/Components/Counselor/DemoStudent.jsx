@@ -32,29 +32,6 @@ function DemoStudent() {
   const month = date.getMonth();
   const year = date.getFullYear();
 
-  const getTrainerdemo = async () => {
-    const res = await fetch("http://localhost:8000/getDemoes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        TrainerName: localStorage.getItem("TrainerName"),
-        month: monthName[month],
-        day: day.toString(),
-        year: year.toString(),
-      }),
-    });
-
-    const data = await res.json();
-    console.log("data of demo =", data);
-    if (res.status === 422 || !data) {
-      console.log("error ");
-    } else {
-      setDemo(data);
-    }
-  };
-
   const badgeStatus = {
     Register: "success",
     Process: "warning",
@@ -62,7 +39,7 @@ function DemoStudent() {
   }
 
   useEffect(() => {
-    getTrainerdemo();
+
   }, []);
 
   return (
@@ -77,12 +54,12 @@ function DemoStudent() {
                   <tr>
                     <th scope="col">No.</th>
                     <th scope="col">Name</th>
+                    <th scope="col">Number</th>
                     <th scope="col">Background</th>
                     <th scope="col">Course</th>
                     <th scope="col">Trainer</th>
                     <th scope="col">Time</th>
                     <th scope="col">Date</th>
-                    <th scope="col">Status</th>
                     <th scope="col">Action</th>
                   </tr>
                 </thead>
@@ -93,20 +70,13 @@ function DemoStudent() {
                         <tr>
                           <td>{index + 1}</td>
                           <td>{data.Name}</td>
+                          <td>{data.Number}</td>
                           <td>{data.Background}</td>
                           <td>{data.Course}</td>
                           <td>{data.Trainer}</td>
                           <td>{data.Time}</td>
                           <td>{data.Date}</td>
-                          <td>
-                            <span
-                              className={`badge badge-rounded badge-${
-                                badgeStatus[data.status]
-                              }`}
-                            >
-                              {data.status}
-                            </span>
-                          </td>
+                         
                           <button className="btn btn-primary text-light">
                     
                             

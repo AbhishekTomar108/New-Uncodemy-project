@@ -5,6 +5,8 @@ import Header from '../Components/Header'
 import Sidebar from '../Components/Sidebar'
 import { StudentContext } from '../context/StudentState';
 import Swal from 'sweetalert2'
+import AddIcCallIcon from '@mui/icons-material/AddIcCall';
+import EmailIcon from '@mui/icons-material/Email'
 
 // import Home from '../Components/Home'
 // import Header from '../Components/Header'
@@ -163,6 +165,8 @@ export default function NewStudent() {
                                   <th>Counselor</th>
                                   <th>Joining</th>
                                   <th>course</th>
+                                  <th scope="col">Call</th>
+                                  <th scope="col">Email</th>
 
                                 </tr>
                               </thead>
@@ -180,6 +184,9 @@ export default function NewStudent() {
                                       <td>{data.Counselor}</td>
                                       <td>{data.BatchStartDate}</td>
                                       <td>{data.Course}</td>
+                                      
+                                <td><a href={`tel:${data.Number}`}><AddIcCallIcon/></a></td>
+                                      <td><a href={`mailto:${data.Email}`}><EmailIcon/></a></td>
                     
 
 

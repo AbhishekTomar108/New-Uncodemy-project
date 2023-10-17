@@ -123,7 +123,51 @@ router.post("/register", controller.upload, async (req, res) => {
 
     const dueDate = `${batchStartDate.getFullYear()}-${String(batchStartDate.getMonth() + 1).padStart(2, '0')}-${String(batchStartDate.getDate()).padStart(2, '0')}`;
 
+    const inputDate = new Date(dueDate);
+let dueDate2 = new Date(inputDate);
+let dueDate3 = new Date(inputDate);
+let dueDate4 = new Date(inputDate);
+
+// Increase one month
+dueDate2.setMonth(inputDate.getMonth() + 1);
+dueDate3.setMonth(inputDate.getMonth() + 2);
+dueDate4.setMonth(inputDate.getMonth() + 3);
+
+// Decrease 3 days
+dueDate2.setDate(inputDate.getDate() - 3);
+dueDate3.setDate(inputDate.getDate() - 3);
+dueDate4.setDate(inputDate.getDate() - 3);
+
+dueDate2 = dueDate2.toISOString().split('T')[0]
+dueDate3 = dueDate3.toISOString().split('T')[0]
+dueDate4 = dueDate4.toISOString().split('T')[0]
+
+
+
+    let totalFees = parseInt(req.body.Fees)-parseInt(req.body.RegistrationFees)
+    let inst = totalFees/4
+    let inst2 = inst*2
+    let inst3 = inst*3
+    let inst4 = inst*4
+
+    let instDate = {
+        [inst]: dueDate,
+        [inst2]: dueDate2,
+        [inst3]: dueDate3,
+        [inst4]: dueDate4
+    }
+
+    // for(let i=0; i<4; i++){
+    //     instDate[inst*i] = dueDate`${i+1}`
+    // }
+
+   
+
     req.body.DueDate = dueDate;
+    req.body.InstallmentDate = instDate;
+    req.body.paidFees = req.body.RegistrationFees;
+    req.body.Installment = inst;
+    req.body.paymentStatus = "newAdmission"
 
     // console.log("req body =", req.body)
     try {
@@ -161,6 +205,27 @@ router.get('/getTotalFees',async(req,res)=>{
     console.log(`Amount in English Words: ${feesInWords}`);
 
     res.send({"formattedFees":formattedFees,"feesInWords":feesInWords})
+})
+router.get('/getMonthFees',async(req,res)=>{
+    const month = req.header("month")
+    let totalFees = await StudentFee.find({month:month});
+
+    console.log('total fees =',totalFees)
+    res.send(totalFees)
+
+    let totalAmount = 0;
+
+    totalFees.map(data=>{
+        totalAmount = totalAmount + parseInt(data.amount)
+    })
+    // console.log('total fees =',totalAmount)
+    const formattedFees = formatRupees(totalAmount);
+    const feesInWords = convertToWords(totalAmount);
+
+    // console.log(`Formatted Amount (Rupees): ₹${formattedFees}`);
+    // console.log(`Amount in English Words: ${feesInWords}`);
+
+    // res.send({"formattedFees":formattedFees,"feesInWords":feesInWords})
 })
 
 // convert amount to rupees and in words
@@ -291,6 +356,84 @@ router.get('/getNewTrainerStudent/:id',async(req,res)=>{
     console.log('new Student =',newStudent)
     res.send({"newStudent":newStudent})
 })
+
+
+// field from value function
+function getFieldFromValue(obj, value) {
+    for (const key in obj) {
+        if (obj[key] === value) {
+            return key;
+        }
+    }
+    return null; // Return null if the value is not found in the object
+}
+
+// get student month fees status
+
+router.get('/getStudentFeesStatus',async(req,res)=>{
+
+    
+    let allStudent = await users.find({})
+
+    let current = new Date();
+
+    for (let index = 0; index < allStudent.length; index++) {
+      
+      let due = new Date(allStudent[index].DueDate);
+      const lastCollectionDate = new Date(allStudent[index].lastCollectionDate);
+
+      const currentDateDiff = Math.floor((due - current) / (1000 * 60 * 60 * 24));
+      const currentDateMonth = current.getMonth();
+      const currentDateYear = current.getFullYear();
+      const currentDate = current.getDate();
+      const dueDateMonth = due.getMonth();
+      const dueDateYear = due.getFullYear();
+      const dueDate = due.getDate()
+      const lastCollectionDateMonth = lastCollectionDate.getMonth();
+
+      
+
+      if(allStudent[index].paymentStatus!=="paid" && allStudent[index].paymentStatus!=="pending"){
+        if (currentDateDiff >= 0 && currentDateDiff <= 3) {
+
+            const installmentFees = getFieldFromValue(allStudent[index].InstallmentDate, allStudent[index].DueDate);
+    
+            if(installmentFees>allStudent[index].paidFees)
+            {
+                console.log("Payment notification");
+                let paymentStatus = await updatePaymentStatus("notification", allStudent[index]._id);
+                console.log("Payment status =", paymentStatus);
+            }   
+           
+    
+          }
+
+          else if (currentDate > dueDate && currentDateMonth === dueDateMonth) {
+            console.log("current date is greater")
+    
+              console.log("pending");
+              let paymentStatus = await updatePaymentStatus("pending", allStudent[index]._id);
+              console.log("Payment status =", paymentStatus);
+            
+          }
+      }
+
+    
+      
+    };
+
+    res.send({"status":"done"})
+
+})
+
+// update payment status
+
+const updatePaymentStatus = async (status, id) => {
+    console.log('update payment')
+    let paymentStatus = await users.updateOne({ _id: id }, { $set: { paymentStatus: status } }, { upsert: true })
+
+  }
+
 router.get('/getNewCounselorStudent/:id',async(req,res)=>{
     console.log("new counselor student")
     const {id} = req.params
@@ -586,6 +729,21 @@ router.delete("/deleteDemo/:id", async (req, res) => {
     }
 });
 
+router.put("/addDemoFeedback", async (req, res) => {
+    try {
+        const {studentId, status} = req.body
+
+            let candidateData = await DemoStudent.findByIdAndUpdate({_id:studentId},{$set:{status:status}});
+          
+
+            console.log("add feedback =",candidateData)
+        res.status(200).json(candidateData);
+    } catch (error) {
+        console.log("message error =",error.message)
+        res.status(500).json(error);
+    }
+});
+
 router.delete("/deletetrainer/:id", async (req, res) => {
     const { id } = req.params;
     console.log('delete trainer route =',id)
@@ -813,7 +971,7 @@ router.get("/document", async (req, res) => {
 router.get("/studentpro", async (req, res) => {
     try {
         const student = await users.find({});
-        console.log('student =', student)
+        // console.log('student =', student)
         res.send(student);
     } catch (error) {
         res.status(500).json(error);
@@ -904,10 +1062,12 @@ router.get("/trainer/:id", async (req, res) => {
 //Add Trainer
 
 
-router.post("/Alltrainer", controller.upload, async (req, res) => {
+router.post("/addTrainer", async (req, res) => {
+    
     sendmail(req,res)
-    req.body.url = req.url
-    req.body.file = req.file
+
+    req.body.Email = req.body.email
+    console.log('req trainer add=',req.body)
     try {
         const newUser = new uploads(req.body);
         const savedUser = await newUser.save();
@@ -1260,7 +1420,6 @@ router.get('/getStudentPendingAssignment/:id',async(req,res)=>{
         let pendingStatus =true;
         submittedAssigment.map(element=>{
            
-            console.log("data =",data._id.toString(),element.assignmentId.toString())
             if(data._id.toString()==element.assignmentId.toString())
          
             {
@@ -1274,6 +1433,15 @@ router.get('/getStudentPendingAssignment/:id',async(req,res)=>{
 
     console.log('pending assignment =',Assignment)
     res.send(Assignment)
+
+})
+router.get('/getStudentAssignment/:id',async(req,res)=>{
+    const {id} = req.params
+
+    let submittedAssigment = await submititem.find({assignmentId:id})
+
+    console.log('submitted assignment student=',submittedAssigment)
+    res.send(submittedAssigment)
 
 })
 
@@ -2214,6 +2382,7 @@ router.post('/adddemoStudent/:id', async (req, res) => {
         console.log("req.body",req.body)
       const { id } = req.params;
       req.body.DemoId = id
+      req.body.status = "process"
       console.log('Updating Demo with ID:', id);
   
       const demoStudent = await DemoStudent.create( req.body);
@@ -2573,6 +2742,8 @@ router.get('/getRangeDemoes', async (req, res) => {
 //         res.send(error.message)
 //     }
 // })
+
+// get range register student
 router.get('/getRangeRegisteredStudent', async (req, res) => {
    
     let startDate = req.header("startDate");
@@ -2606,6 +2777,53 @@ router.get('/getRangeRegisteredStudent', async (req, res) => {
         res.send(error.message)
     }
 })
+
+
+// get range stduent fees
+
+router.get('/getRangeFees', async (req, res) => {
+   
+    let startDate = req.header("startDate");
+
+    let endDate = req.header("endDate");
+    console.log('get fees startDate  ',startDate,endDate)
+    // // console.log('Trainer demo =', TrainerName, month, day, year
+
+        startDate = new Date(startDate);
+        endDate = new Date(endDate);
+
+
+    try {
+
+        let student = await StudentFee.find()
+      
+            let studentFees = student.filter(data=>{
+            const itemDateStr = data.CollectionDate;
+            const itemDate    =    new Date(itemDateStr);
+          
+            return itemDate >= startDate && itemDate <= endDate;
+        })
+
+        
+    let totalAmount = 0;
+
+    studentFees.map(data=>{
+        totalAmount = totalAmount + parseInt(data.amount)
+    })
+    console.log('total fees =',totalAmount)
+    const formattedFees = formatRupees(totalAmount);
+    const feesInWords = convertToWords(totalAmount);
+
+        console.log('student fees =',studentFees)
+        res.send({"studentFees":studentFees,"formattedFees":formattedFees,"feesInWords":feesInWords })
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+
 
 // need to replace it
 router.post('/getDemoesCounselor', async (req, res) => {
@@ -2890,100 +3108,100 @@ router.get('/getNewDemoesByCounselor/:id', async (req, res) => {
         res.send(error.message)
     }
 })
-// router.post('/getUpcomingDemoesByCounselor', async (req, res) => {
-//     let totalCandidate = []
-//     let totalCandidateData = []
+router.post('/getUpcomingDemoesByCounselor', async (req, res) => {
+    let totalCandidate = []
+    let totalCandidateData = []
 
-//     try {
+    try {
 
-//         let demoCounselor = await NewDemo.find({
-//             "CounselorId": req.body.CounselorId,
-//             "day":req.body.day,
-//             "month":req.body.month,
-//             "year":req.body.year
-//         })
+        let demoCounselor = await NewDemo.find({
+            "CounselorId": req.body.CounselorId,
+            "day":req.body.day,
+            "month":req.body.month,
+            "year":req.body.year
+        })
 
         
-//         for (const data of demoCounselor) {
+        for (const data of demoCounselor) {
 
-//             let candidateData = await DemoStudent.find({
-//               DemoId: data._id
-//             });
-//             totalCandidate.push(candidateData.length);
-//             totalCandidateData.push(candidateData);
-//           }
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
 
-//           res.send({Demo:demoCounselor, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
-//     }
-
-//     catch (error) {
-//         console.log('error new demo counselor=',error.message)
-//         res.send(error.message)
-//     }
-// })
-
-const getIntegerTime = (time)=>{
-    let timeParts = time.split(':');
-    let hours = parseInt(timeParts[0]);
-    let minutes = parseInt(timeParts[1].replace(/[^0-9]/g, '')); // Remove 'AM' or 'PM' if present
-    let isPM = time.includes('PM');
-  
-    // Convert to 24-hour format
-    if (isPM && hours < 12) {
-      hours += 12;
-    } else if (!isPM && hours === 12) {
-      hours = 0;
+          res.send({Demo:demoCounselor, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
     }
+
+    catch (error) {
+        console.log('error new demo counselor=',error.message)
+        res.send(error.message)
+    }
+})
+
+// const getIntegerTime = (time)=>{
+//     let timeParts = time.split(':');
+//     let hours = parseInt(timeParts[0]);
+//     let minutes = parseInt(timeParts[1].replace(/[^0-9]/g, '')); // Remove 'AM' or 'PM' if present
+//     let isPM = time.includes('PM');
   
-    const formattedTime = (hours < 10 ? '0' : '') + hours + (minutes < 10 ? '0' : '') + minutes;
-    console.log("Formatted time =", formattedTime);
-    return formattedTime
-}
-
-
-router.post('/getUpcomingDemoesByCounselor', async (req, res) => {
-    let totalCandidate = [];
-    let totalCandidateData = [];
-    console.log('req body of upcoming demoes =',req.body)
+//     // Convert to 24-hour format
+//     if (isPM && hours < 12) {
+//       hours += 12;
+//     } else if (!isPM && hours === 12) {
+//       hours = 0;
+//     }
   
-    try {
-      let demoCounselor = await NewDemo.find({
-        "CounselorId": req.body.CounselorId,
-        "day": req.body.day,
-        "month": req.body.month,
-        "year": req.body.year,
- // Compare demo time with the current time
-      });
+//     const formattedTime = (hours < 10 ? '0' : '') + hours + (minutes < 10 ? '0' : '') + minutes;
+//     console.log("Formatted time =", formattedTime);
+//     return formattedTime
+// }
 
-      let checkTime = getIntegerTime(req.body.time)
 
-      demoCounselor = demoCounselor.filter(data => {
-        let time = getIntegerTime(data.Time)
+// router.post('/getUpcomingDemoesByCounselor', async (req, res) => {
+//     let totalCandidate = [];
+//     let totalCandidateData = [];
+//     console.log('req body of upcoming demoes =',req.body)
+  
+//     try {
+//       let demoCounselor = await NewDemo.find({
+//         "CounselorId": req.body.CounselorId,
+//         "day": req.body.day,
+//         "month": req.body.month,
+//         "year": req.body.year,
+//  // Compare demo time with the current time
+//       });
 
-        return time>=checkTime
-      });
+//       let checkTime = getIntegerTime(req.body.time)
+
+//       demoCounselor = demoCounselor.filter(data => {
+//         let time = getIntegerTime(data.Time)
+
+//         return time>=checkTime
+//       });
       
 
-      console.log('demoCounselor upcoming demoes=',demoCounselor)
+//       console.log('demoCounselor upcoming demoes=',demoCounselor)
   
-      for (const data of demoCounselor) {
-        let candidateData = await DemoStudent.find({
-          DemoId: data._id
-        });
-        totalCandidate.push(candidateData.length);
-        totalCandidateData.push(candidateData);
-      }
+//       for (const data of demoCounselor) {
+//         let candidateData = await DemoStudent.find({
+//           DemoId: data._id
+//         });
+//         totalCandidate.push(candidateData.length);
+//         totalCandidateData.push(candidateData);
+//       }
   
-      res.send({
-        Demo: demoCounselor,
-        totalStudent: totalCandidate,
-        totalDemoStudent: totalCandidateData
-      });
-    } catch (error) {
-      console.log('error new demo counselor=', error.message)
-      res.send(error.message);
-    }
-  });
+//       res.send({
+//         Demo: demoCounselor,
+//         totalStudent: totalCandidate,
+//         totalDemoStudent: totalCandidateData
+//       });
+//     } catch (error) {
+//       console.log('error new demo counselor=', error.message)
+//       res.send(error.message);
+//     }
+//   });
   
 
 
@@ -3187,15 +3405,16 @@ router.post("/AddFee/:id", controller.upload, async (req, res) => {
 
         if (savedUser) {
           
-
             let collectionDate = userindividual.CollectionDate
             collectionDate.push(req.body.CollectionDate)
             let remainingFees = userindividual.remainingFees - req.body.amount
+            let paidFees = userindividual.paidFees + parseInt(req.body.amount)
 
-            const updateUser = await users.updateOne({ _id: id }, { $set: { CollectionDate: collectionDate, lastCollectionDate: req.body.CollectionDate, remainingFees: remainingFees } }, { upsert: true })
-            if (updateUser) {
+            const updateUser = await users.updateOne({ _id: id }, { $set: { CollectionDate: collectionDate, lastCollectionDate: req.body.CollectionDate, remainingFees: remainingFees, paidFees:paidFees } }, { upsert: true })
+            if (updateUser) { 
 
-                await updateDueDate(req.body.CollectionDate, userindividual, id, remainingFees)
+                await updateDueDate(req.body.CollectionDate, userindividual, id, remainingFees,paidFees)
+
             }
 
             res.status(200).json(savedUser);
@@ -3208,52 +3427,108 @@ router.post("/AddFee/:id", controller.upload, async (req, res) => {
     }
 });
 
-const updateDueDate = async (collection, student, id, remainingFees) => {
-    // Parse collection date and due date
-    const collectionDate = new Date(collection);
-    const dueDate = new Date(student.DueDate);
+// const updateDueDate = async (collection, student, id, remainingFees,paidFees) => {
+//     // Parse collection date and due date
+//     const collectionDate = new Date(collection);
+//     const dueDate = new Date(student.DueDate);
 
-    // Calculate the year and month for collection and due dates
-    const collectionDateYear = collectionDate.getFullYear();
-    const collectionDateMonth = collectionDate.getMonth() + 1;
-    const dueDateYear = dueDate.getFullYear();
-    const dueDateMonth = dueDate.getMonth() + 1;
+//     // Calculate the year and month for collection and due dates
+//     const collectionDateYear = collectionDate.getFullYear();
+//     const collectionDateMonth = collectionDate.getMonth() + 1;
+//     const dueDateYear = dueDate.getFullYear();
+//     const dueDateMonth = dueDate.getMonth() + 1;
 
 
-    console.log('collection month =', collectionDateMonth, dueDateMonth)
+//     console.log('collection month =', collectionDateMonth, dueDateMonth)
 
-    // Calculate the difference in months between collection and due dates
-    const monthDifference = (collectionDateYear - dueDateYear) * 12 + (collectionDateMonth - dueDateMonth);
+//     // Calculate the difference in months between collection and due dates
+//     const monthDifference = (collectionDateYear - dueDateYear) * 12 + (collectionDateMonth - dueDateMonth);
 
-    console.log('remaining fees =', remainingFees)
+//     console.log('remaining fees =', remainingFees)
+//     if (remainingFees <= 0) {
+//         console.log('less than zero')
+//         // Fees are completed, set the payment status and remove DueDate
+//         const updateUser = await users.updateOne(
+//             { _id: id },
+//             { $set: { paymentStatus: "Fees Completed", DueDate: "No Due Date", feesStatus: "Fees Completed" } },
+//             { upsert: true }
+//         );
+//     } else {
+//         if (collectionDateMonth === dueDateMonth) {
+//             // If collection month is the same as the due date month, increment due date by 1 month
+//             dueDate.setMonth(dueDate.getMonth() + 1);
+//         } else if (collectionDateMonth > dueDateMonth && collectionDateYear === dueDateYear) {
+//             // If collection month is greater than due date month and same year
+//             if (collectionDate.getDate() <= dueDate.getDate() + 5 || collectionDate.getDate() > dueDate.getDat()) {
+//                 // If collection date is more than 5 days away from due date, increment due date by 1 month
+//                 dueDate.setMonth(collectionDate.getMonth() + 1);
+//             }
+//         }
+
+//         // Format the nextDueDate
+//         const nextDueDate = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${String(
+//             dueDate.getDate()
+//         ).padStart(2, '0')}`;
+
+//         // Update the user's DueDate
+//         const updateUser = await users.updateOne({ _id: id }, { $set: { DueDate: nextDueDate } }, { upsert: true });
+//     }
+// };
+
+// update due date 
+
+const updateDueDate = async (collection, student, id, remainingFees,paidFees) => {
+
+    console.log('remaining fees =', remainingFees,paidFees)
     if (remainingFees <= 0) {
         console.log('less than zero')
         // Fees are completed, set the payment status and remove DueDate
         const updateUser = await users.updateOne(
             { _id: id },
-            { $set: { paymentStatus: "Fees Completed", DueDate: "No Due Date", feesStatus: "Fees Completed" } },
+            { $set: { paymentStatus: "paid", DueDate: "Fees Completed", feesStatus: "Fees Completed" } },
             { upsert: true }
         );
-    } else {
-        if (collectionDateMonth === dueDateMonth) {
-            // If collection month is the same as the due date month, increment due date by 1 month
-            dueDate.setMonth(dueDate.getMonth() + 1);
-        } else if (collectionDateMonth > dueDateMonth && collectionDateYear === dueDateYear) {
-            // If collection month is greater than due date month and same year
-            if (collectionDate.getDate() <= dueDate.getDate() + 5 || collectionDate.getDate() > dueDate.getDat()) {
-                // If collection date is more than 5 days away from due date, increment due date by 1 month
-                dueDate.setMonth(collectionDate.getMonth() + 1);
-            }
-        }
+    } 
+    
+   else{
+    
+    let duedate
 
-        // Format the nextDueDate
-        const nextDueDate = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, '0')}-${String(
-            dueDate.getDate()
-        ).padStart(2, '0')}`;
+    if(paidFees>=student.Installment && paidFees<student.Installment*2){
+    console.log("if 1 =",paidFees,student.Installment)
 
-        // Update the user's DueDate
-        const updateUser = await users.updateOne({ _id: id }, { $set: { DueDate: nextDueDate } }, { upsert: true });
+    let instString = (student.Installment).toString()
+
+        duedate = student.InstallmentDate[instString]
     }
+    else if(paidFees>=student.Installment*2 && paidFees<student.Installment*3){
+        
+        let instString = (student.Installment*2).toString()
+        console.log("if 2 =",paidFees,student.Installment,student.InstallmentDate,student.InstallmentDate)
+
+        duedate = student.InstallmentDate[instString]
+    }
+    else if(paidFees>=student.Installment*3 && paidFees<student.Installment*4){
+    console.log("if 3 =",paidFees,student.Installment)
+
+    let instString = (student.Installment*3).toString()
+
+        duedate = student.InstallmentDate[instString]
+    }
+    else if(paidFees>=student.Installment*4){
+
+    console.log("if 4 =",paidFees,student.Installment*2)
+
+        duedate = "Fees Completeted"
+    }
+
+    const updateUser = await users.updateOne(
+        { _id: id },
+        { $set: { paymentStatus: "paid", DueDate: duedate, } },
+        { upsert: true }
+    );
+    
+   }
 };
 
 

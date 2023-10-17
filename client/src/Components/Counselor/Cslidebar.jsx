@@ -133,12 +133,10 @@ export default function Cslidebar() {
                         </li>
                         <li>
                             <div onClick={moveToDemo} className='light-text'> <span className="nav-text">Demo</span></div>
-
-
                         </li>
-                        <li>
-                        <div onClick={moveToAllDemo} className='light-text'> <span className="nav-text">All Demo</span></div>
-                        </li>
+                        <Link to="/counsellor/Demo-Feedback"><li>
+                         <div className='light-text'> <span className="nav-text">Add Demo Feedback</span></div>
+                       </li> </Link>
 
                     </ul>
                 </div>

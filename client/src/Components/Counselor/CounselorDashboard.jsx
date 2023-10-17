@@ -43,6 +43,8 @@ export default function Home() {
   const [newTotal, setNewTotal] = useState()
   const [registerStudent, setRegisterStudent] = useState()
   const [allDemo, setAllDemo] = useState()
+  const [todayDemo, setTodayDemo] = useState()
+  const [todayDemoStudent, setTodayDemoStudent] = useState()
   const [allDemoStudent, setAllDemoStudent] = useState()
   const [newDemo, setNewDemo] = useState()
   const [newDemoStudent, setNewDemoStudentData] = useState(0)
@@ -87,8 +89,8 @@ export default function Home() {
   const getCounselorUpcoming = async(id)=>{
     let counselorUpcoming = await ContextValue.counselorUpcomimgDemo(id)
 
-// setDemoList(counselorUpcoming.Demo)
-// setDemoStudentData(counselorUpcoming.totalDemoStudent)
+setTodayDemo(counselorUpcoming.Demo)
+setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
   }
 
   const getRegisterStudent = async(id)=>{
@@ -273,6 +275,11 @@ export default function Home() {
     navigate('New-Counselor-Demo', { state: { demo:newDemo, demoStudent:newDemoStudent } });
   
   }
+  const moveToTodayDemo=()=>
+  {
+    navigate('Today-Demo', { state: { demoList: todayDemo,totalDemoStudent:todayDemoStudent } });
+  
+  }
 
   const getDemoCounselorStudent  = async(id)=>{
     let counselorDemo = await ContextValue.getAllDemoListCounselor(id)
@@ -432,9 +439,9 @@ export default function Home() {
                     <span className="mr-3">
                       <i className="la la-dollar" />
                     </span>
-                    <div className="media-body text-white" onClick={moveToNewDemo}>
-                      <p className="mb-1">Upcoming Demo</p>
-                      <h3 className="text-white">{newDemo && newDemo.length}</h3>
+                    <div className="media-body text-white" onClick={moveToTodayDemo}>
+                      <p className="mb-1">Today Demo</p>
+                      <h3 className="text-white">{todayDemo && todayDemo.length}</h3>
                       {/* <div className="progress mb-2 bg-white">
                         <div
                           className="progress-bar progress-animated bg-light"

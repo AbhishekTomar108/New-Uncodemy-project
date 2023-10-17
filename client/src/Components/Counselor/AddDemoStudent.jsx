@@ -18,6 +18,7 @@ function AddDemoStudent() {
         Name: '',
         Email: '',
         Background: '',
+        Number:'',
         Trainer: data.Trainer,
         TrainerId: data.TrainerId,
         CounselorId: data.CounselorId,
@@ -28,7 +29,8 @@ function AddDemoStudent() {
         classLink:data.classLink,
         day:data.day,
         year:data.year,
-        month:data.month
+        month:data.month,
+        status:"process"
     })
 
     useEffect(async()=>{
@@ -66,7 +68,7 @@ function AddDemoStudent() {
       const addinpdata = async (e) => {
         console.log("demo =",inpval);
         e.preventDefault();
-   let { Name, Email, Background, Trainer, Date, Time, Course, classLink,TrainerId,CounselorId,month,year,day, CounselorName } = { ...inpval };
+   let { Name, Email, Background, Trainer, Date, Time, Course, classLink,TrainerId,CounselorId,month,year,day, CounselorName, status } = { ...inpval };
   
             
             
@@ -74,7 +76,7 @@ function AddDemoStudent() {
         const res = await fetch(`http://localhost:8000/adddemoStudent/${data._id}`, {
             method: 'POST',
             headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({Email,Name,Background,Trainer,TrainerId,CounselorId,CounselorName,Date,Time,Course,month,year,day, classLink})
+            body: JSON.stringify(inpval)
         });
 
         const demoStudent = await res.json();
@@ -100,19 +102,7 @@ function AddDemoStudent() {
                                     <h4>Schedule Demo</h4>
                                 </div>
                             </div>
-                            <div className="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
-                                <ol className="breadcrumb">
-                                    <li className="breadcrumb-item">
-                                        <a href="index.html">Home</a>
-                                    </li>
-                                    <li className="breadcrumb-item active">
-                                        <a href="javascript:void(0);">Students</a>
-                                    </li>
-                                    <li className="breadcrumb-item active">
-                                        <a href="javascript:void(0);">Add Student</a>
-                                    </li>
-                                </ol>
-                            </div>
+                         
                         </div>
                         <div className="row">
                             <div className="col-xl-12 col-xxl-12 col-sm-12">
@@ -131,6 +121,17 @@ function AddDemoStudent() {
     
                                                             onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })}
                                                             name="Name"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="col-lg-6 col-md-6 col-sm-12">
+                                                    <div className="form-group">
+                                                        <label className="form-label">Number</label>
+                                                        <input type="text"
+                                                            className="form-control"
+    
+                                                            onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })}
+                                                            name="Number"
                                                         />
                                                     </div>
                                                 </div>

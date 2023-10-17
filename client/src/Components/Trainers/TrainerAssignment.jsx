@@ -192,6 +192,10 @@ setTrainerAssignment(trainerAssignment)
 
     let tempvideoUrl = videoUrlInfo;
     tempvideoUrl.batch = batch;
+    console.log("temp video url =",tempvideoUrl)
+    tempvideoUrl.videoUrl = tempvideoUrl.videoUrl.replace("/view", "/preview");
+    console.log("temp video url after=",tempvideoUrl)
+
 
     for (const field in videoUrlInfo) {
       formData.append(field, videoUrlInfo[field]);
@@ -413,6 +417,21 @@ const getTrainerNotesLink =async(batch)=>{
   setNotesLink(trainerNotesLink)
 }
 
+const getAssignmentStudent = async(id)=>{
+
+  const res = await fetch(`http://localhost:8000/getStudentAssignment/${id}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    });
+    const data = await res.json();
+    console.log("submitted Data ", data);
+
+    navigation('StudentAssigment',{state:{data}})
+
+}
+
   return (
     <>
       <Header />
@@ -493,6 +512,7 @@ const getTrainerNotesLink =async(batch)=>{
                                                 <th>Date</th>
                                                 <th>View</th>
                                                 <th>Delete</th>
+                                                <th>Completed</th>
                                              
                                             </tr>
                                         </thead>
@@ -511,6 +531,13 @@ const getTrainerNotesLink =async(batch)=>{
                                                     </td>
                                                     <td>
                                                     <button className="btn btn-danger" onClick={() => deleteuser(data._id)}><DeleteOutlineIcon /></button>
+                                                    </td>
+                                                    <td>
+                                                        <button className="btn btn-success text-light" onClick={e=>getAssignmentStudent(data._id)}>
+                                                            <RemoveRedEyeIcon />
+
+                                                        </button>
+
                                                     </td>
                             
                                                 
@@ -789,7 +816,7 @@ const getTrainerNotesLink =async(batch)=>{
                                     title="Google Meet Recording"
                                     width="800"
                                     height="700"
-                                    src="https://drive.google.com/file/d/1wnjSFthaLTdRyd9YkghVjsVK1diocMDe/preview"
+                                    src={videos[index].videoUrl}
                                     frameBorder="0"
                                     allowFullScreen
                                 ></iframe>

@@ -20,10 +20,12 @@ const Assignment = () => {
         file: null,
         assignmentId:"",
         assignmentUrl:"",
+        assignmentFile:"",
         trainerId:student.TrainerID,
         studentId:student._id,
         batch:student.Batch,
         student:student.Name,
+        enrollmentNo:student.EnrollmentNo,
         trainerName:student.TrainerName
     })
 
@@ -36,12 +38,13 @@ const Assignment = () => {
 
 
 
-    const sendAssignment = async (e,id,url) => {
+    const sendAssignment = async (e,id,url,file) => {
         e.preventDefault();
 
         let tempInp = {...inpval}
         tempInp.assignmentId = id
         tempInp.assignmentUrl = url
+        tempInp.assignmentFile = file
 
         const formData = new FormData();
         for (const field in tempInp) {
@@ -122,8 +125,7 @@ const Assignment = () => {
                                             <tr>
                                                 <th>S.No.</th>
                                                 <th>File</th>
-                                                <th>Url</th>
-                                                <th>Date</th>
+                                                <th>Uploaded Date</th>
                                                 <th>View</th>
                                                 <th>Send</th>
                                             </tr>
@@ -133,8 +135,7 @@ const Assignment = () => {
                                                 <tr key={index}>
                                                     <td>{index + 1}</td>
                                                     <td>{data.file}</td>
-                                                    <td>{data.url}</td>
-                                                    <td>{data.date}</td>
+                                                    <td>{new Date(data.date).toLocaleString()}</td>
                                                     <td>
                                                         <button className="btn btn-success text-light" onClick={e=>toggleDocument(data.url)}>
                                                             <RemoveRedEyeIcon />
@@ -144,7 +145,7 @@ const Assignment = () => {
                                                     </td>
                                                     <td className='d-flex align-center'>
                                                     <input className="dropify" type="file" onChange={handleFileChange} name="file" />
-                                                        <SendIcon onClick={e=>sendAssignment(e,data._id,data.url)}></SendIcon></td>
+                                                        <SendIcon onClick={e=>sendAssignment(e,data._id,data.url,data.file)} className="cursor-pointer"></SendIcon></td>
                                                 
                                                 </tr>
                                             ))}

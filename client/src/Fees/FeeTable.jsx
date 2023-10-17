@@ -21,6 +21,10 @@ function FeeTable() {
   const [runningBatch, setRunningBatch] = useState()
   const [counselor, setCounselor]  = useState()
   const [currentStudent, setCurrentStudent] = useState()
+  let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  let currentMonth = monthName[((new Date().getMonth()))]
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
+  const [filteredMonth, setFilteredMonth] = useState()
   
   let ContextValue = useContext(StudentContext);
 
@@ -101,8 +105,25 @@ function FeeTable() {
     const batchData = await ContextValue.getRunningBatch();
     setRunningBatch(batchData.runningBatches)
     console.log('batch all =',batchData.runningBatches)
+  }
 
+  const setMonth =(month)=>{
 
+    console.log('month =',month.toString(), monthName[month-1],currentMonth)
+    setFilteredMonth(month.toString())
+
+    if(monthName[month-1]==currentMonth){
+      
+      console.log('current month =',month,new Date().getDate())
+
+    }
+else
+{
+  const lastDayOfMonth = new Date(currentYear, month, 0);
+  let lastDate = lastDayOfMonth.getDate();
+  console.log("last date =",lastDate)
+}
+  
   }
 
   const getCounselor = async()=>{
@@ -132,6 +153,7 @@ function FeeTable() {
   }
   useEffect(() => {
 
+    getAllStudentPaymentStatus()
     getAllStudent();
     getTrainerdata();
     getBatch();
@@ -139,10 +161,21 @@ function FeeTable() {
 
   }, [])
 
+  const getAllStudentPaymentStatus =async()=>{
+
+    let studentPaymentStatus = await fetch("http://localhost:8000/getStudentFeesStatus")
+    studentPaymentStatus = await studentPaymentStatus.json()
+    if(studentPaymentStatus.status==="done"){
+      console.log("student payment status =",studentPaymentStatus.status)
+      getAllStudent()
+    }
+  
+  }
+
   const getAllStudent = async () => {
     let student = await ContextValue.getAllStudent()
 
-    ContextValue.getPaymentStatus(student)
+    // ContextValue.getPaymentStatus(student)
     console.log("student =",student)
     setAllStudent(student)
     setCurrentStudent(student)
@@ -153,7 +186,8 @@ function FeeTable() {
     notification: "warning",
     backout: "dark",
     pending: "danger",
-    paid: "success"
+    paid: "success",
+    newAdmission: "light"
   }
 
   const moveToFeeDetail = (student) =>{
@@ -161,11 +195,20 @@ function FeeTable() {
   }
 
   const [detail, setDetail] = useState({
-
     status: null,
     batch: null,
     counselor: null
   })
+
+  const SearchStudentFees = async()=>{
+
+    console.log("filter month =",filteredMonth)
+    let studentFees =  ContextValue.getStudentMonthFeeStatus(filteredMonth,(new Date().getFullYear))
+    
+
+    console.log("student fees =",studentFees)
+
+  }
 
   return (
     <>
@@ -175,9 +218,24 @@ function FeeTable() {
 
       <div className="card-body fee-detail">
 
-      <div className='d-none d-lg-flex'>
+      <div className='d-none d-lg-flex flex-col'>
             <div className='message-form'>
-          
+
+            <select className="custom-select mr-sm-2" onChange={e=>setMonth(e.target.value)}>
+            <option disabled selected>--Choose Month--</option>
+            {
+              monthName.map((data,index)=>{
+                return(
+                  <option value={index+1}>{data}</option>
+                )
+              })
+            }
+          </select>
+
+          <button className='filter-btn' onClick={SearchStudentFees}>Search</button>
+
+          </div>
+          <div className='flex-row'>
               <div className="batch-thumb thumb">
                 <label className="form-label"> Batch :</label>
                 {runningBatch && <select className="custom-select mr-sm-2" required name='batch' onChange={(e) => setDetail({ ...detail, [e.target.name]: e.target.value })} >
@@ -210,12 +268,14 @@ function FeeTable() {
                       <option value="paid">Paid</option>
                       <option value="pending">Pending</option>
                       <option value="notification">Notification</option>
+                      <option value="newAdmission">New Admission</option>
                                     
                 </select>
                 
               </div>
               <button className='filter-btn' onClick={filterStudent}>Filter</button>
-            </div>
+              </div>
+           
           </div>
 
 
@@ -257,7 +317,7 @@ function FeeTable() {
                         <td>
 
                         <td className='d-flex w-f'>
-                                      <button className={`btn mx-2 btn-${paymentStatus[data.paymentStatus]}`} >{data.paymentStatus}</button>
+                                      <button className={`btn mx-2 btn-${paymentStatus[data.paymentStatus]}`} >{data.paymentStatus==="newAdmission"?"New Admission":data.paymentStatus}</button>
                     <button className="btn btn-success " onClick={e=>moveToFeeDetail(data)}><NavLink to={`FeeDetail/${data._id}`}><CurrencyRupeeIcon /></NavLink></button>
                                    
                                   </td>

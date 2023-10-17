@@ -118,14 +118,6 @@ const TrainerStudent = () => {
             >
               Filter
             </button>
-            <Link to="attendence">
-              <button
-                className="btn btn-primary"
-                disabled={filterStatus === false ? true : false}
-              >
-                Attendence
-              </button>
-            </Link>
           </div>
 
           <div className="card-body mt-4">
@@ -158,7 +150,7 @@ const TrainerStudent = () => {
                           <td>{data.Number}</td>
                           <td>{data.BatchTiming}</td>
                           <td>{data.Course}</td>
-                          <Link to="attendencedetail">
+                          <Link to={`attendencedetail/${data._id}`}>
                             <td>
                               <i className="fa-solid fa-clipboard-user"></i>
                             </td>

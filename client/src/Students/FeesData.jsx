@@ -14,104 +14,24 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 // import EditFee from '../Fees/EditFee';
 
 
-function FeesData() {
+function FeesData(props) {
   const [allStudent, setAllStudent] = useState()
   const navigate = useNavigate();
 
-  const location = useLocation();
-  const { student } = location.state;
+  const student  = props.student;
 
+  console.log("props student =",student)
   
   let ContextValue = useContext(StudentContext);
 
   const [Feedata, setFeedata] = useState("")
 
-  const getTrainerdata = async () => {
-    const res = await fetch("http://localhost:8000/FeeTable", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    const data = await res.json();
-    if (res.status === 422 || !data) {
-      console.log("error ");
-
-    } else {
-      setFeedata(data)
-    }
-  }
-
-  const deleteuser = async (id) => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        fetch(`http://localhost:8000/deleteFee/${id}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json"
-          }
-
-        }).then(response => {
-
-          const deletedata = response.json();
-
-          if (deletedata.status === 422 || !deletedata) {
-            console.log("error");
-            Swal.fire({
-              icon: 'error',
-              title: 'Oops...',
-              text: 'Something went wrong!',
-              footer: '<a href="">Why do I have this issue?</a>'
-            })
-          }
-          else {
-            console.log("user deleted", deletedata);
-            // setDLTdata(deletedata)
-            Swal.fire(
-              'Deleted!',
-              'Your file has been deleted.',
-              'success'
-            )
-            getTrainerdata();
-          }
-        }).catch(error => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: 'Something went wrong!',
-            footer: '<a href="">Why do I have this issue?</a>'
-          });
-
-        })
-      }
-    })
-
-  }
-
+ 
 
   useEffect(() => {
 
-    getAllStudent();
-    getTrainerdata();
-
   }, [])
 
-  const getAllStudent = async () => {
-    let student = await ContextValue.getAllStudent()
-
-    ContextValue.getPaymentStatus(student)
-    console.log("student =",student)
-    setAllStudent(student)
-  }
 
 
   const paymentStatus = {
@@ -131,16 +51,12 @@ window.open(url,'_blank')
 
   return (
     <>
-      <Header />
-      <div className='sidebar-main-container'>
-        <Sidebar />
-
       <div className="card-body fee-detail">
         <div className="container-fluid">
           <div className="row page-titles mx-0">
             <div className="col-sm-6 p-md-0">
               <div className="welcome-text">
-                <h4>Student Fees Data</h4>
+                <h4>Student Fees</h4>
               </div>
             </div>
             <div className="table-responsive recentOrderTable">
@@ -181,16 +97,7 @@ window.open(url,'_blank')
                                   </td>
 
                                   </td>
-                        {/* <td>
-                                <span className={`badge badge-rounded badge-${badgeStatus[data.status]}`}>
-                                  {data.status}
-                                </span>
-                </td> */}
-                        {/* <td className='nav-link'>
-                          <button className="btn btn-primary"> <NavLink to={`/EditFee/${data._id}`}> <CreateIcon /></NavLink></button>
-                          <button className="btn btn-danger" onClick={() => deleteuser(data._id)} ><DeleteOutlineIcon /></button>
-                          <button className="btn btn-warning text-light" ><MessageIcon /></button>
-                        </td> */}
+                  
                       </tr>
                     )
                   })
@@ -202,7 +109,7 @@ window.open(url,'_blank')
           </div>
         </div>
       </div>
-      </div>
+      
     </>
   )
 }

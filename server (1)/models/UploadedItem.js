@@ -6,22 +6,51 @@ const UploadAssignment = new Schema({
     file:{
        type:String
     },
-    trainer: {
+    LinkedinId:{
+       type:String
+    },
+    Name: {
         type: String 
     },
-    batch: {
+    Number: {
+        type: String 
+    },
+    Email: {
+        type: String 
+    }, 
+    Password: {
+        type: String 
+    },  
+    Headline: {
+        type: String 
+    },  
+    code: {
+        type: String 
+    },  
+    CompanyName: {
+        type: String 
+    },  
+    Address: {
+        type: String 
+    },  
+    bio: {
         type: String 
     },  
     url: {
         type: String
     },  
-    Trainer:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'uploads'
-    },     
     date:{
         type: Date,
         default: Date.now
+    },
+    Course:{
+        type:Object
+    },
+    weekDaysBatch:{
+        type:Object
+    },
+    WeekEndBatch:{
+        type:Object
     }
 })
 const uploaditem = mongoose.model("uploadassignments", UploadAssignment);

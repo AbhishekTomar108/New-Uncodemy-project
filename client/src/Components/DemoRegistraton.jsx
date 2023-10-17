@@ -88,7 +88,7 @@ const DemoRegistration = () => {
   const filterStudent = () => {
     console.log('register student')
  
-    let filterRegister = filterRegisterStudent.filter((data, index) => {
+    let filterRegister = registerStudent.filter((data, index) => {
   
       return (detail.trainer!= null ? data.TrainerId === detail.trainer : true) && (detail.counselor != null ? data.CounselorId === detail.counselor : true)
   

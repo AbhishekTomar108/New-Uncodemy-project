@@ -7,6 +7,9 @@ const DemoStudentSchema = new mongoose.Schema({
     Name: {
         type: String,
     },
+    Number: {
+        type: String,
+    },
     Email: {
         type: String,
        

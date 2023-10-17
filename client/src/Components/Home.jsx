@@ -501,7 +501,7 @@ export default function Home() {
   }
   const moveToNewDemo = ()=>{
     
-  navigate('New-Demo',{state:{demolist:newDemoList,demoStudent:newDemoStudentData}})
+  navigate('New-Demo',{state:{demoList:newDemoList,demoStudentData:newDemoStudentData}})
   }
 
   const moveToUpcomingDemo = ()=>{

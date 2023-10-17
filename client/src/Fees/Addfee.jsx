@@ -43,6 +43,9 @@ function Addfee() {
     InvoiceNumber:"",
     Paymentmode:"",
     amount:"",
+    month:"",
+    day:"",
+    year:"",
     Detail:"",
     CollectionDate:"",
     installment:"",
@@ -89,9 +92,27 @@ function Addfee() {
     setFeeData({ ...feeData, file: e.target.files[0] });
   };
 
+  const setDayYearMonth = (date)=>{
+
+    const selectedDate = new Date(date)
+    const month = ((selectedDate.getMonth())+1)
+    const year = selectedDate.getFullYear()
+    const day = selectedDate.getDate()
+
+    let fee  = feeData
+    fee.month = month
+    fee.year = year
+    fee.day = day
+  
+    setFeeData(fee)
+
+  }
+
   const addinpdata = async (e) => {
     e.preventDefault();
     console.log('fee data before=',feeData)
+    setDayYearMonth(feeData.CollectionDate)
+    console.log('fee data after=',feeData)
     const formData = new FormData();
     for (const field in feeData) {
       formData.append(field, feeData[field]);
@@ -120,11 +141,11 @@ function Addfee() {
         <div className="col-xl-12 col-xxl-12 col-sm-12">
           <div className="card w-80">
             <div className="card-header">
-              <h5 className="card-title" onClick={e=>setFeesStatus("addFees")}>Add Fees</h5>
-              <h5 className="card-title" onClick={e=>setFeesStatus("feesDetail")}>Fees Details</h5>
+              <button className="btn btn-dark text-light card-title" onClick={e=>setFeesStatus("addFees")}>Add Fees</button>
+              <button className="btn btn-dark text-light card-title" onClick={e=>setFeesStatus("feesDetail")}>Fees Details</button>
             </div>
 
-           {feesStatus=="addFees" && <div className="card-body ">
+           {feesStatus=="addFees" && <div className="card-body">
               <form action="#" method="post">
                 <div className="row">
                   <div className="col-lg-6 col-md-6 col-sm-12">
@@ -321,11 +342,11 @@ function Addfee() {
                       <option disabled selected>
                         --select Payment Mode--
                       </option>
-                      <option value="online">Cash</option>
-                      <option value="offline">Cheque</option>
-                      <option value="offline">UPI</option>
-                      <option value="offline">Draft</option>
-                      <option value="offline">Other</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Cheque">Cheque</option>
+                      <option value="UPI">UPI</option>
+                      <option value="Draft">Draft</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                 </div>

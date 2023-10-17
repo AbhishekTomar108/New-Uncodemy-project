@@ -240,7 +240,7 @@ function NewBatch() {
                                             <div className="form-group">
 
                                                 <>
-                                                    <label className="form-label">Batch</label>
+                                                    <label className="form-label">Course</label>
                                                     {batchCourse && <select
                                                         id="exampleInputPassword1"
                                                         type="select"

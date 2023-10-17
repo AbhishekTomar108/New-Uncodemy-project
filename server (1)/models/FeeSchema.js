@@ -14,7 +14,15 @@ const userSchema = new mongoose.Schema({
     amount: {
         type: String
     },
-
+    month: {
+        type: String
+    },
+    day: {
+        type: String
+    },
+    year: {
+        type: String
+    },
     Detail: {
         type: String
     },

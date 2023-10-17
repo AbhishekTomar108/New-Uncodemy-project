@@ -4,29 +4,18 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import { StudentContext } from '../context/StudentState';
-import FeesData from "../Students/FeesData";
 
-function ViewFee() {
+function ViewFee2() {
 
     
     let ContextValue = useContext(StudentContext);
     const [chartData, setChartData] = useState({ labels: [], series: [] });
     const [feesData, setFeesData] = useState()
     const [currentFeesData, setCurrentFeesData] = useState()
-    const [allFeesData, setAllFeesData] = useState()
     const [Student, setStudent] = useState()
     const [runningBatch, setRunningBatch] = useState()
     const [counselor, setCounselor]  = useState()
     const [month, setMonth] = useState()
-    const [totalFees, setTotalFees] = useState()
-    const [timeValue,setTimeValue] = useState()    
-    const [counselorStatus,setCounselorStatus] = useState()    
-    const [batchStatus,setBatchStatus] = useState()    
-    const [rangeDate, setRangeDate]=  useState({
-        startDate:"",
-        endDate:""
-      })
-    
 
 
     const navigate = useNavigate();
@@ -38,10 +27,56 @@ function ViewFee() {
 
         month: null,
         batch: null,
-        counselor: null,
-        counselorName:null
+        counselor: null
       })
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch("http://localhost:8000/getTotalFeeschart");
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+
+                const data = await response.json();
+                setFeesData(data)
+                setCurrentFeesData(data)
+                console.log("response", data);
+
+                if (Array.isArray(data)) {
+                    const monthData = {};
+
+                    data.forEach((record) => {
+                        const batchStartDate = new Date(record.CollectionDate);
+                        const monthYear = `${batchStartDate.getFullYear()}-${(
+                            batchStartDate.getMonth() + 1
+                        )
+                            .toString()
+                            .padStart(2, "0")}`;
+
+                        if (!monthData[monthYear]) {
+                            monthData[monthYear] = 0;
+                        }
+
+                        monthData[monthYear] += parseInt(record.amount, 10);
+                    });
+
+                    const labels = Object.keys(monthData);
+                    const fees = labels.map((monthYear) => monthData[monthYear]);
+                    console.log("fees and labels =", labels, fees)
+
+                    setChartData({
+                        labels: labels,
+                        series: [{ data: fees }],
+                    });
+                } else {
+                    console.error("Data is not in the expected format.");
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error.message);
+            }
+        };
+
+        fetchData();
         getBatch();
         getCounselor();
     }, []);
@@ -114,28 +149,6 @@ function ViewFee() {
     
       }
 
-      const SearchDemo = async()=>{
-
-
-        console.log('start and date from state =',rangeDate)
-      
-      
-        let selectFees = await fetch("http://localhost:8000/getRangeFees",{
-          method:"GET",
-          headers:{
-            "startDate":rangeDate.startDate,
-            "endDate":rangeDate.endDate
-          }
-        })
-      
-        selectFees = await selectFees.json()
-        console.log('selected fees =',selectFees)
-        setAllFeesData(selectFees.studentFees)
-        setCurrentFeesData(selectFees.studentFees)
-        setTotalFees(selectFees.formattedFees)
-        // setFilterRegisterStudent(selectRegister)
-       }
-
       const getCounselor = async()=>{
         const counsellor = await ContextValue.getAllCounselor()
         setCounselor(counsellor.counselorData)
@@ -150,23 +163,16 @@ function ViewFee() {
     
         })
         console.log('filter student =',filterStudent)
-        let totalAmount = 0;
-        filterStudent.map(data=>{
-            totalAmount = totalAmount + parseInt(data.amount)
-        })
-        console.log('total fees =',totalAmount)
-        const formattedFees = formatRupees(totalAmount);
+        
+        setStudent(filterStudent)
 
-        setTotalFees(formattedFees)
-        setCurrentFeesData(filterStudent)
-        setBatchStatus(detail.batch)
-        setCounselorStatus(detail.counselor)
+        filterfees(filterStudent)
       }
       let counselorData ={}
 
       const setCounselorData = (e)=>{
         console.log('select index =',e.target.selectedIndex,counselorData[e.target.selectedIndex])
-        setDetail({...detail,["counselor"]:counselorData[e.target.selectedIndex],["counselorName"]:e.target.value})
+        setDetail({...detail,["counselor"]:counselorData[e.target.selectedIndex]})
       }
 
       const filterfees = (data)=>{
@@ -206,59 +212,6 @@ function ViewFee() {
         },
       }
 
-      const formatDate = (date) => {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = date.toLocaleString('default', { month: 'short' });
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-      };
-      
-      const setStartEndate = (timeValue) => {
-        let today = new Date();
-        let startDate, endDate;
-      
-        if (timeValue === "Today") {
-          startDate = today;
-          endDate = today;
-        } else if (timeValue === "Yesterday") {
-          today.setDate(today.getDate() - 1); // Subtract 1 day to get yesterday
-          startDate = today;
-          endDate = today;
-        } else if (timeValue === "Last Week") {
-          endDate = new Date(); // Current date
-          startDate = new Date();
-          startDate.setDate(endDate.getDate() - 7); // Subtract 7 days to get a week ago
-        } else {
-          // Handle the case when time is not recognized
-          console.error("Invalid time option");
-          return;
-        }
-      
-        const startDateStr = formatDate(startDate);
-        const endDateStr = formatDate(endDate);
-        setRangeDate({...rangeDate, ["startDate"]:startDateStr, ["endDate"]:endDateStr})
-        console.log("start date and end date =",startDateStr, endDateStr)
-      
-        return { startDate: startDateStr, endDate: endDateStr };
-      };
-      
-   const setFromTime =(fromTime)=>{
-    const startDateStr =  formatDate(new Date(fromTime))
-    setRangeDate({...rangeDate, ["startDate"]:startDateStr})
-    console.log("from time ",startDateStr)
-    
-   }
-   const setToTime =(toTime)=>{
-    const endDateStr = formatDate(new Date(toTime))
-    setRangeDate({...rangeDate, ["endDate"]:endDateStr})
-    console.log("to time ",endDateStr)
-   }
-
-   function formatRupees(amount) {
-    // Function to convert a number to the Indian numbering system (with commas)
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  }
-
       
       
 
@@ -270,35 +223,24 @@ function ViewFee() {
                 <div className="container-fluid mt-3 mb-3">
                     <h2 className="text-left">Fee Chart</h2>
 
-                    <div className="d-flex j-c-initial c-gap-40">
-                  <select
+
+
+                    <select
                         id="exampleInputPassword1"
                         type="select"
                         name="Course"
-                        class="custom-select mr-sm-2"
-                        onChange={e =>{ setTimeValue(e.target.value);setStartEndate(e.target.value)}}
+                        class="form-control"
+                        onChange={e => getMonthFees(e.target.value)}
                     >
-                        <option disabled selected>--select Time--</option>
-                    
-                                <option value="Today">Today</option>
-                                <option value="Yesterday">Yesterday</option>
-                                <option value="Last Week">Last Week</option>
-                                <option value="Select Range">Select Range</option>
-                        
-                        
+                        <option disabled selected>--select Month--</option>
+                        {monthName.map((data, index) => {
+                            let monthNumber = index + 1 < 10 ? `0${index + 1}` : index + 1
+                            return (
+                                <option value={monthNumber}>{data}</option>
+                            )
+                        })
+                        }
                     </select>
-
-                     {timeValue==="Select Range" && 
-                     <>
-                     <label>From</label>
-                      <input type="date" class="custom-select mr-sm-2" onChange={e=>setFromTime(e.target.value)}></input>
-                      <label>To</label>
-                      <input type="date" class="custom-select mr-sm-2" onChange={e=>setToTime(e.target.value)}></input>
-                      </>}
-
-          <button className='filter-btn' onClick={SearchDemo}>Search</button>
-          </div>
-
 
                     <div className='d-none d-lg-flex'>
             <div className='message-form'>
@@ -332,17 +274,15 @@ function ViewFee() {
             </div>
           </div>
 
-         { <div className="fees-detail-section container">
-            <div className="d-flex"><h3>Total Fees:</h3> <h4>{totalFees}&#8377; </h4></div>
-            <div className="d-flex">{batchStatus && <><h3>Batch:</h3> <h4>{batchStatus} </h4></>}</div>
-            <div className="d-flex">{counselorStatus && <><h3>Counselor:</h3> <h4>{counselorStatus} </h4></>}</div>
-          </div>}
-
-                    {currentFeesData && <FeesData student={currentFeesData}/>}
+                    {chartData.labels.length > 0 ? (
+                        <Chart options={options} series={chartData.series} type="bar" height={350} onClick={showStudent}/>
+                    ) : (
+                        <p>No data to display.</p>
+                    )}
                 </div>
             </div>
         </>
     );
 }
 
-export default ViewFee;
+export default ViewFee2;

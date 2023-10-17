@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import CreateIcon from '@mui/icons-material/Create';
 import Header from '../Header';
 import Sidebar from '../Sidebar';
 // import { NavLink} from "react-router-dom";
@@ -7,6 +8,8 @@ import Sidebar from '../Sidebar';
 function TeacherDemo() {
 
     const [demo, setDemo] = useState();
+    const [demoStudent, setDemoStudent] = useState(JSON.parse(localStorage.getItem("demoData")))
+    const [filterDemoStudent, setFilterDemoStudent] = useState(JSON.parse(localStorage.getItem("demoData")))
   let monthName = [
     "Jan",
     "Feb",
@@ -21,6 +24,10 @@ function TeacherDemo() {
     "Nov",
     "Dec",
   ];
+
+  const [detail, setDetail] = useState({
+    status: null,  
+  })
 
   const date = new Date();
 
@@ -52,20 +59,50 @@ function TeacherDemo() {
   };
 
   const badgeStatus = {
-    Register: "success",
-    Process: "warning",
-    NotIntersted: "danger",
+    Interested: "success",
+    process: "warning",
+    Reject: "danger",
   }
 
   useEffect(() => {
     getTrainerdemo();
   }, []);
 
+
+  const filterDemo = ()=>{
+
+    const filterStudent  = demoStudent.filter(data=>{
+      return (
+        data.status===detail.status
+      )
+    })
+
+    setFilterDemoStudent(filterStudent)
+
+  }
+
+
   return (
     <>
+
+    
      
-      <div className="sidebar-main-container">
+      <div className="sidebar-main-container ml-30 mt-30">
+       
         <div className="teacher-demo-container">
+        <div className="preference-thumb thumb">
+                <label className="form-label">Feedback Status :</label>
+                <select className="custom-select mr-sm-2" required name='status' onChange={(e) => setDetail({...detail,["status"]:e.target.value})}>
+                  <option selected>Feedback Status...</option>           
+                      <option value="process">Process</option>
+                      <option value="Interested">Interested</option>
+                      <option value="Reject">Reject</option>
+                                    
+                </select>
+
+                <button className='btn btn-primary' onClick={filterDemo}>Search</button>
+                
+              </div>
           <div className="card-body">
             <div className="table-responsive recentOrderTable">
               <table className="table verticle-middle table-responsive-md">
@@ -73,22 +110,26 @@ function TeacherDemo() {
                   <tr>
                     <th scope="col">No.</th>
                     <th scope="col">Name</th>
+                    <th scope="col">Number</th>
                     <th scope="col">Background</th>
                     <th scope="col">Course</th>
                     <th scope="col">Trainer</th>
                     <th scope="col">Time</th>
                     <th scope="col">Date</th>
                     <th scope="col">Status</th>
+                    
                   
                   </tr>
                 </thead>
                 <tbody>
-                  {JSON.parse(localStorage.getItem("demoData")).map(
+                  {filterDemoStudent.map(
                     (data, index) => {
+                      console.log('demo status =',data.status)
                       return (
                         <tr>
                           <td>{index + 1}</td>
                           <td>{data.Name}</td>
+                          <td>{data.Number}</td>
                           <td>{data.Background}</td>
                           <td>{data.Course}</td>
                           <td>{data.Trainer}</td>
@@ -103,14 +144,7 @@ function TeacherDemo() {
                               {data.status}
                             </span>
                           </td>
-                          {/* <button className="btn btn-primary text-light">
-                    
-                            <NavLink
-                              to={`/counselor/editDemoStudent/${data._id}`}
-                            >
-                              <CreateIcon />
-                            </NavLink>
-                          </button> */}
+                      
                         </tr>
                       );
                     }

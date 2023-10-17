@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Header';
 import { StudentContext } from '../context/StudentState';
+import Loader from '../Components/Loader';
+import Swal from 'sweetalert2'
 
 
 export default function
@@ -17,6 +19,7 @@ export default function
   const [selectedRunningBatch, setSelectedRunningBatch] = useState()
   const [trainer, setTrainer] = useState('')
   const [counselor, setCouselor] = useState()
+  const [isLoading, setIsLoading] = useState(false);
   let counselorData = {}
   let trainerData   = {}
 
@@ -119,8 +122,9 @@ export default function
 
   const addinpdata = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    const formData = new FormData();
+        const formData = new FormData();
 
     for (const field in inpval) {
       formData.append(field, inpval[field]);
@@ -130,8 +134,8 @@ export default function
     formData.append("remainingFees", remainingFees);
     console.log('inpval ', inpval,remainingFees)
 
-    try {
-      const res = await fetch('http://localhost:8000/register', {
+    try {       
+      const res = await fetch('http://localhost:8000/registe', {
         method: 'POST',
         body: formData,
       });
@@ -141,18 +145,38 @@ export default function
 
         alert('error');
       } else {
-        alert('student added')
         let tempInpval = inpval
         for (const field in inpval) {
           tempInpval[field]="";
         }
         setINP(tempInpval)
       }
+      setIsLoading(false);
+      Swal.fire({
+        position: 'center',
+        icon: 'success',
+        title: 'student added',
+        showConfirmButton: false,
+        timer: 1500
+      })
+
     }
     catch (error) {
+      setIsLoading(false);
+      Swal.fire({
+        position: 'center',
+        icon: 'error',
+        title: 'some error occurred',
+        showConfirmButton: false,
+        timer: 1500
+      })
       console.log('error =', error.message)
     }
   };
+
+    
+ 
+  
 
   const setCourse = (name, value) => {
     setINP({ ...inpval, [name]: value })
@@ -214,6 +238,9 @@ export default function
       <Header />
       <div className='sidebar-main-container'>
       <Sidebar />
+      {isLoading && (
+ <Loader/>
+)}
       <div className="content-body">
         <div className="container-fluid">
           <div className="row page-titles mx-0">
@@ -387,7 +414,7 @@ export default function
                       </div>
                       <div className="col-lg-6 col-md-6 col-sm-12">
                         <div className="form-group">
-                          <label className="form-label">Trainer Name </label>
+                          <label className="form-label"> Trainer Name </label>
                           <input required type="text" value={inpval.TrainerName} name="TrainerName" onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} readonly={true} class="form-control" id="exampleInputPassword1" />
                         </div>
                       </div>

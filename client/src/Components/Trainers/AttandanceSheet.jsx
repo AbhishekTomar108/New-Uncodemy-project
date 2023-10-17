@@ -126,7 +126,6 @@ function AttandanceSheet() {
       return(attendance.filter(data=>{
         return data.day==i
       }))
-
     
   }
 
@@ -245,9 +244,7 @@ else{
   setLastDay(lastDate)
   console.log("last date =",lastDate)
 }
-   
   
-
   }
 
   const batchData  =[]
@@ -285,7 +282,7 @@ else{
         </div>
         <div className="start-end-section batch-thumb thumb">
         <div className="start-section">
-          <select onChange={e=>setMonth(e.target.value)}>
+          <select className="custom-select mr-sm-2" onChange={e=>setMonth(e.target.value)}>
             <option disabled selected>--Choose Month--</option>
             {
               monthName.map((data,index)=>{

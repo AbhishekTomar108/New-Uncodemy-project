@@ -78,7 +78,8 @@ export default function VideoAssignment(props) {
                                     title="Google Meet Recording"
                                     width="800"
                                     height="700"
-                                    src="https://drive.google.com/file/d/1wnjSFthaLTdRyd9YkghVjsVK1diocMDe/preview"
+                                    // src="https://drive.google.com/file/d/1wnjSFthaLTdRyd9YkghVjsVK1diocMDe/preview"
+                                    src={videos[index].videoUrl}
                                     frameBorder="0"
                                     allowFullScreen
                                 ></iframe>
