@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import StudentSlidebar from "./StudentSlidebar";
+import { StudentContext } from '../context/StudentState';
 import Header from "../Components/Header";
 
 function StudentAttandanceDetails() {
@@ -12,6 +13,14 @@ function StudentAttandanceDetails() {
   const [firstDay, setFirstDay] = useState(1);
   const [dayRows, setDayRows] = useState([]);
   const [attendenceRows, setAttendanceStatus] = useState([]);
+  const [batchDetail, setBatchDetail] = useState({
+    batch:"",
+    batchTime:"",
+    batchTrainer:"",
+    trainerId:""
+  })
+
+  let ContextValue = useContext(StudentContext);
 
   let monthName = [
     "Jan",
@@ -86,15 +95,15 @@ function StudentAttandanceDetails() {
   };
 
   const getAttendance = async (student) => {
-    console.log("first last ", filteredMonth, student);
+    console.log("first last ", filteredMonth, student,batchDetail);
     let filterStatus = await fetch("http://localhost:8000/getMonthAttendance", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         year: currentYear,
         month: filteredMonth,
-        batch: student.Batch,
-        TrainerID: student.TrainerID,
+        batch: batchDetail.batch,
+        TrainerID: batchDetail.trainerId,
       }),
     });
     let data = await filterStatus.json();
@@ -115,6 +124,7 @@ function StudentAttandanceDetails() {
     res = await res.json();
     console.log("student =", res.userIndividual);
     setStudent(res.userIndividual);
+    setBatchDetail({...batchDetail,["batch"]:res.userIndividual.studentRunningBatch[0], ["batchTime"]:res.userIndividual.BatchTiming,["batchTrainer"]:res.userIndividual.TrainerName,["trainerId"]:res.userIndividual.TrainerID})
     // fillAttendance(tempMonthAttendance, res)
     // getAttendance(res.userIndividual);
   };
@@ -405,6 +415,12 @@ function StudentAttandanceDetails() {
 
   // }
 
+  const setStudentBatch = async(batch) =>{
+    let batchData = await ContextValue.getBatchDetail(batch)
+    setBatchDetail({batchDetail,["batch"]:batchData.Batch,["batchTime"]:batchData.BatchTime,["batchTrainer"]:batchData.Trainer,["trainerId"]:batchData.TrainerID})
+    console.log("batch data =",batchData)
+  }
+
   return (
     <>
      
@@ -430,11 +446,11 @@ function StudentAttandanceDetails() {
                       </div>
                       <div className="Full-atta">
                         <h3>Trainer Name:</h3>
-                        <h4>{student && student.TrainerName}</h4>
+                        <h4>{batchDetail && batchDetail.batchTrainer}</h4>
                       </div>
                       <div className="Full-atta">
                         <h3>Batch Time:</h3>
-                        <h4>{student && student.BatchTiming}</h4>
+                        <h4>{batchDetail && batchDetail.batchTime}</h4>
                       </div>
                     </div>
 
@@ -458,6 +474,36 @@ function StudentAttandanceDetails() {
                           Search
                         </button>
                       </div>
+
+                      {student && <select
+                        id="exampleInputPassword1"
+                        type="select"
+                        name="Course"
+                        class="custom-select mr-sm-2"
+                        onChange={e=>setStudentBatch(e.target.value)}
+                      >
+                        <option disabled selected>--select Batch--</option>
+                    
+                    {student.studentRunningBatch.map(data=>{
+
+                      return(
+                          <option value={data}>{data}</option>
+                      )
+
+                    })}
+                       
+                        
+                    </select>}
+                    
+                    <div className="search">
+                        <button
+                          className="btn btn-primary"
+                          onClick={(e) => getAttendance(student)}
+                        >
+                          Filter
+                        </button>
+                      </div>
+
                     </div>
 
                     <table

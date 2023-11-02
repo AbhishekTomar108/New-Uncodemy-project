@@ -24,6 +24,14 @@ export default function AboutStudent() {
   const [status, setStatus] = useState("Assignment")
   const [aboutStatus, setAboutStatus] = useState(true)
 
+
+
+  const [batchDetail, setBatchDetail] = useState({
+    batch:"",
+    batchTime:"",
+    batchTrainer:""
+  })
+
   useEffect(() => {
 
     fetchStudent(id)
@@ -41,6 +49,7 @@ export default function AboutStudent() {
         receivemessage(status.userIndividual._id)
         localStorage.setItem('studentData', JSON.stringify(status.userIndividual))
         setStudent(status.userIndividual)
+        setBatchDetail({...batchDetail,["batch"]:status.userIndividual.studentRunningBatch[0], ["batchTime"]:status.userIndividual.BatchTiming,["batchTrainer"]:status.userIndividual.TrainerName})
         console.log('student =',status.userIndividual)
         
       }
@@ -70,6 +79,12 @@ export default function AboutStudent() {
     console.log("messageData",messageData.message)
   }
 
+  const setStudentBatch = async(batch) =>{
+    let batchData = await ContextValue.getBatchDetail(batch)
+    setBatchDetail({batchDetail,["batch"]:batchData.Batch,["batchTime"]:batchData.BatchTime,["batchTrainer"]:batchData.Trainer})
+    console.log("batch data =",batchData)
+  }
+
   const [assignment, setAssignment] = useState("pending")
   return (
     <>
@@ -77,12 +92,31 @@ export default function AboutStudent() {
       <div className='sidebar-main-container'>
         <Sidebar />
         <div className="content-body">
-          <div className="container-fluid">
+          <div className="container-fluid w-80">
             <div className="row page-titles mx-0">
               <div className="col-sm-6 p-md-0">
                 <div className="welcome-text">
                   <h4>About Student</h4>
                 </div>
+                {student && <select
+                        id="exampleInputPassword1"
+                        type="select"
+                        name="Course"
+                        class="custom-select mr-sm-2"
+                        onChange={e=>setStudentBatch(e.target.value)}
+                      >
+                        <option disabled selected>--select Batch--</option>
+                    
+                    {student.studentRunningBatch.map(data=>{
+
+                      return(
+                          <option value={data}>{data}</option>
+                      )
+
+                    })}
+                       
+                        
+                    </select>}
               </div>
               <div className="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
                 <ol className="breadcrumb">
@@ -116,7 +150,7 @@ export default function AboutStudent() {
                           />
                         </div>
                         <h3 className="mt-3 mb-1 text-white">{student && student.Name}</h3>
-                        <h3 className="mt-3 mb-1 text-white">{student && student.Batch}</h3>
+                        <h3 className="mt-3 mb-1 text-white">{batchDetail && batchDetail.batch}</h3>
                       </div>
 
 
@@ -261,7 +295,7 @@ export default function AboutStudent() {
                                   </h5>
                                 </div>
                                 <div className="col-lg-9 col-md-8 col-sm-6 col-6">
-                                  <span>{student && student.TrainerName}</span>
+                                <span>{batchDetail && batchDetail.batchTrainer}</span>
                                 </div>
                               </div>
                               <div className="row mb-4">
@@ -277,11 +311,41 @@ export default function AboutStudent() {
                               <div className="row mb-4">
                                 <div className="col-lg-3 col-md-4 col-sm-6 col-6">
                                   <h5 className="f-w-500">
-                                    Batch <span className="pull-right">:</span>
+                                    Batch Time<span className="pull-right">:</span>
                                   </h5>
                                 </div>
                                 <div className="col-lg-9 col-md-8 col-sm-6 col-6">
-                                  <span>{student && student.BatchTiming}</span>
+                                <span>{batchDetail && batchDetail.batchTime}</span>
+                                </div>
+                              </div>
+                              <div className="row mb-4">
+                                <div className="col-lg-3 col-md-4 col-sm-6 col-6">
+                                  <h5 className="f-w-500">
+                                    Total Fees<span className="pull-right">:</span>
+                                  </h5>
+                                </div>
+                                <div className="col-lg-9 col-md-8 col-sm-6 col-6">
+                                  <span>{student && student.Fees}</span>
+                                </div>
+                              </div>
+                              <div className="row mb-4">
+                                <div className="col-lg-3 col-md-4 col-sm-6 col-6">
+                                  <h5 className="f-w-500">
+                                    Installment<span className="pull-right">:</span>
+                                  </h5>
+                                </div>
+                                <div className="col-lg-9 col-md-8 col-sm-6 col-6">
+                                  <span>{student && student.Installment}</span>
+                                </div>
+                              </div>
+                              <div className="row mb-4">
+                                <div className="col-lg-3 col-md-4 col-sm-6 col-6">
+                                  <h5 className="f-w-500">
+                                    Remaining Fees<span className="pull-right">:</span>
+                                  </h5>
+                                </div>
+                                <div className="col-lg-9 col-md-8 col-sm-6 col-6">
+                                  <span>{student && student.remainingFees}</span>
                                 </div>
                               </div>
                               <div className="row mb-4">

@@ -72,7 +72,7 @@ function AllMessage(props) {
       <td>{index + 1}</td>
       <td>{displayedMessage}</td>
       <td>{data.from}</td>
-      <td>{data.date}</td>
+      <td>{new Date(data.date).toLocaleString()}</td>
       <td><button className="btn btn-success" onClick={() => showMessagedialog(data.message)}><RemoveRedEyeIcon/></button></td>
     </tr>
   );

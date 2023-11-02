@@ -87,6 +87,7 @@ setDate({...date, ["selectedDate"]:formattedDate, ["day"]:day, ["month"]:monthIn
   }
 
   const getBatch = async (id) => {
+    console.log('get batch trainer id =',id)
     try {
       let batchData = await ContextValue.getTrainerRunningBatch(id);
 
@@ -312,9 +313,9 @@ console.log("student running batch =",student)
         <TrainerSlidebar />
 
 
-        <div className="card-body">
+        <div className="card-body right-side-container">
 
-        <div className="batch-course-filter mt-4 j-c-space-between ml-90 mb-30 w-80">
+        <div className="batch-course-filter j-c-space-between w-80">
           <div>
             {runningBatch && (
               <select

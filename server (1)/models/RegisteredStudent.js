@@ -82,6 +82,9 @@ const RegisterStudentSchema = new mongoose.Schema({
     Remark: {
         type: String,
     },
+    status: {
+        type: String,
+    },
 
 });
 

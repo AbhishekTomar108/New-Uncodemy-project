@@ -32,6 +32,12 @@ export default function RegistrationData(props) {
   document.title  = "StudentDashboard - All Student"
   const navigation = useNavigate()
 
+  const registerStatus = {
+    Process: "warning",
+    Added: "success",
+    BackOut: "dark"
+  }
+
 
   return (
 
@@ -40,7 +46,7 @@ export default function RegistrationData(props) {
      
        
 
-        <div className="content-body" style={{ minWidth: "876px" }}>
+        <div style={{ minWidth: "876px" }}>
           {/* row */}
           <div className="container-fluid">
           
@@ -53,10 +59,10 @@ export default function RegistrationData(props) {
                   <div id="list-view" className="tab-pane fade active show col-lg-12">
                     <div className="card w-80">
         
-                      <div class="container">
+                      <div >
 
 
-                        <div class="row">
+                        <div class="row p-20">
 
                           <div class="col-md-12">
 
@@ -73,6 +79,7 @@ export default function RegistrationData(props) {
                                   <th>course</th>
                                   <th>Call</th>
                                   <th>Email</th>
+                                  <th>Status</th>
                                  
 
                                 </tr>
@@ -95,7 +102,11 @@ export default function RegistrationData(props) {
                                       <td>{data.Course}</td>
                                       <td><a href={`tel:${data.Number}`}><AddIcCallIcon/></a></td>
                                       <td><a href={`mailto:${data.Email}`}><EmailIcon/></a></td>
-                                      
+                                      <td>
+                                      <span className={`badge badge-rounded badge-${registerStatus[data.status]}`}>
+                                    {data.status}
+                                  </span>
+                                      </td>
                                     </tr>
                                   )
                                 })

@@ -9,15 +9,17 @@ import Cslidebar from './Cslidebar';
 function FeedbackDemo() {
 
     const location = useLocation();
+    const {counselor} = location.state
+    console.log("counselor = ",counselor)
     const [demoList, setDemoList] = useState()
     const [demoStudentData, setDemoStudentData] = useState()
     let ContextValue = useContext(StudentContext);
     const [filterDemoStudent, setFilterDemoStudent] = useState()
-  const [filterDemoList, setFilterDemoList] = useState()
-  const [trainer, setTrainer] = useState()
+    const [filterDemoList, setFilterDemoList] = useState()
+    const [trainer, setTrainer] = useState()
 
     const [timeValue,setTimeValue] = useState()
-  const [rangeDate, setRangeDate]=  useState({
+    const [rangeDate, setRangeDate]=  useState({
     startDate:"",
     endDate:""
   })
@@ -58,7 +60,7 @@ function FeedbackDemo() {
 
         console.log('start and date from state =',rangeDate)
       
-        let selectDemo = await fetch("http://localhost:8000/getRangeDemoes",{
+        let selectDemo = await fetch(`http://localhost:8000/getRangeDemoes/${counselor._id}`,{
           method:"GET",
           headers:{
             "startDate":rangeDate.startDate,
@@ -139,6 +141,21 @@ function FeedbackDemo() {
         
       }
     
+      
+  const setDemoFeedback = async(demoId,status)=>{
+
+    console.log("status =",demoId,status)
+
+    let feedback = await fetch("http://localhost:8000/addDemoStatus",{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({demoId,status})
+    })
+
+         feedback = await feedback.json()
+         console.log("feedback =",feedback)
+
+  }
 
 
     return (
@@ -148,7 +165,7 @@ function FeedbackDemo() {
             <div className='sidebar-main-container'>
         <Cslidebar/>        
          
-            <div >
+            <div className='right-side-container'>
             <div className="d-flex j-c-initial c-gap-40">
                   <select
                         id="exampleInputPassword1"
@@ -200,6 +217,7 @@ function FeedbackDemo() {
                                     <th scope="col">Trainer</th>
                                     <th scope="col">Link</th>
                                     <th scope="col">Action</th>
+                                    <th scope="col">Add Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -214,6 +232,21 @@ function FeedbackDemo() {
                                             <td>{data.Trainer}</td>
                                             <td><Link to={data.link}><button className='btn btn-primary'>Class Link</button></Link ></td>
                                             <td> <NavLink to={`Add-Feedback`}> <button className="btn btn-success" onClick={e=>{localStorage.setItem('demoData',JSON.stringify(demoStudentData[index]))}}  ><RemoveRedEyeIcon /></button></NavLink></td>
+                                            <td>  
+                              <select
+                        id="exampleInputPassword1"
+                        type="select"
+                        name="Course"
+                        class="custom-select mr-sm-2"                        
+                        onChange={e=>setDemoFeedback(data._id,e.target.value)}                        
+                    >
+                        <option disabled selected >--Add Feedback--</option>
+                    
+                                <option  value="Done" selected={data.status==="process"?true:false}>Done</option>
+                                <option  value="Cancel" selected={data.status==="Interested"?true:false}>Cancel</option>
+                                                     
+                        
+                    </select></td>
                                         </tr>
                                     )
                                 })}

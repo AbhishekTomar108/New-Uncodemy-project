@@ -137,15 +137,15 @@ function Addfee() {
       <Header />
       <div className='sidebar-main-container c-gap-40'>
       <Sidebar />
-      <div className="row w-80">
+      <div className="row w-80 right-side-container">
         <div className="col-xl-12 col-xxl-12 col-sm-12">
           <div className="card w-80">
             <div className="card-header">
-              <button className="btn btn-dark text-light card-title" onClick={e=>setFeesStatus("addFees")}>Add Fees</button>
-              <button className="btn btn-dark text-light card-title" onClick={e=>setFeesStatus("feesDetail")}>Fees Details</button>
+              <button className={`btn btn-${feesStatus==="addFees"?"dark":"light"} text-${feesStatus==="addFees"?"light":"dark"} card-title`} onClick={e=>setFeesStatus("addFees")}>Add Fees</button>
+              <button className={`btn btn-${feesStatus==="feesDetail"?"dark":"light"} text-${feesStatus==="feesDetail"?"light":"dark"} card-title`} onClick={e=>setFeesStatus("feesDetail")}>Fees Details</button>
             </div>
 
-           {feesStatus=="addFees" && <div className="card-body">
+           {feesStatus=="addFees" && <div className="p-20">
               <form action="#" method="post">
                 <div className="row">
                   <div className="col-lg-6 col-md-6 col-sm-12">
@@ -425,7 +425,7 @@ function Addfee() {
                   Submit
                 </button>
                 <button className="btn btn-light">
-                  Cencel
+                  Cancel
                 </button>
               </div>
             </div>}

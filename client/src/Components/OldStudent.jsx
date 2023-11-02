@@ -157,7 +157,7 @@ export default function OldStudent() {
       <Header />
       <div className='sidebar-main-container'>
       <Sidebar/>
-      <div className="content-body">
+      <div className="right-side-container">
         <div className="container-fluid">
           <div className='d-none d-lg-flex'>
             <div className='message-form'>

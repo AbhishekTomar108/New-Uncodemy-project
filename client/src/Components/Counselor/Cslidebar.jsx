@@ -15,8 +15,7 @@ export default function Cslidebar() {
 
     useEffect(()=>{
 
-        getCounsellorStatus()
-    
+        getCounsellorStatus()    
 
     },[])
 
@@ -27,7 +26,7 @@ export default function Cslidebar() {
         try {
           const status = await ContextValue.checkCounsellor();
     
-          console.log('status of student =',status);
+          console.log('status of counselor =',status);
           if (status.status === "active") {
             setCounselor(status.data)
             localStorage.setItem('counselorId',status.data._id)
@@ -74,6 +73,10 @@ export default function Cslidebar() {
         console.log('demo route',counselor)
         navigate('/counselor/RegisteredStudent', { state: { counselor } });
       }
+      const moveToFeedBack =()=>{
+        
+        navigate('/counsellor/Demo-Feedback', { state: { counselor } });
+      }
       const moveToAllDemo =()=>{
         console.log('demo route',counselor)
         navigate('/counselor/AllDemo', { state: { counselor } });
@@ -93,7 +96,7 @@ export default function Cslidebar() {
                         <li>
                             <Link className="has-arrow" to={`/counselor/SendMessage`}>Message</Link>
                         </li>
-                        <li>
+                        {/* <li>
                             <a
                                 className="has-arrow"
                                 href="#"
@@ -105,13 +108,13 @@ export default function Cslidebar() {
                             <ul aria-expanded="false">
                                 <li>
                                     <Link to="/counselor/AllStudents">All Students</Link>
-                                    {/* <a href="AllStudents.jsx">All Students</a> */}
+                                   
                                 </li>
                                 <li>
                                     <Link to="/counsellor/AddStudents">Add Students</Link>
                                 </li>
                             </ul>
-                        </li>
+                        </li> */}
                         <li>
                             <a
                                 className="has-arrow"
@@ -123,20 +126,20 @@ export default function Cslidebar() {
                             </a>
                             <ul aria-expanded="false">
                                 <li>
-                                <div onClick={moveToRegister} className='light-text'>Register Student Add</div>
+                                <div onClick={moveToRegister} className='light-text'>Add Register Student </div>
                                     {/* <a href="AllStudents.jsx">All Students</a> */}
                                 </li>
                                 <li>
-                                <div onClick={moveToRegisterStudent} className='light-text'>Register Student Table</div>
+                                <div onClick={moveToRegisterStudent} className='light-text'>Register Student</div>
                                 </li>
                             </ul>
                         </li>
                         <li>
                             <div onClick={moveToDemo} className='light-text'> <span className="nav-text">Demo</span></div>
                         </li>
-                        <Link to="/counsellor/Demo-Feedback"><li>
+                        <button className='btn-sidebar' onClick={moveToFeedBack}><li>
                          <div className='light-text'> <span className="nav-text">Add Demo Feedback</span></div>
-                       </li> </Link>
+                       </li> </button>
 
                     </ul>
                 </div>

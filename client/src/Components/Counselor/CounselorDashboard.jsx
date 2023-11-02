@@ -42,12 +42,15 @@ export default function Home() {
   const [total, setTotal] = useState()
   const [newTotal, setNewTotal] = useState()
   const [registerStudent, setRegisterStudent] = useState()
+  const [newRegisterStudent, setNewRegisterStudent] = useState()
   const [allDemo, setAllDemo] = useState()
   const [todayDemo, setTodayDemo] = useState()
   const [todayDemoStudent, setTodayDemoStudent] = useState()
   const [allDemoStudent, setAllDemoStudent] = useState()
   const [newDemo, setNewDemo] = useState()
   const [newDemoStudent, setNewDemoStudentData] = useState(0)
+  const [totalFees, setTotalFees] = useState()
+  const [newFees, setCounselorNewFees] = useState()
 
 
 
@@ -73,6 +76,9 @@ export default function Home() {
         getDemoCounselorStudent(status.data._id)
         getNewCounselorDemo(status.data._id)
         getCounselorUpcoming(status.data._id)
+        getNewRegisterStudent(status.data._id)
+        getCounselorTotalFees(status.data._id)
+        getCounselorNewTotalFees(status.data._id)
         // receivemessage(status.data._id)
         // localStorage.setItem('studentData', JSON.stringify(status.data))
       }
@@ -93,11 +99,24 @@ setTodayDemo(counselorUpcoming.Demo)
 setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
   }
 
+  const getCounselorNewTotalFees = async(id)=>{
+    let counselorNewFees = await ContextValue.getCounselorNewTotalFees(id)
+    setCounselorNewFees(counselorNewFees.formattedFees)
+    console.log("counselor new fees =",counselorNewFees)
+  }
+
   const getRegisterStudent = async(id)=>{
 
     let registerCounselorStudent = await ContextValue.getCounselorRegisterStudent(id)
     setRegisterStudent(registerCounselorStudent)
-    console.log('register student =',registerCounselorStudent)
+    // console.log('register student =',registerCounselorStudent)
+  }
+
+  const getNewRegisterStudent = async(id)=>{
+
+    let registerCounselorStudent = await ContextValue.getCounselorNewRegisterStudent(id)
+    setNewRegisterStudent(registerCounselorStudent)
+    console.log('new register student =',registerCounselorStudent)
   }
 
   const showMessagedialog = async (id) => {
@@ -260,19 +279,30 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
     setNewTotal(trainerStudent.length)
     console.log('set new total =',trainerStudent.length,trainerStudent)
   }
+  const getCounselorTotalFees = async(id)=>{
+    const counselorFees = await ContextValue.getCounselorTotalFees(id)
+   
+    setTotalFees(counselorFees.formattedFees)
+    console.log('counselor total fees =',counselorFees)
+  }
 
   const moveToRegisterStudent = ()=>{
+
     navigate('registerStudent', { state: { registerStudent } });
   }
+  const moveToNewRegisterStudent = ()=>{
 
-  const moveToAllDemo=()=>{
+    navigate('newregisterStudent', { state: { registerStudent:newRegisterStudent } });
+  }
 
-    navigate('All-Counselor-Demo', { state: { demo:allDemo, demoStudent:allDemoStudent } });
+  const moveToAllDemo=(id)=>{
+
+    navigate(`All-Counselor-Demo/${id}`, { state: { demo:allDemo, demoStudent:allDemoStudent, user:"counselor" } });
   
   }
-  const moveToNewDemo=()=>
+  const moveToNewDemo=(id)=>
   {
-    navigate('New-Counselor-Demo', { state: { demo:newDemo, demoStudent:newDemoStudent } });
+    navigate(`New-Counselor-Demo/${id}`, { state: { demo:newDemo, demoStudent:newDemoStudent, user:"counselor" } });
   
   }
   const moveToTodayDemo=()=>
@@ -388,13 +418,35 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
               </div>
             </div>
             <div className="col-xl-3 col-xxl-3 col-sm-6">
+              <div className="widget-stat card bg-secondary">
+                <div className="card-body">
+                  <div className="media">
+                    <span className="mr-3">
+                      <i className="la la-graduation-cap" />
+                    </span>
+                    <div className="media-body text-white" onClick={moveToNewRegisterStudent}>
+                      <p className="mb-1">New Registration</p>
+                      <h3 className="text-white">{newRegisterStudent && newRegisterStudent.length}</h3>
+                      {/* <div className="progress mb-2 bg-white">
+                        <div
+                          className="progress-bar progress-animated bg-light"
+                          style={{ width: "76%" }}
+                        />
+                      </div> */}
+                      {/* <small>76% Increase in 20 Days</small> */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="col-xl-3 col-xxl-3 col-sm-6">
               <div className="widget-stat card bg-danger">
                 <div className="card-body">
                   <div className="media">
                     <span className="mr-3">
                       <i className="la la-dollar" />
                     </span>
-                    <div className="media-body text-white" onClick={moveToAllDemo}>
+                    <div className="media-body text-white" onClick={e=>moveToAllDemo(counselor._id)}>
                       <p className="mb-1">Total Demo</p>
                       <h3 className="text-white">{allDemo && allDemo.length}</h3>
                       {/* <div className="progress mb-2 bg-white">
@@ -416,7 +468,7 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
                     <span className="mr-3">
                       <i className="la la-dollar" />
                     </span>
-                    <div className="media-body text-white" onClick={moveToNewDemo}>
+                    <div className="media-body text-white" onClick={e=>moveToNewDemo(counselor._id)}>
                       <p className="mb-1">New Demo</p>
                       <h3 className="text-white">{newDemo && newDemo.length}</h3>
                       {/* <div className="progress mb-2 bg-white">
@@ -442,6 +494,50 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
                     <div className="media-body text-white" onClick={moveToTodayDemo}>
                       <p className="mb-1">Today Demo</p>
                       <h3 className="text-white">{todayDemo && todayDemo.length}</h3>
+                      {/* <div className="progress mb-2 bg-white">
+                        <div
+                          className="progress-bar progress-animated bg-light"
+                          style={{ width: "30%" }}
+                        />
+                      </div> */}
+                      {/* <small>30% Increase in 30 Days</small> */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> 
+            <div className="col-xl-3 col-xxl-3 col-sm-6">
+              <div className="widget-stat card bg-danger">
+                <div className="card-body">
+                  <div className="media">
+                    <span className="mr-3">
+                      <i className="la la-dollar" />
+                    </span>
+                    <div className="media-body text-white" >
+                      <p className="mb-1">Total Fees</p>
+                      <h3 className="text-white">{totalFees && totalFees}</h3>
+                      {/* <div className="progress mb-2 bg-white">
+                        <div
+                          className="progress-bar progress-animated bg-light"
+                          style={{ width: "30%" }}
+                        />
+                      </div> */}
+                      {/* <small>30% Increase in 30 Days</small> */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> 
+            <div className="col-xl-3 col-xxl-3 col-sm-6">
+              <div className="widget-stat card bg-danger">
+                <div className="card-body">
+                  <div className="media">
+                    <span className="mr-3">
+                      <i className="la la-dollar" />
+                    </span>
+                    <div className="media-body text-white">
+                      <p className="mb-1">New Fees</p>
+                      <h3 className="text-white">{newFees && newFees}</h3>
                       {/* <div className="progress mb-2 bg-white">
                         <div
                           className="progress-bar progress-animated bg-light"
@@ -521,9 +617,9 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
                           <tr>
                             <th scope="col">Enrollment No.</th>
                             <th scope="col">Name</th>
-                            <th scope="col">Assigned Professor</th>
-                            <th scope="col">Date Of Admit</th>
-                            <th scope="col">Subject</th>
+                            <th scope="col">Trainer</th>
+                            <th scope="col">Joining Date</th>
+                            <th scope="col">Course</th>
                             <th scope="col">Fees</th>
                             <th scope="col">Action</th>
                             <th scope="col">Call</th>
@@ -539,7 +635,11 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
                               <tr>
                                 <td>{data.EnrollmentNo}</td>
                                 <td>{data.Name}</td>
-                                <td>{data.TrainerName}</td>
+                                <td className='d-flex flex-col'>{data.AllTrainer?data.AllTrainer.map(data=>{
+                                  return(
+                                    <td className='border-0'>{data}</td>
+                                  )
+                                }):data.TrainerName}</td>
                                 <td>{data.BatchStartDate}</td>
                                 <td>{data.Course}</td>
                                 <td>{data.Fees}</td>

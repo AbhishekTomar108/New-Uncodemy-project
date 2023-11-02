@@ -94,7 +94,8 @@ function AddFeedback() {
                           <td>{data.Trainer}</td>
                           <td>{data.Time}</td>
                           <td>{data.Date}</td>
-                          <td>    <select
+                          <td>  
+                              <select
                         id="exampleInputPassword1"
                         type="select"
                         name="Course"

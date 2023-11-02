@@ -7,6 +7,7 @@ import Header from "../Header";
 const RegisterStudentAdd = () => {
   const [allcourse, setAllCourse] = useState();
   const [trainer, setTrainer] = useState()
+  const [course, setCourse] = useState()
   const location = useLocation();
   const { counselor } = location.state;
 
@@ -14,12 +15,20 @@ const RegisterStudentAdd = () => {
   useEffect(() => {
     getAllCourse();
     getTrainer()
+    
   }, []);
 
+  // const getAllCourse = async () => {
+  //   let allCourse = await ContextValue.getAllBatchCourse();
+  //   console.log("course =", allCourse.batchCourse[0].Course);
+  //   setAllCourse(allCourse.batchCourse[0].Course);
+  // };
+
   const getAllCourse = async () => {
-    let allCourse = await ContextValue.getAllBatchCourse();
-    console.log("course =", allCourse.batchCourse[0].Course);
-    setAllCourse(allCourse.batchCourse[0].Course);
+    let allCourse = await ContextValue.getAllMainSubCourse();
+    console.log("course =",allCourse , allCourse.courses);
+  setCourse(allCourse.allCourse)
+    setAllCourse(allCourse.courses);
   };
 
   const [inpval, setINP] = useState({
@@ -30,13 +39,15 @@ const RegisterStudentAdd = () => {
     Pnumber: "",
     RegistrationDate: "",
     Course: "",
+    subCourse:"",
     Counselor: counselor.Name,
     CounselorId: counselor._id,
-    RegistraionFees: "",
+    RegistrationFees: "",
     TrainerName: "",
     TrainerId: "",
     BatchMode: "",
     Remark: "",
+    status:"Process"
   });
 
   const addinpdata = async (e) => {
@@ -74,6 +85,21 @@ const RegisterStudentAdd = () => {
       [e.target.name]: e.target.value,
       ["TrainerId"]: trainerData[e.target.selectedIndex]
     })
+  }
+
+  const setMainCourse  =(subCourse)=>{
+    let mainCourse;
+    course.map(data=>{
+      data.subCourse.map(element=>{
+        if(element===subCourse){
+          mainCourse = data.mainCourse
+        }
+      })
+    })
+
+    console.log('sub and main Course =',subCourse,mainCourse)
+    setINP({...inpval, ["Course"]:mainCourse,["subCourse"]:subCourse})
+
   }
 
   return (
@@ -265,14 +291,14 @@ const RegisterStudentAdd = () => {
                             <label className="form-label">Registration Fees</label>
                             <input
                               type="number"
-                              value={inpval.RegistraionFees}
+                              value={inpval.RegistrationFees}
                               onChange={(e) =>
                                 setINP({
                                   ...inpval,
                                   [e.target.name]: e.target.value,
                                 })
                               }
-                              name="RegistraionFees"
+                              name="RegistrationFees"
                               class="form-control"
                               id="exampleInputPassword1"
                             />
@@ -310,12 +336,7 @@ const RegisterStudentAdd = () => {
                               type="select"
                               name="Course"
                               class="form-control"
-                              onChange={(e) =>
-                                setINP({
-                                  ...inpval,
-                                  [e.target.name]: e.target.value,
-                                })
-                              }
+                              onChange={(e) => setMainCourse(e.target.value)}
                             >
                               <option disabled selected>
                                 --select Batch Mode--
@@ -357,7 +378,7 @@ const RegisterStudentAdd = () => {
                             Submit
                           </button>
                           <button type="submit" className="btn btn-light">
-                            Cencel
+                            Cancel
                           </button>
                         </div>
                       </div>

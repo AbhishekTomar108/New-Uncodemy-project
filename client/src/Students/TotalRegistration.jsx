@@ -11,7 +11,7 @@ import Swal from 'sweetalert2'
 // import Home from '../Components/Home'
 // import Header from '../Components/Header'
 
-export default function TotalRegistrationStudent(props) {
+export default function TotalRegistration(props) {
 
   let  registerStudentData
 
@@ -34,19 +34,14 @@ export default function TotalRegistrationStudent(props) {
   document.title  = "StudentDashboard - All Student"
   const navigation = useNavigate()
 
-  const registerStatus = {
-    Process: "warning",
-    Added: "success",
-    BackOut: "dark"
-  }
-
-
 
   return (
 
     <>
 
-     
+      <Header />
+      <div className='sidebar-main-container'>
+        <Sidebar />
 
         <div className="content-body" style={{ minWidth: "876px" }}>
           {/* row */}
@@ -107,7 +102,6 @@ export default function TotalRegistrationStudent(props) {
                                   <th>course</th>
                                   <th>Call</th>
                                   <th>Email</th>
-                                  <th>Status</th>
                                  
 
                                 </tr>
@@ -130,12 +124,6 @@ export default function TotalRegistrationStudent(props) {
                                       <td>{data.Course}</td>
                                       <td><a href={`tel:${data.Number}`}><AddIcCallIcon/></a></td>
                                       <td><a href={`mailto:${data.Email}`}><EmailIcon/></a></td>
-                                      <td>
-                                      <span className={`badge badge-rounded badge-${registerStatus[data.status]}`}>
-                                    {data.status}
-                                  </span>
-                                      </td>
-
                                       
                                     </tr>
                                   )
@@ -167,7 +155,7 @@ export default function TotalRegistrationStudent(props) {
             </div>
           </div>
         </div>
-    
+      </div>
 
     </>
 

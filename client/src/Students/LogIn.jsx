@@ -67,7 +67,7 @@ export default function LogIn() {
             <div className='all-button'>
               <button type="button" className="btn btn bg-color1" onClick={(e) => setUser("admin")}>Admin</button>
               <button type="button" className="btn btn bg-color2" onClick={(e) => setUser("trainer")}>Trainer</button>
-              <button type="button" className="btn btn bg-color3" onClick={(e) => setUser("counselor")}>Counsellor</button>
+              <button type="button" className="btn btn bg-color3" onClick={(e) => setUser("counsellor")}>Counsellor</button>
               <button type="button" className="btn btn bg-color4" onClick={(e) => setUser("student")}>Student</button>
             </div>
             <div className="inputfield">

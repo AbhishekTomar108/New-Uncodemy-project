@@ -3,10 +3,13 @@ import { useLocation  } from 'react-router-dom'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { StudentContext } from "../context/StudentState";
 
-const AssignmentStatus = () => {
-    const location = useLocation();
-    const { student } = location.state;
-  console.log('student assignment status =',student)
+const AssignmentStatus = (props) => {
+    // const { student, batch } = props;
+
+    const location = useLocation()
+    const { student, batch } = location.state;
+  
+  console.log('student assignment status =',student,batch)
 
   let ContextValue = useContext(StudentContext);
 

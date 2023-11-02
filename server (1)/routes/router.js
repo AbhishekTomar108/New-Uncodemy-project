@@ -38,6 +38,7 @@ const attendance = require("../models/Attendance")
 const Studentattendance = require("../models/StudentAttendance")
 const compiler = require('compilex');
 const batches = require("../models/BatchCourse");
+const subCourse = require("../models/Subcourse");
 const runningBatch = require("../models/RunningBatch");
 const registerStudent = require("../models/RegisteredStudent");
 const counselors = require("../models/Counselor")
@@ -50,6 +51,8 @@ compiler.init(options)
 
 const jwt_secret = "uuu"
 
+// add Student route
+
 router.post("/register", controller.upload, async (req, res) => {
     // console.log('url =',req.body,req.url,req.file)  
 
@@ -57,31 +60,7 @@ router.post("/register", controller.upload, async (req, res) => {
     .findOne({}, {}, { sort: { _id: -1 } }) // Sort by the default ObjectId in descending order
     .exec();
 
-    let newEnrollment;
-    console.log('last student =',lastStudent)
-
-    if (lastStudent && lastStudent.EnrollmentNo) {
-      const lastStudentEnrollment = lastStudent.EnrollmentNo;
-      const currentYear = new Date().getFullYear();
-      
-      // Check if the last enrollment number belongs to the current year
-      if (lastStudentEnrollment.startsWith(currentYear.toString())) {
-        const lastEnrollmentNumber = parseInt(lastStudentEnrollment.substr(4), 10);
-        const nextEnrollmentNumber = lastEnrollmentNumber + 1;
-        
-         newEnrollment = `${currentYear}${nextEnrollmentNumber.toString().padStart(2, '0')}`;
-        console.log(newEnrollment);
-      } else {
-        // Start a new enrollment for the current year
-         newEnrollment = `${currentYear}01`; // Assuming it starts from 01
-        console.log(newEnrollment);
-      }
-    } else {
-      // If there are no previous enrollments, start a new one for the current year
-      const currentYear = new Date().getFullYear();
-       newEnrollment = `${currentYear}01`; // Assuming it starts from 01
-      console.log(newEnrollment);
-    }
+    let newEnrollment = generateEnrollment(lastStudent,req.body);
     
     req.body.EnrollmentNo = newEnrollment
 
@@ -102,7 +81,6 @@ router.post("/register", controller.upload, async (req, res) => {
         "message": req.body.Remark
     }]
 
-    console.log('body remark =',req.body.Remark)
     req.body.Remark = tempRemark
 
     if (req.body.remainingFees <= 0) {
@@ -124,9 +102,9 @@ router.post("/register", controller.upload, async (req, res) => {
     const dueDate = `${batchStartDate.getFullYear()}-${String(batchStartDate.getMonth() + 1).padStart(2, '0')}-${String(batchStartDate.getDate()).padStart(2, '0')}`;
 
     const inputDate = new Date(dueDate);
-let dueDate2 = new Date(inputDate);
-let dueDate3 = new Date(inputDate);
-let dueDate4 = new Date(inputDate);
+    let dueDate2 = new Date(inputDate);
+    let dueDate3 = new Date(inputDate);
+    let dueDate4 = new Date(inputDate);
 
 // Increase one month
 dueDate2.setMonth(inputDate.getMonth() + 1);
@@ -145,35 +123,59 @@ dueDate4 = dueDate4.toISOString().split('T')[0]
 
 
     let totalFees = parseInt(req.body.Fees)-parseInt(req.body.RegistrationFees)
-    let inst = totalFees/4
-    let inst2 = inst*2
-    let inst3 = inst*3
-    let inst4 = inst*4
+    let inst =  Math.round(totalFees/req.body.totalInstallment)
+    console.log('installment first = ',inst,req.body.totalInstallment)
+    let inst2 = Math.round(inst*2)
+    let inst3 = Math.round(inst*3)
+    let inst4 = Math.round(inst*4)
 
-    let instDate = {
-        [inst]: dueDate,
-        [inst2]: dueDate2,
-        [inst3]: dueDate3,
-        [inst4]: dueDate4
+    let instDate = {}    
+
+    for(let i=1; i<=(req.body.totalInstallment);i++){
+        if(i===1){
+            instDate[inst]=dueDate
+            console.log('installment first and if  = ',inst,instDate)
+        }
+
+        if(i===2){
+            console.log('installment second and if 2 before= ',inst2,instDate)
+           instDate[inst2]=dueDate2
+         console.log('installment second and if 2 after= ',inst2,instDate)
+        }
+
+        if(i===3){
+            console.log('installment third and if 3 before= ',inst3,instDate)
+            instDate[inst3]=dueDate3
+          console.log('installment third and if 3 after= ',inst3,instDate)
+        }
+        if(i===4){
+            console.log('installment fourth and if 4 before= ',inst4,instDate)
+            instDate[inst4]=dueDate4
+          console.log('installment fourth and if 4 after= ',inst4,instDate)
+        }
+       
     }
 
-    // for(let i=0; i<4; i++){
-    //     instDate[inst*i] = dueDate`${i+1}`
-    // }
-
+    
    
 
     req.body.DueDate = dueDate;
     req.body.InstallmentDate = instDate;
+    console.log('installment due date  = ',instDate)
     req.body.paidFees = req.body.RegistrationFees;
     req.body.Installment = inst;
+    req.body.minimumFees = inst;
     req.body.paymentStatus = "newAdmission"
+    req.body.studentRunningBatch = [req.body.Batch]
+    req.body.AllTrainer = [req.body.TrainerName]
+    req.body.AllTrainerId = [req.body.TrainerID]
 
     // console.log("req body =", req.body)
     try {
         const newUser = new users(req.body);
 
         const savedUser = await newUser.save();
+        const updateRegistration = await registerStudent.update({RegistrationNo:req.body.RegistrationNo},{$set:{status:"Added"}})
         res.status(200).json(savedUser);
         // sendmail(req, res)
     } catch (error) {
@@ -182,12 +184,50 @@ dueDate4 = dueDate4.toISOString().split('T')[0]
     }
 });
 
+
+//function to generate enrollment 
+
+const generateEnrollment = (student, data)=>{
+    console.log('generate enrollment =', data)
+    let course = '';
+    let splitCourse = data.Course.split(' ')
+    if (splitCourse.length > 1) {
+        splitCourse.map(data => {
+            course = `${course}${data[0]}`
+        })
+    }
+
+    else {
+        course = splitCourse[0]
+    }
+    let newEnrollment;
+    let year = data.BatchStartDate.split('-')[0]
+    let month = data.BatchStartDate.split('-')[1]
+    if(student){
+            
+    let count = parseInt(student.EnrollmentNo.split('/')[2].split('-')[1]);
+    count = count+1
+    count = count.toString().padStart(2, '0')
+    
+    newEnrollment = `UC${year}/${course}/${month}-${count}`
+    console.log('enrollment no =',newEnrollment)
+
+        }
+        else{
+            newEnrollment = `UC${year}/${course}/${month}-01`
+        }
+
+    return newEnrollment
+}
+
 router.get('/getlastData',async(req,res)=>{
     const lastStudent = await users
     .findOne({}, {}, { sort: { _id: -1 } }) // Sort by the default ObjectId in descending order
     .exec();
     console.log('last student',lastStudent)
 })
+
+// total fees route
 
 router.get('/getTotalFees',async(req,res)=>{
     let totalFees = await StudentFee.find();
@@ -206,6 +246,72 @@ router.get('/getTotalFees',async(req,res)=>{
 
     res.send({"formattedFees":formattedFees,"feesInWords":feesInWords})
 })
+
+// get counselor total fees router
+router.get('/getCounselorTotalFees/:id',async(req,res)=>{
+    const {id} = req.params
+    let totalFees = await StudentFee.find({CounselorId:id});    
+
+    let totalAmount = 0;
+
+    totalFees.map(data=>{
+        totalAmount = totalAmount + parseInt(data.amount)
+    })
+    console.log('total fees =',totalAmount)
+    const formattedFees = formatRupees(totalAmount);
+    const feesInWords = convertToWords(totalAmount);
+
+    console.log(`Formatted Amount (Rupees): ₹${formattedFees}`);
+    console.log(`Amount in English Words: ${feesInWords}`);
+
+    res.send({"formattedFees":formattedFees,"feesInWords":feesInWords,"totalFeesData":totalFees})
+})
+
+// get counselor new fees router 
+
+router.get('/getCounselorNewTotalFees/:id',async(req,res)=>{
+    const {id} = req.params
+    const month = req.header("month")
+    let totalFees = await StudentFee.find({CounselorId:id,month:month});    
+
+    let totalAmount = 0;
+
+    totalFees.map(data=>{
+        totalAmount = totalAmount + parseInt(data.amount)
+    })
+    console.log('total fees =',totalAmount) 
+    const formattedFees = formatRupees(totalAmount);
+    const feesInWords = convertToWords(totalAmount);
+
+    console.log(`Formatted Amount (Rupees): ₹${formattedFees}`);
+    console.log(`Amount in English Words: ${feesInWords}`);
+
+    res.send({"formattedFees":formattedFees,"feesInWords":feesInWords,"totalFeesData":totalFees})
+})
+
+// get all sub course and main course router
+
+router.get('/allSubMainCourse',async(req,res)=>{
+    let allCourse = await subCourse.find()
+
+    let courses =[]
+    allCourse.map(data=>{
+
+        data.subCourse.map(element=>{
+            courses.push(element)
+        })
+    
+    })
+    let maincourses =[]
+
+    allCourse.map(data=>{
+            maincourses.push(data.mainCourse)       
+    
+    })
+
+    res.send({courses:courses,mainCourse:maincourses,allCourse:allCourse})
+})
+
 router.get('/getMonthFees',async(req,res)=>{
     const month = req.header("month")
     let totalFees = await StudentFee.find({month:month});
@@ -377,46 +483,68 @@ router.get('/getStudentFeesStatus',async(req,res)=>{
 
     let current = new Date();
 
+
     for (let index = 0; index < allStudent.length; index++) {
       
-      let due = new Date(allStudent[index].DueDate);
+      let due = allStudent[index].DueDate;
+      console.log('condition of due and current =',current>(new Date(due)) )
+    //   console.log("current and due =",current>(new Date(due)),current,due)
       const lastCollectionDate = new Date(allStudent[index].lastCollectionDate);
 
       const currentDateDiff = Math.floor((due - current) / (1000 * 60 * 60 * 24));
-      const currentDateMonth = current.getMonth();
-      const currentDateYear = current.getFullYear();
-      const currentDate = current.getDate();
-      const dueDateMonth = due.getMonth();
-      const dueDateYear = due.getFullYear();
-      const dueDate = due.getDate()
-      const lastCollectionDateMonth = lastCollectionDate.getMonth();
+    //   const currentDateMonth = current.getMonth();
+    //   const currentDateYear = current.getFullYear();
+    //   const currentDate =   current.getDate();
+    //   const dueDateMonth = due.getMonth();
+    //   const dueDateYear = due.getFullYear();
+    //   const dueDate = due.getDate()
+    //   const lastCollectionDateMonth = lastCollectionDate.getMonth();
 
-      
-
-      if(allStudent[index].paymentStatus!=="paid" && allStudent[index].paymentStatus!=="pending"){
-        if (currentDateDiff >= 0 && currentDateDiff <= 3) {
-
+      if(allStudent[index].DueDate!=="Fees Completed")
+      {
+  
+        if (currentDateDiff >= 0 && currentDateDiff <= 2)
+         {
+           
             const installmentFees = getFieldFromValue(allStudent[index].InstallmentDate, allStudent[index].DueDate);
     
             if(installmentFees>allStudent[index].paidFees)
             {
-                console.log("Payment notification");
+                // console.log("Payment notification");
                 let paymentStatus = await updatePaymentStatus("notification", allStudent[index]._id);
                 console.log("Payment status =", paymentStatus);
             }   
-           
-    
+            else if(installmentFees<allStudent[index].paidFees)
+            {
+                // console.log("Payment paid");
+                let paymentStatus = await updatePaymentStatus("paid", allStudent[index]._id);
+                console.log("Payment status =", paymentStatus);
+            } 
+         
+               
           }
 
-          else if (currentDate > dueDate && currentDateMonth === dueDateMonth) {
+          else if (current>(new Date(due))) {
+
+            const installmentFees = getFieldFromValue(allStudent[index].InstallmentDate, allStudent[index].DueDate);
             console.log("current date is greater")
     
-              console.log("pending");
-              let paymentStatus = await updatePaymentStatus("pending", allStudent[index]._id);
-              console.log("Payment status =", paymentStatus);
+              
+            if(installmentFees>allStudent[index].paidFees)
+            {
+                // console.log("Payment pending");
+                let paymentStatus = await updatePaymentStatus("pending", allStudent[index]._id);
+                console.log("Payment status =", paymentStatus);
+            }   
+            else if(installmentFees<allStudent[index].paidFees)
+            {
+                // console.log("Payment paid");
+                let paymentStatus = await updatePaymentStatus("paid", allStudent[index]._id);
+                console.log("Payment status =", paymentStatus);
+            } 
             
           }
-      }
+        }
 
     
       
@@ -520,6 +648,7 @@ router.post("/registerStudent", async (req, res) => {
     }
 });
 
+// get counselor registtartion router
 router.get('/getCounselorRegisterStudent/:id',async(req,res)=>{
     const {id} = req.params   
 
@@ -527,6 +656,30 @@ router.get('/getCounselorRegisterStudent/:id',async(req,res)=>{
         const userdata = await registerStudent.find({CounselorId:id});
         // console.log("user data =",userdata)
         res.status(200).json(userdata);
+        
+    } catch (error) {
+        console.log('error =', error.message)
+        res.status(500).json(error);
+    }
+})
+
+// get counselor new registration router
+
+
+router.get('/getCounselorNewRegisterStudent/:id',async(req,res)=>{
+    const {id} = req.params   
+    const month = req.header('month')
+
+    try {
+        const userdata = await registerStudent.find({CounselorId:id});
+        // console.log("user data =",userdata)
+
+        let newRegisterCousnelor = userdata.filter(data=>{
+            let matchMonth = data.RegistrationDate.split('-')[1]
+
+          return matchMonth===month
+        })
+        res.status(200).json(newRegisterCousnelor);
         
     } catch (error) {
         console.log('error =', error.message)
@@ -729,6 +882,8 @@ router.delete("/deleteDemo/:id", async (req, res) => {
     }
 });
 
+// add demo student feedback route
+
 router.put("/addDemoFeedback", async (req, res) => {
     try {
         const {studentId, status} = req.body
@@ -738,6 +893,23 @@ router.put("/addDemoFeedback", async (req, res) => {
 
             console.log("add feedback =",candidateData)
         res.status(200).json(candidateData);
+    } catch (error) {
+        console.log("message error =",error.message)
+        res.status(500).json(error);
+    }
+});
+
+// add demo status route
+
+router.put("/addDemoStatus", async (req, res) => {
+    try {
+        const {demoId, status} = req.body
+
+            let demoData = await NewDemo.findByIdAndUpdate({_id:demoId},{$set:{status:status}});
+          
+
+            console.log("add feedback =",demoData)
+        res.status(200).json(demoData);
     } catch (error) {
         console.log("message error =",error.message)
         res.status(500).json(error);
@@ -1059,15 +1231,19 @@ router.get("/trainer/:id", async (req, res) => {
 
 
 
-//Add Trainer
-
+//Add Trainer route
 
 router.post("/addTrainer", async (req, res) => {
     
     sendmail(req,res)
 
-    req.body.Email = req.body.email
-    console.log('req trainer add=',req.body)
+    req.body.Email = req.body.email    
+    
+    let code = await generateCode(req.body.Name,req.body.mainCourse)
+    req.body.code = code;
+
+    
+    // console.log('req trainer add=',code,req.body)
     try {
         const newUser = new uploads(req.body);
         const savedUser = await newUser.save();
@@ -1078,6 +1254,51 @@ router.post("/addTrainer", async (req, res) => {
         res.status(500).json({ error: "Something went wrong" });
     }
 });
+
+const generateCode = async(name,course)=>{
+
+    console.log('course =',course)
+    let tempCourse = '';
+    let splitCourse = course.split(' ')
+    if (splitCourse.length > 1) {
+        splitCourse.map(data => {
+            tempCourse = `${tempCourse}${data[0]}`
+        })
+    }
+
+    else {
+        tempCourse = splitCourse[0]
+    }
+
+    let count = 0;
+    count = `0${count+1}`
+    let code = `UC/${(name[0]+name[1]).toUpperCase()}/${tempCourse}-`
+    let tempCode = `${code}${count}`
+    let codeStatus = false
+    do{
+        
+        let getCode = await uploads.find({code:tempCode})  
+          
+        if(getCode.length!==0){
+           let codeCount = parseInt(count.substr(0), 10);
+           codeCount = codeCount + 1;
+            
+            tempCode = `${code}${codeCount.toString().padStart(2, '0')}`;
+            codeStatus = true
+        }
+        else
+        {
+            codeStatus = false
+            
+             }
+
+    }while(codeStatus)
+
+    return tempCode
+
+}
+
+// update trainer route
 router.post("/updatetrainer/:id", async (req, res) => {
 
     const {id} = req.params
@@ -2657,6 +2878,7 @@ const filterDemo = (data) => {
    
 }
 
+// get range demo
 router.get('/getRangeDemoes', async (req, res) => {
     console.log("get range  demo")
     let startDate = req.header("startDate");
@@ -2705,43 +2927,162 @@ router.get('/getRangeDemoes', async (req, res) => {
         res.send(error.message)
     }
 })
-// router.get('/getRangeDemoes', async (req, res) => {
-//     console.log("get range  demo")
-//     let startDate = req.header("startDate");
 
-//     let endDate = req.header("endDate");
-//     console.log(' startDate  ',startDate,endDate)
-//     // // console.log('Trainer demo =', TrainerName, month, day, year)
-//   const endMonth = endDate.split('/')[1]
-//   const startMonth = startDate.split('/')[1]
+// counselor range demoes
 
-//  startDate = new Date(startDate);
-//  endDate = new Date(endDate);
+router.get('/getRangeDemoes/:id', async (req, res) => {
+   
+    let startDate = req.header("startDate");
+    const {id} = req.params
+    console.log("get range  demo from id",id)
 
-//   let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    let endDate = req.header("endDate");
+    console.log(' startDate  ',startDate,endDate)
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+  const endMonth = endDate.split('/')[1]
+  const startMonth = startDate.split('/')[1]
 
-//     try {
+ startDate = new Date(startDate);
+ endDate = new Date(endDate);
 
-//         let demo = await FixDemo.find()
-//         console.log('demo =',demo)
+  let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-//         let finalDemo = demo.filter(data=>{
-//             const itemDateStr = data.Date;
-//             const itemDate = new Date(itemDateStr);
+    try {
+
+        let demo = await NewDemo.find({CounselorId:id})
+               
+        let totalCandidate = []
+        let totalCandidateData = []
+
+        let finalDemo = demo.filter(data=>{
+            const itemDateStr = data.Date;
+            const itemDate = new Date(itemDateStr);
           
-//             return itemDate >= startDate && itemDate <= endDate;
-//         })
+            return itemDate >= startDate && itemDate <= endDate;
+        })
 
-//         let finalDemoData = filterDemo(finalDemo)
+        for (const data of finalDemo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
 
-//         res.send(finalDemoData)
-//     }
+          res.send({Demo:finalDemo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+        // res.send(finalDemoData)
+    }
 
-//     catch (error) {
-//         // // console.log('error =',error.message)
-//         res.send(error.message)
-//     }
-// })
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+
+
+// get range counselor demo 
+
+router.get('/getRangeCounselorDemoes/:id', async (req, res) => {
+    console.log("get range  demo")
+    const {id} = req.params
+    let startDate = req.header("startDate");
+
+    let endDate = req.header("endDate");
+    console.log(' startDate  ',startDate,endDate)
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+  const endMonth = endDate.split('/')[1]
+  const startMonth = startDate.split('/')[1]
+
+ startDate = new Date(startDate);
+ endDate = new Date(endDate);
+
+  let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    try {
+
+        let demo = await NewDemo.find({CounselorId:id})
+        // console.log('demo =',demo)
+        
+        let totalCandidate = []
+        let totalCandidateData = []
+
+        let finalDemo = demo.filter(data=>{
+            const itemDateStr = data.Date;
+            const itemDate = new Date(itemDateStr);
+          
+            return itemDate >= startDate && itemDate <= endDate;
+        })
+
+        for (const data of finalDemo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+          res.send({Demo:finalDemo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+        // res.send(finalDemoData)
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
+
+// get range trainer demo
+router.get('/getRangeTrainerDemoes/:id', async (req, res) => {
+    console.log("get range  demo")
+    const {id} = req.params
+    let startDate = req.header("startDate");
+
+    let endDate = req.header("endDate");
+    console.log(' startDate  ',startDate,endDate)
+    // // console.log('Trainer demo =', TrainerName, month, day, year)
+  const endMonth = endDate.split('/')[1]
+  const startMonth = startDate.split('/')[1]
+
+ startDate = new Date(startDate);
+ endDate = new Date(endDate);
+
+  let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    try {
+
+        let demo = await NewDemo.find({TrainerId:id})
+        // console.log('demo =',demo)
+        
+        let totalCandidate = []
+        let totalCandidateData = []
+
+        let finalDemo = demo.filter(data=>{
+            const itemDateStr = data.Date;
+            const itemDate = new Date(itemDateStr);
+          
+            return itemDate >= startDate && itemDate <= endDate;
+        })
+
+        for (const data of finalDemo) {
+            // console.log("demo id =", data._id);
+            let candidateData = await DemoStudent.find({
+              DemoId: data._id
+            });
+            totalCandidate.push(candidateData.length);
+            totalCandidateData.push(candidateData);
+          }
+
+          res.send({Demo:finalDemo, totalStudent:totalCandidate, totalDemoStudent:totalCandidateData})
+        // res.send(finalDemoData)
+    }
+
+    catch (error) {
+        // // console.log('error =',error.message)
+        res.send(error.message)
+    }
+})
 
 // get range register student
 router.get('/getRangeRegisteredStudent', async (req, res) => {
@@ -3226,6 +3567,8 @@ router.get('/getrunningBatch', async (req, res) => {
         res.send({ "error": error.message })
     }
 })
+
+
 router.get('/getrunningBatchByTrainer/:id', async (req, res) => {
 
 const {id} = req.params
@@ -3243,8 +3586,8 @@ router.get('/getRunningBatchStudent', async (req, res) => {
 const batch = req.header("batch")
 console.log('batch = ',batch)
     try {
-        let studentRunningBatches = await users.find({"Batch":batch})
-        console.log("running student =",studentRunningBatches)
+        let studentRunningBatches = await users.find({studentRunningBatch:batch})
+        // console.log("running student =",studentRunningBatches)
         res.send({ "status": "active", "studentRunningBatches": studentRunningBatches })
     }
     catch (error) {
@@ -3262,6 +3605,43 @@ router.get("/getAllBatches", async (req, res) => {
         res.send({ "error": error.message })
     }
 })
+
+// get All Main Course
+
+router.get("/getAllMainCourse", async (req, res) => {
+
+    try {
+        let mainCourse = await subCourse.find({})
+        res.send({ "status": "active", "mainCourse": mainCourse })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+
+// add weekdays and weekEnd batch
+
+router.post("/addNewBatchTime", async (req, res) => {
+
+    console.log("body =",req.body)
+    let days = req.body.days
+    let batchTime = req.body.batchTime
+    try {
+        let newBatchTime;
+        if(days==="WeekDays"){
+            newBatchTime = await batches.update({},{$set:{WeekDaysBatch:batchTime}})
+        }
+        else{
+            newBatchTime = await batches.update({},{$set:{WeekEndBatch:batchTime}})
+        }
+   
+        res.send({ "status": "active", "batchCourse": newBatchTime })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+
 router.post("/addNewCourse", async (req, res) => {
 
     let course = req.body.course
@@ -3295,8 +3675,21 @@ router.post("/addNewWeekDayTiming", async (req, res) => {
 
 router.post('/getRunningBatchTrainer', async (req, res) => {
     try {
-        let runningbatchTrainer = await runningBatches.find({ Trainer: req.body.trainerName })
+        let runningbatchTrainer = await runningBatches.find({ TrainerID: req.body.TrainerID })
         res.send({ "status": "active", "runningbatchTrainer": runningbatchTrainer })
+    }
+    catch (error) {
+        res.send({ "error": error.message })
+    }
+})
+
+// get single batch detail
+
+router.get('/getBatchData', async (req, res) => {
+    let batch = req.header("batch")
+    try {
+        let batchData = await runningBatches.findOne({ Batch: batch })
+        res.send({ "status": "active", "batchData": batchData })
     }
     catch (error) {
         res.send({ "error": error.message })
@@ -3493,38 +3886,85 @@ const updateDueDate = async (collection, student, id, remainingFees,paidFees) =>
    else{
     
     let duedate
+    let minimunFees
 
-    if(paidFees>=student.Installment && paidFees<student.Installment*2){
-    console.log("if 1 =",paidFees,student.Installment)
+    // if(paidFees>=student.Installment && paidFees<student.Installment*2){
+    // console.log("if 1 =",paidFees,student.Installment)
 
-    let instString = (student.Installment).toString()
+    // let instString = (student.Installment).toString()
 
-        duedate = student.InstallmentDate[instString]
-    }
-    else if(paidFees>=student.Installment*2 && paidFees<student.Installment*3){
+    //     duedate = student.InstallmentDate[instString]
+    //     minimunFees = student.Installment-paidFees
+    // }
+    // else if(paidFees>=student.Installment*2 && paidFees<student.Installment*3){
         
-        let instString = (student.Installment*2).toString()
-        console.log("if 2 =",paidFees,student.Installment,student.InstallmentDate,student.InstallmentDate)
+    //     let instString = (student.Installment*2).toString()
+    //     minimunFees = (student.Installment*2)-paidFees
+    //     console.log("if 2 =",paidFees,student.Installment,student.InstallmentDate,student.InstallmentDate)
 
+    //     duedate = student.InstallmentDate[instString]
+    // }
+    // else if(paidFees>=student.Installment*3 && paidFees<student.Installment*4){
+    // console.log("if 3 =",paidFees,student.Installment)
+
+    // minimunFees = (student.Installment*3)-paidFees
+    // let instString = (student.Installment*3).toString()
+
+    //     duedate = student.InstallmentDate[instString]
+    // }
+    // else if(paidFees>=student.Installment*4){
+
+    //  minimunFees = (student.Installment*4)-paidFees
+    // console.log("if 4 =",paidFees,student.Installment*2)
+
+    //     duedate = "Fees Completeted"
+    // }
+
+    if(paidFees<student.Installment){
+        console.log("if 1 =",paidFees,student.Installment)
+    
+        let instString = (student.Installment).toString()
+    
+            duedate = student.InstallmentDate[instString]
+            minimunFees = student.Installment-paidFees
+        }
+        else if(paidFees<student.Installment*2 && paidFees>=student.Installment){
+            
+            let instString = (student.Installment*2).toString()
+            minimunFees = (student.Installment*2)-paidFees
+            console.log("if 2 =",paidFees,student.Installment,student.InstallmentDate,student.InstallmentDate)
+    
+            duedate = student.InstallmentDate[instString]
+        }
+        else if(paidFees<student.Installment*3 && paidFees>=student.Installment*2){
+        console.log("if 3 =",paidFees,student.Installment)
+    
+        minimunFees = (student.Installment*3)-paidFees
+        let instString = (student.Installment*3).toString()
+    
+            duedate = student.InstallmentDate[instString]
+        }
+        else if(paidFees<student.Installment*4 && paidFees>=student.Installment*3)
+        {
+
+        console.log("if 3 =",paidFees,student.Installment)
+    
+        minimunFees = (student.Installment*4)-paidFees
+        let instString = (student.Installment*4).toString()
+    
         duedate = student.InstallmentDate[instString]
-    }
-    else if(paidFees>=student.Installment*3 && paidFees<student.Installment*4){
-    console.log("if 3 =",paidFees,student.Installment)
-
-    let instString = (student.Installment*3).toString()
-
-        duedate = student.InstallmentDate[instString]
-    }
-    else if(paidFees>=student.Installment*4){
-
-    console.log("if 4 =",paidFees,student.Installment*2)
-
-        duedate = "Fees Completeted"
-    }
+        }
+        else if(paidFees>=student.Installment*4){
+    
+         minimunFees = (student.Installment*4)-paidFees
+        console.log("if 4 =",paidFees,student.Installment*2)
+    
+            duedate = "Fees Completeted"
+        }
 
     const updateUser = await users.updateOne(
         { _id: id },
-        { $set: { paymentStatus: "paid", DueDate: duedate, } },
+        { $set: { paymentStatus: "paid", DueDate: duedate, minimumFees : minimunFees} },
         { upsert: true }
     );
     
@@ -3599,6 +4039,92 @@ router.get("/getOldBatch",async(req,res)=>{
 
     console.log('old batch =',oldBatches)
     res.send({"oldBatches":oldBatches})
+})
+
+// route to get batch student 
+
+router.get("/getbatchStudent",async(req,res)=>{
+    const batch = req.header("batch")
+    console.log("batch =",batch)
+    let oldBatches = await users.find({studentRunningBatch:batch})
+
+    console.log('old batch =',oldBatches)
+    res.send({"oldBatches":oldBatches})
+})
+
+// router to move student to other batch
+
+
+router.post("/moveStudent",async(req,res)=>{
+    const currentBatch = req.body.currentBatch
+    const newBatch = req.body.newBatch
+    const id = req.body.id
+    let newbatch = await runningBatches.findOne({Batch:newBatch})
+    let currentbatch = await runningBatches.findOne({Batch:currentBatch})
+    let student = await users.findById({_id:id})
+    console.log('current and new batch =',currentBatch,newBatch,id,student.studentRunningBatch)
+
+    // console.log('student =',student)
+    let oldBatchStudent=[]
+    let oldTrainer=[]
+    let oldTrainerId=[]
+    
+    if(student.studentOldBatch)
+    {
+        oldBatchStudent = student.studentOldBatch
+        oldTrainer = student.OldTrainer
+        oldTrainerId = student.OldTrainerId
+
+    }
+    
+    let runningBatchstudent = student.studentRunningBatch.filter(data=>{
+        return data!==currentBatch
+    })
+    let AllTrainer = student.AllTrainer.filter(data=>{
+        return data!==currentbatch.Trainer
+    })
+    let AllTrainerId = student.AllTrainerId.filter(data=>{
+        return data!==currentbatch.TrainerID
+    })
+
+    runningBatchstudent.push(newBatch)
+    AllTrainer.push(newbatch.Trainer)
+    AllTrainerId.push(newbatch.TrainerID)
+
+    oldBatchStudent.push(currentBatch)
+    oldTrainer.push(currentbatch.Trainer)
+    oldTrainerId.push(currentbatch.TrainerID)
+
+    let updateStudent = await users.findByIdAndUpdate({_id:id}, {$set:{studentRunningBatch:runningBatchstudent,studentOldBatch:oldBatchStudent, AllTrainer:AllTrainer, AllTrainerId:AllTrainerId, OldTrainer:oldTrainer, OldTrainerId:oldTrainerId}})
+
+    console.log('old batch =',runningBatchstudent,oldBatchStudent)
+    res.send({"oldBatches":oldBatchStudent,"newBatches":runningBatchstudent})
+
+})
+
+// router to add student to new batch
+router.post("/addStudent",async(req,res)=>{
+    const currentBatch = req.body.currentBatch
+    const newBatch = req.body.newBatch
+    const id = req.body.id
+    let newbatch = await runningBatches.findOne({Batch:newBatch})
+    let student = await users.findById({_id:id})
+   
+    // console.log('student =',student)
+        
+    let runningBatchstudent = student.studentRunningBatch
+    let AllTrainer = student.AllTrainer
+    let AllTrainerId = student.AllTrainerId
+
+    runningBatchstudent.push(newBatch)
+    AllTrainer.push(newbatch.Trainer)
+    AllTrainerId.push(newbatch.TrainerID)
+
+
+    let updateStudent = await users.findByIdAndUpdate({_id:id}, {$set:{studentRunningBatch:runningBatchstudent, AllTrainer:AllTrainer, AllTrainerId:AllTrainerId}})
+    
+    res.send({"newBatches":runningBatchstudent})
+
 })
 
 module.exports = router;

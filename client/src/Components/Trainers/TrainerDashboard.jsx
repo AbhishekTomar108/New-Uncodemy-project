@@ -14,6 +14,8 @@ export default function TrainerDashboard() {
   const navigate = useNavigate();
 
   const [allStudent, setAllStudent] = useState()
+  const [demoUpcomingList, setDemoUpcomingList] = useState()
+
   const [trainer, setTrainer] = useState()
   const [currentStudent, setCurrentStudent] = useState()
   const [runningBatch, setRunningBatch] = useState()
@@ -21,6 +23,7 @@ export default function TrainerDashboard() {
   const [newStudent, setNewStudent] = useState()
   const [course, setCourse] = useState()
   const [total, setTotal] = useState()
+  const [demoUpcomingStudent, setDemoUpcomingStudent] = useState()
   const [filter, setFilter] = useState(
     {
       course: "",
@@ -35,6 +38,18 @@ export default function TrainerDashboard() {
 
 
   }, [])
+
+  const moveToUpcomingDemo = ()=>{
+    navigate('upcomingDemo', {state: { demo:demoUpcomingList,demoStudent:demoUpcomingStudent } });
+  }
+
+  const getTrainerUpcoming = async(id)=>{
+    let counselorUpcoming = await ContextValue.trainerUpcomimgDemo(id)
+
+    console.log('counselor demo upcoming =',counselorUpcoming)
+    setDemoUpcomingList(counselorUpcoming.Demo)
+    setDemoUpcomingStudent(counselorUpcoming.totalDemoStudent)
+  }
 
 
   const getBatch = async (id) => {
@@ -56,6 +71,7 @@ export default function TrainerDashboard() {
         localStorage.setItem('trainerData', JSON.stringify(status.data))
         localStorage.setItem('trainerId', status.data._id)
         getBatch(status.data._id)
+        getTrainerUpcoming(status.data._id)
         getNewTrainerStudent(status.data._id)
         setCourse(status.data.Course)
       }
@@ -219,6 +235,28 @@ export default function TrainerDashboard() {
                   </div>
                 </div>
               </div>
+              <div className="col-xl-3 col-xxl-3 col-sm-6">
+              <div className="widget-stat card bg-danger">
+                <div className="card-body">
+                  <div className="media">
+                    <span className="mr-3">
+                      <i className="la la-dollar" />
+                    </span>
+                    <div className="media-body text-white" onClick={moveToUpcomingDemo}>
+                      <p className="mb-1">Upcoming Demo</p>
+                      <h3 className="text-white">{demoUpcomingList && demoUpcomingList.length}</h3>
+                      {/* <div className="progress mb-2 bg-white">
+                        <div
+                          className="progress-bar progress-animated bg-light"
+                          style={{ width: "30%" }}
+                        />
+                      </div> */}
+                      {/* <small>30% Increase in 30 Days</small> */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> 
               <div className="col-xl-3 col-xxl-3 col-sm-6">
                 <div className="widget-stat card bg-danger">
                   <div className="card-body">

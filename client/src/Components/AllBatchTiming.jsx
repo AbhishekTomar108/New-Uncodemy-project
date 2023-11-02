@@ -12,7 +12,11 @@ export default function AllBatchTiming() {
 
   const location = useLocation();
   const { weekDays, weekEnd } = location.state;
-  let time=''
+  const [currentBatchTime, setCurrentBatchTime] = useState(weekDays)
+  const [days, setDays] = useState("WeekDays")
+  console.log('batch time =',weekDays,weekEnd)
+  let toTime=''
+  let fromTime=''
 
   let ContextValue = useContext(StudentContext);
   document.title = "StudentDashboard - All Student"
@@ -21,19 +25,29 @@ export default function AllBatchTiming() {
   const addBatchTime = ()=>{
     Swal.fire({
         title: 'Enter New Batch Timing',
-        html: '<input type="time" id="timeInput" class="swal2-input">',
+        html: `
+        <div class="from-to-swal"><label>From</label><input type="time" id="fromTimeInput" class="swal2-input fromTime" placeholder="From Time"></div>
+        <div class="from-to-swal"><label>To</label><input type="time" id="toTimeInput" class="swal2-input toTime" placeholder="To Time"></div>
+    `,
         showCancelButton: true,
         confirmButtonText: 'Add',
         showLoaderOnConfirm: true,
         preConfirm: () => {
-            const timeInput = document.getElementById('timeInput');
-            const selectedTime = timeInput.value;
-            time = formatTime(selectedTime)
+          const fromTimeInput = document.getElementById('fromTimeInput');
+          const toTimeInput = document.getElementById('toTimeInput');
+          fromTime = fromTimeInput.value;
+          toTime =   toTimeInput.value;
+        console.log('from and to value=',fromTime,toTime)
+           
+          fromTime = formatTime(fromTime)
+          toTime =   formatTime(toTime)
+
           },
         
         allowOutsideClick: () => !Swal.isLoading()
       }).then((result) => {
-        console.log("time =",time)
+        let time = `${fromTime} - ${toTime}`
+        console.log('from and to =',fromTime,toTime,time)
         addBatch(time)
         if (result.isConfirmed) {
           Swal.fire({
@@ -47,17 +61,17 @@ export default function AllBatchTiming() {
 
 
   const addBatch = async(time)=>{
-    let tempWeekDays = weekDays
-    tempWeekDays.push(time)
-    console.log('all batch =',tempWeekDays)
+    let tempBatchTime = days==="WeekDays"?weekDays:weekEnd
+    tempBatchTime.push(time)
+    console.log('all batch =',days,tempBatchTime)
 
-    // let newBatch = await fetch("http://localhost:8000/addNewBatchTime", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({"weekDays":tempWeekDays})
-    //   });
+    let newBatch = await fetch("http://localhost:8000/addNewBatchTime", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({"days":days,"batchTime":tempBatchTime})
+      });
 
   }
 
@@ -74,13 +88,20 @@ date.setMinutes(parseInt(minutes, 10));
 
 // Format the time with AM/PM
 const formattedTime = date.toLocaleString('en-US', {
-  hour: 'numeric',
+  hour: '2-digit',
   minute: 'numeric',
   hour12: true,
 });
 
 console.log(formattedTime);
 return formattedTime
+  }
+
+  const setDaysTime = (days)=>{
+
+    setDays(days)
+    let tempBatchTime = days==="WeekDays"?weekDays:weekEnd
+    setCurrentBatchTime(tempBatchTime)
   }
 
   return (
@@ -99,6 +120,20 @@ return formattedTime
                 <div className="welcome-text">
                   <h4>Batch Time</h4>
                 </div>
+                <select
+                        id="exampleInputPassword1"
+                        type="select"
+                        name="Course"
+                        class="custom-select mr-sm-2"
+                        onChange={e=>setDaysTime(e.target.value)}
+                    >
+                        <option disabled selected>--select Days--</option>
+                    
+                                <option value="WeekDays">WeekDays</option>
+                                <option value="WeekEndDays">WeekEnd Days</option>
+                                            
+                        
+                    </select>
               </div>
              
             </div>
@@ -112,7 +147,7 @@ return formattedTime
                     <div className="card w-80">
                       <div className="card-header">
                         <h4 className="card-title">All Batch List</h4>
-                        <button className='btn btn-primary' onClick={addBatchTime}>Add New Timing</button>
+                        <button className='btn btn-primary' onClick={addBatchTime}>Add New {days} Timing</button>
 
                       </div>
 
@@ -139,7 +174,7 @@ return formattedTime
 
 
                               <tbody>
-                                {weekDays && weekDays.map((data, index) => {
+                                {currentBatchTime && currentBatchTime.map((data, index) => {
 
                                   return (
                                     <tr>

@@ -4,14 +4,13 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { StudentContext } from "../context/StudentState";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
-const StudentNotes = () => {
+const StudentNotes = (props) => {
 
     const [notes, setNotes] = useState("pdf")
     const [notesPdf, setNotesPdf] = useState()
     const [notesLink, setNotesLink] = useState()
-    const location = useLocation();
-    const { student } = location.state;
-  console.log('student assignment status =',student)
+    const { student, batch } = props;
+    console.log('student assignment status =',student)
 
   let ContextValue = useContext(StudentContext);
 
@@ -20,8 +19,8 @@ const StudentNotes = () => {
 
     useEffect(()=>{
         getSubmittedAssigment(student._id)
-        getTrainerNotesLink(student.Batch)
-        getTrainerNotesPdf(student.Batch)
+        getTrainerNotesLink(batch.Batch)
+        getTrainerNotesPdf(batch.Batch)
     },[])
 
     const getSubmittedAssigment = async(id)=>{

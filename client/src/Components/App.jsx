@@ -98,6 +98,11 @@ import FeedbackDemo from './Counselor/FeedbackDemo'
 import AddFeedback from './Trainers/AddFeedback'
 import StudentAssignment from '../Students/StudentAssignment'
 import Loader from './Loader'
+import AllDemoSection from './AllDemoSection'
+import NewDemoSection from './NewDemoSection'
+import { Filter } from '@mui/icons-material'
+import FilterSection from './FilterSection'
+import TotalRegistration from '../Students/TotalRegistration'
 
 // import Navbaar from './components/Navbaar';
 export default function App() {
@@ -108,12 +113,14 @@ export default function App() {
           <Routes>
 
             <Route exact path='/loading' element={<Loader />} />
+            <Route exact path='/filter' element={<FilterSection />} />
             <Route exact path='/googlemeet' element={<EmbedGoogleMeet />} />
             <Route exact path='/' element={<LogIn />} />
             <Route exact path='admin/' element={<Home />} />
             <Route exact path='admin/AllCourse' element={<AllCourse />} />
             <Route exact path='admin/AllBatchTiming' element={<AllBatchTiming />} />
             <Route exact path='admin/Registered-Student' element={<RegisterStudent />} />
+            <Route exact path='admin/Registered-Student/Add-Registered-Student' element={<RegisterStudent />} />
             <Route exact path='admin/Demo-Registration' element={<DemoRegistration />} />
             <Route exact path='admin/Demo-Registration/teacherdemo' element={ <>
       <Header />
@@ -122,7 +129,13 @@ export default function App() {
         <TeacherDemo />
       </div>
     </>} />
-            <Route exact path='admin/upcomingDemo' element={<UpcomingDemo />} />
+            <Route exact path='admin/upcomingDemo' element={<>
+      <Header />
+      <div style={{ display: 'flex' }}>
+        <Sidebar />
+        <UpcomingDemo />
+      </div>
+    </>} />
             <Route exact path='admin/upcomingDemo/DemoStudent'   element={
     <>
       <Header />
@@ -177,7 +190,7 @@ export default function App() {
   }
  />
             <Route exact path="admin/Demo-Register/ShowDemo" element={<ShowDemo />} />
-            <Route exact path="admin/Demo-Register/ShowRegister" element={<TotalRegistrationStudent />} />
+            <Route exact path="admin/Demo-Register/ShowRegister" element={<TotalRegistration/>} />
             <Route exact path="admin/RegisteredStudent" element={<RegisteredStudent />} />
             <Route exact path="EditStudents/:id" element={[ <EditStudents />]} />
             <Route exact path="/EditTrainer" element={[ <EditTrainer />]} />
@@ -194,7 +207,13 @@ export default function App() {
     </>]} />
             <Route exact path="Aboutstudent/:id" element={[ <AboutStudent />]} />
             <Route exact path="AboutTrainer/:id" element={[ <AboutTrainer />]} />
-            <Route exact path="AboutTrainer/:id/upcomingDemo" element={[ <UpcomingDemo />]} />
+            <Route exact path="AboutTrainer/:id/upcomingDemo" element={<>
+      <Header />
+      <div style={{ display: 'flex' }}>
+        <Sidebar />
+        <UpcomingDemo />
+      </div>
+    </>} />
             <Route exact path="AboutTrainer/:id/upcomingDemo/DemoStudent"   element={
     <>
       <Header />
@@ -209,16 +228,16 @@ export default function App() {
             <Route exact path='AboutTrainer/:id/newStudent' element={<NewStudent />} />
             <Route exact path='AboutTrainer/:id/Trainer-Running-batch' element={<TrainerRunningBatch />} />
             <Route exact path='AboutTrainer/:id/Trainer-Course' element={<TrainerCourse />} />
-            <Route exact path='AboutTrainer/:id/All-Trainer-Demo' element={
+            <Route exact path='AboutTrainer/:id/All-Demo' element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
         <Sidebar />
-        <AllTrainerDemo />
+        <AllDemoSection />
       </div>
     </>
   } />
-            <Route exact path='AboutTrainer/:id/All-Trainer-Demo/teacherdemo' element={
+            <Route exact path='AboutTrainer/:id/All-Demo/demoStudent' element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
@@ -227,16 +246,16 @@ export default function App() {
       </div>
     </>
   } />
-            <Route exact path='AboutTrainer/:id/New-Trainer-Demo' element={
+            <Route exact path='AboutTrainer/:id/New-Demo' element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
         <Sidebar />
-        <AllTrainerDemo />
+        <NewDemoSection />
       </div>
     </>
   } />
-            <Route exact path='AboutTrainer/:id/New-Trainer-Demo/teacherdemo' element={
+            <Route exact path='AboutTrainer/:id/New-Demo/demoStudent' element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
@@ -257,16 +276,16 @@ export default function App() {
       </div>
     </>
   } />
-            <Route exact path="AboutCounselor/:id/All-Trainer-Demo" element={
+            <Route exact path="AboutCounselor/:id/All-Demo" element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
         <Sidebar />
-        <AllTrainerDemo />
+        <AllDemoSection />
       </div>
     </>
   } />
-            <Route exact path="AboutCounselor/:id/All-Trainer-Demo/teacherdemo" element={
+            <Route exact path="AboutCounselor/:id/All-Demo/demoStudent" element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
@@ -275,16 +294,16 @@ export default function App() {
       </div>
     </>
   } />
-            <Route exact path="AboutCounselor/:id/New-Trainer-Demo" element={
+            <Route exact path="AboutCounselor/:id/New-Demo" element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
         <Sidebar />
-        <AllTrainerDemo />
+        <NewDemoSection />
       </div>
     </>
   } />
-            <Route exact path="AboutCounselor/:id/New-Trainer-Demo/teacherdemo" element={
+            <Route exact path="AboutCounselor/:id/New-Demo/demoStudent" element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
@@ -300,18 +319,31 @@ export default function App() {
             <Route exact path="/counsellor/allStudent" element={[ <AllStudents />]} />
             <Route exact path="/counsellor/AddStudents" element={[ <CounselorAddStudent />]} />
             <Route exact path="/counselor/newStudent" element={[ <NewStudent />]} />
-            <Route exact path="/counselor/registerStudent" element={[ <TotalRegistrationStudent />]} />
-            <Route exact path="/counselor/All-Counselor-Demo"   element={
+            <Route exact path="/counsellor/registerStudent" element={ <>
+      <Header />
+      <div style={{ display: 'flex' }}>
+        <Cslidebar />
+        <TotalRegistrationStudent />
+      </div>
+    </>} />
+            <Route exact path="/counsellor/newregisterStudent" element={   <>
+      <Header />
+      <div style={{ display: 'flex' }}>
+        <Cslidebar />
+        <TotalRegistrationStudent />
+      </div>
+    </>} />
+            <Route exact path="/counsellor/All-Counselor-Demo/:id"   element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
         <Cslidebar />
-        <AllTrainerDemo />
+        <AllDemoSection />
       </div>
     </>
   }
  />
-            <Route exact path="/counsellor/All-Counselor-Demo/teacherdemo"   element={
+            <Route exact path="/counsellor/All-Counselor-Demo/:id/demoStudent"   element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
@@ -321,17 +353,17 @@ export default function App() {
     </>
   }
  />
-            <Route exact path="/counselor/new-Counselor-Demo"   element={
+            <Route exact path="/counsellor/new-Counselor-Demo/:id"   element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
         <Cslidebar />
-        <AllTrainerDemo />
+        <NewDemoSection />
       </div>
     </>
   }
  />
-            <Route exact path="/counselor/Today-Demo"   element={
+            <Route exact path="/counsellor/Today-Demo"   element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
@@ -377,7 +409,7 @@ export default function App() {
  </>
   }
  />
-            <Route exact path="/counsellor/new-Counselor-Demo/teacherdemo"   element={
+            <Route exact path="/counsellor/new-Counselor-Demo/:id/demoStudent"   element={
     <>
       <Header />
       <div style={{ display: 'flex' }}>
@@ -388,7 +420,13 @@ export default function App() {
   }
  />
 
-            <Route exact path="AboutCounselor/:id/registerStudent" element={[ <TotalRegistrationStudent />]} />
+            <Route exact path="AboutCounselor/:id/registerStudent" element={ <>
+      <Header />
+      <div style={{ display: 'flex' }}>
+        <Sidebar />
+        <TotalRegistrationStudent />
+      </div>
+    </>} />
             {/* <Route exact path="FeesCollection" element={<FeesCollection />} /> */}
             <Route exact path="admin/New-Batch" element={<NewBatch />} />
             <Route exact path="admin/Running-batches" element={<RunningBatches />} />
@@ -408,6 +446,20 @@ export default function App() {
             <Route exact path="EditTrainer" element={<EditTrainer />} />
             <Route exact path="counsellor/" element={[ <CounselorDashboard />]} />
             <Route exact path="trainer/" element={ <TrainerDashboard />} />
+            <Route exact path="trainer/upcomingDemo" element={ <>
+      <Header />
+      <div style={{ display: 'flex' }}>
+        <TrainerSlidebar />
+        <UpcomingDemo />
+      </div>
+    </>} />
+            <Route exact path="trainer/upcomingDemo/DemoStudent" element={ <>
+      <Header />
+      <div style={{ display: 'flex' }}>
+        <TrainerSlidebar />
+        <TeacherDemo />
+      </div>
+    </>} />
             <Route exact path="/trainer/attendence" element={<StudentAttandance />} />
             <Route exact path="/trainer/student/:id" element={<TrainerStudent />} />
             <Route exact path="/trainer/student/:id/attendencedetail/:id" element={ <div style={{ display: 'flex' }}>
@@ -417,10 +469,12 @@ export default function App() {
             <Route exact path="/trainer/add-attendance" element={<AddAttendance />} />
             <Route exact path="/trainer/student/:id/StudentAssignment" element={<AssignmentStatus />} />
             <Route exact path="/trainer/student/:id/attendence" element={<StudentAttandance />} />
-            <Route exact path="/student/fullattendance/:id" element={ <div style={{ display: 'flex' }}>
+            <Route exact path="/student/fullattendance/:id" element={<><Header /> <div style={{ display: 'flex' }}>
         <StudentSlidebar />
         <StudentAttandanceDetails />
-      </div>} />
+      
+      </div> 
+      </>}/>
             <Route exact path='/trainer/allStudent' element={<AllStudents />} />
             <Route exact path='/trainer/newStudent' element={<NewStudent />} />
             <Route exact path='/trainer/Trainer-Course' element={<TrainerCourse />} />

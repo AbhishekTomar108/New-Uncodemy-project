@@ -284,7 +284,7 @@ const DemoRegistration = () => {
         <Sidebar />   
         <div>
 
-        <div className='d-none d-lg-flex flex-d-cloumn'>
+        <div className='d-none d-lg-flex flex-d-cloumn right-side-container'>
           <div className="container-fluid mt-3 mb-3">
        
 

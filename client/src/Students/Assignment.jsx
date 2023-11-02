@@ -6,11 +6,12 @@ import SendIcon from '@mui/icons-material/Send';
 import { useLocation  } from 'react-router-dom'
 import { StudentContext } from "../context/StudentState";
 
-const Assignment = () => {
+const Assignment = (props) => {
 
     const location = useLocation();
-  const { student } = location.state;
-  console.log('student =',student)
+  const { student, batch } = props;
+  console.log('assignment props =',student,batch)
+
   let contextValue = useContext(StudentContext);
 
     document.title = "StudentDashboard - Assignment"
@@ -21,12 +22,12 @@ const Assignment = () => {
         assignmentId:"",
         assignmentUrl:"",
         assignmentFile:"",
-        trainerId:student.TrainerID,
+        trainerId:batch.TrainerID,
         studentId:student._id,
-        batch:student.Batch,
+        batch:batch.Batch,
         student:student.Name,
         enrollmentNo:student.EnrollmentNo,
-        trainerName:student.TrainerName
+        trainerName:batch.Trainer
     })
 
     // ------Upload Student Item----
@@ -98,7 +99,7 @@ const Assignment = () => {
     useEffect(() => {
         getTrainerdata()
         console.log('use effect id batch',student, student._id,student.Batch)
-        getPendingAssignment(student._id,student.Batch)
+        getPendingAssignment(student._id,batch.Batch)
     }, [])
 
     const getPendingAssignment = async(id,batch)=>{

@@ -87,7 +87,7 @@ function TeacherDemo() {
 
     
      
-      <div className="sidebar-main-container ml-30 mt-30">
+      <div className="sidebar-main-container right-side-container">
        
         <div className="teacher-demo-container">
         <div className="preference-thumb thumb">

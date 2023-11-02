@@ -437,7 +437,7 @@ const getAssignmentStudent = async(id)=>{
       <Header />
       <div className="sidebar-main-container">
         <TrainerSlidebar />
-        <div className="assignment-main-container">
+        <div className="assignment-main-container right-side-container">
           <div className="upload-button">
           {trainerBatch.length != 0 && (
             <select

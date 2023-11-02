@@ -88,7 +88,7 @@ const StudentState = (props) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "auth-token": localStorage.getItem('counselor')
+        "auth-token": localStorage.getItem('counsellor')
       }
     });
 
@@ -103,6 +103,14 @@ const StudentState = (props) => {
     userStatus = await userStatus.json()
     return userStatus
   }
+  const getAllMainSubCourse = async (id) => {
+    let AllCourse = await fetch(`http://localhost:8000/allSubMainCourse`, {
+      method: "GET",
+    });
+
+    AllCourse = await AllCourse.json()
+    return AllCourse
+  }
 
   const getAllBatchCourse = async () => {
     let allbatchCourse = await fetch("http://localhost:8000/getAllBatches", {
@@ -114,6 +122,17 @@ const StudentState = (props) => {
 
     allbatchCourse = await allbatchCourse.json()
     return allbatchCourse
+  }
+  const getAllMainCourse = async () => {
+    let allMainCourse = await fetch("http://localhost:8000/getAllMainCourse", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+
+    allMainCourse = await allMainCourse.json()
+    return allMainCourse
   }
 
   const getAllDemoListCounselor  = async(id)=>{
@@ -166,7 +185,16 @@ const StudentState = (props) => {
     return runningBatch
   }
 
+  const getBatchDetail = async(batch)=>{
+    let batchData = await fetch(`http://localhost:8000/getBatchData/`, {
+      method: "GET",
+      headers: {"batch":batch}
+    });
 
+    batchData = await batchData.json()
+
+    return batchData.batchData
+  }
 
   const getAllCounselor = async () => {
     let allCounselor = await fetch("http://localhost:8000/getAllCounselor", {
@@ -495,6 +523,25 @@ return trainerStudent.newStudent
     totalFees = await totalFees.json()
     return totalFees
   }
+  const getCounselorTotalFees = async(id)=>{
+    let totalFees = await fetch(`http://localhost:8000/getCounselorTotalFees/${id}`,{
+      method:'GET',
+})
+
+    totalFees = await totalFees.json()
+    return totalFees
+  }
+  const getCounselorNewTotalFees = async(id)=>{
+    let month = new Date().getMonth()
+    month = month+1
+    let totalFees = await fetch(`http://localhost:8000/getCounselorNewTotalFees/${id}`,{
+      method:'GET',
+      headers:{"month":month}
+})
+
+    totalFees = await totalFees.json()
+    return totalFees
+  }
 
   const getOldStudent = async () => {
     let oldStudent = await fetch('http://localhost:8000/getoldStudent')
@@ -570,6 +617,18 @@ const getCounselorRegisterStudent = async(id)=>{
   console.log('counselor register =',id)
   let registerCounselorStudent = await fetch(`http://localhost:8000/getCounselorRegisterStudent/${id}`,{
     method:'GET',
+  })
+
+  registerCounselorStudent = await registerCounselorStudent.json()
+  return registerCounselorStudent
+}
+const getCounselorNewRegisterStudent = async(id)=>{
+  let month = new Date().getMonth()
+  month = month+1<10?`0${month+1}`:month+1
+  console.log('counselor register =',id)
+  let registerCounselorStudent = await fetch(`http://localhost:8000/getCounselorNewRegisterStudent/${id}`,{
+    method:'GET',
+    headers:{"month":month}
   })
 
   registerCounselorStudent = await registerCounselorStudent.json()
@@ -794,7 +853,7 @@ const UpcomimgTrainerDemo = async(id)=>{
 
   return (
     <div>
-      <StudentContext.Provider value={{ student: student, Admin: Admin, teacher: teacher, updateTeacher: updateTeacher, updateAdmin: updateAdmin, updateStudent: updateStudent, loggedInPerson: loggedInPerson, updateLoggedInPerson: updateLoggedInPerson, checkAdmin: checkAdmin, checkTrainer: checkTrainer, checkStudent: checkStudent, getAllBatchCourse: getAllBatchCourse, getRunningBatch: getRunningBatch, getAllCounselor: getAllCounselor, getAllTrainer: getAllTrainer, getSingleStudent: getSingleStudent, getSingleTrainer: getSingleTrainer, getAllStudent: getAllStudent, checkCounsellor: checkCounsellor, getPaymentStatus: getPaymentStatus, getSingleCounselor: getSingleCounselor, getBatchByTrainer: getBatchByTrainer, getFiles: getFiles, totalStudent:totalStudent,newStudent:newStudent,totalNewTrainerStudent:totalNewTrainerStudent,getTotalFees:getTotalFees,getOldStudent:getOldStudent,totalNewCounselorStudent:totalNewCounselorStudent,demoStudent:demoStudent,setDemoData:setDemoData, getTrainerDemo:getTrainerDemo,getTrainerNewDemo:getTrainerNewDemo,getTrainerRunningBatch:getTrainerRunningBatch,getCounselorRegisterStudent:getCounselorRegisterStudent,getCounselorDemo:getCounselorDemo,getCounselorNewDemo:getCounselorNewDemo,getRegisterStudent:getRegisterStudent,allCounselor:allCounselor,runningBatch:runningBatch,getAllDemo:getAllDemo,getNewDemo:getNewDemo,getReceiveMessage:getReceiveMessage,getAllCounselorStudent:getAllCounselorStudent,getPendingStudentAssignment:getPendingStudentAssignment,getSubmittedStudentAssignment:getSubmittedStudentAssignment,getTrainerAssignment:getTrainerAssignment,getTrainerNotesLink:getTrainerNotesLink,getTrainerNotesPdf:getTrainerNotesPdf,getStudentNotesLink:getStudentNotesLink,getStudentNotesPdf:getStudentNotesPdf,counselorUpcomimgDemo:counselorUpcomimgDemo,trainerUpcomimgDemo:trainerUpcomimgDemo,UpcomimgDemo:UpcomimgDemo,getAdminId:getAdminId,getStudentreceivemessage:getStudentreceivemessage,checkCounsellorById:checkCounsellorById,getDemo:getDemo,UpcomimgTrainerDemo:UpcomimgTrainerDemo,getAllDemoListCounselor:getAllDemoListCounselor,getRunningBatchStudent:getRunningBatchStudent,getAttendance:getAttendance}}>
+      <StudentContext.Provider value={{ student: student, Admin: Admin, teacher: teacher, updateTeacher: updateTeacher, updateAdmin: updateAdmin, updateStudent: updateStudent, loggedInPerson: loggedInPerson, updateLoggedInPerson: updateLoggedInPerson, checkAdmin: checkAdmin, checkTrainer: checkTrainer, checkStudent: checkStudent, getAllBatchCourse: getAllBatchCourse, getRunningBatch: getRunningBatch, getAllCounselor: getAllCounselor, getAllTrainer: getAllTrainer, getSingleStudent: getSingleStudent, getSingleTrainer: getSingleTrainer, getAllStudent: getAllStudent, checkCounsellor: checkCounsellor, getPaymentStatus: getPaymentStatus, getSingleCounselor: getSingleCounselor, getBatchByTrainer: getBatchByTrainer, getFiles: getFiles, totalStudent:totalStudent,newStudent:newStudent,totalNewTrainerStudent:totalNewTrainerStudent,getTotalFees:getTotalFees,getOldStudent:getOldStudent,totalNewCounselorStudent:totalNewCounselorStudent,demoStudent:demoStudent,setDemoData:setDemoData, getTrainerDemo:getTrainerDemo,getTrainerNewDemo:getTrainerNewDemo,getTrainerRunningBatch:getTrainerRunningBatch,getCounselorRegisterStudent:getCounselorRegisterStudent,getCounselorDemo:getCounselorDemo,getCounselorNewDemo:getCounselorNewDemo,getRegisterStudent:getRegisterStudent,allCounselor:allCounselor,runningBatch:runningBatch,getAllDemo:getAllDemo,getNewDemo:getNewDemo,getReceiveMessage:getReceiveMessage,getAllCounselorStudent:getAllCounselorStudent,getPendingStudentAssignment:getPendingStudentAssignment,getSubmittedStudentAssignment:getSubmittedStudentAssignment,getTrainerAssignment:getTrainerAssignment,getTrainerNotesLink:getTrainerNotesLink,getTrainerNotesPdf:getTrainerNotesPdf,getStudentNotesLink:getStudentNotesLink,getStudentNotesPdf:getStudentNotesPdf,counselorUpcomimgDemo:counselorUpcomimgDemo,trainerUpcomimgDemo:trainerUpcomimgDemo,UpcomimgDemo:UpcomimgDemo,getAdminId:getAdminId,getStudentreceivemessage:getStudentreceivemessage,checkCounsellorById:checkCounsellorById,getDemo:getDemo,UpcomimgTrainerDemo:UpcomimgTrainerDemo,getAllDemoListCounselor:getAllDemoListCounselor,getRunningBatchStudent:getRunningBatchStudent,getAttendance:getAttendance,getAllMainCourse:getAllMainCourse,getCounselorNewRegisterStudent:getCounselorNewRegisterStudent,getCounselorTotalFees:getCounselorTotalFees,getCounselorNewTotalFees:getCounselorNewTotalFees,getAllMainSubCourse:getAllMainSubCourse, getBatchDetail:getBatchDetail}}>
         {props.children}
       </StudentContext.Provider>
     </div>

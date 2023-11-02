@@ -147,7 +147,7 @@ export default function Sidebar() {
               </a>
               <ul aria-expanded="false">
                 <li>
-                  <Link to="/FeesTable">Fees Table</Link>
+                  <Link to="/FeesTable">Current Month Fees</Link>
 
                 </li>
                 {/* <li>

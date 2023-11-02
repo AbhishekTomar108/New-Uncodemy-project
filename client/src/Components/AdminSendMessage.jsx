@@ -284,23 +284,23 @@ export default function AdminSendMessage() {
       <div className='sidebar-main-container'>
       <Sidebar/>
 <div>
-    <div>
+    <div className='right-side-container'>
         
          <div className="card-header">
-                <button class="btn btn-outline-dark" onClick={e => setStatus("send-message")}>Send Message</button>
-                <button class="btn btn-outline-dark" onClick={e => setStatus("receive-message")}>Receive Message</button>
+                <button class={`btn btn-hover btn-outline-${status==="send-message"?"dark":"light"}`} onClick={e => setStatus("send-message")}>Send Message</button>
+                <button class={`btn btn-hover btn-outline-${status==="receive-message"?"dark":"light"}`} onClick={e => setStatus("receive-message")}>Receive Message</button>
                
               </div>
 
    {status==="send-message" &&  
    <>
     <div className="card-header j-c-initial">
-                <button class="btn btn-outline-dark" onClick={e => {setUser("student");setCheck("allStudent")}}>Student</button>
-                <button class="btn btn-outline-dark" onClick={e => {setUser("trainer");setCheck("allTrainer")}}>Trainer</button>
-                <button class="btn btn-outline-dark" onClick={e => {setUser("counselor");setCheck("allCounselor")}}>Counsellor</button>
+                <button class={`btn btn-hover btn-outline-${user==="student"?"dark":"light"}`} onClick={e => {setUser("student");setCheck("allStudent")}}>Student</button>
+                <button class={`btn btn-hover btn-outline-${user==="trainer"?"dark":"light"}`} onClick={e => {setUser("trainer");setCheck("allTrainer")}}>Trainer</button>
+                <button class={`btn btn-hover btn-outline-${user==="counselor"?"dark":"light"}`} onClick={e => {setUser("counselor");setCheck("allCounselor")}}>Counsellor</button>
               </div>
 
-    {user=="student" && <div className="content-body">
+    {user=="student" && <div>
         <div className="container-fluid">
           <div className='d-none d-lg-flex'>
             <div className='message-form'>
@@ -347,7 +347,7 @@ export default function AdminSendMessage() {
           <div className="row">
             <div className="col-lg-12">
               <div className="card w-80">
-                <div className="card-body">
+                <div>
                   <div className="email-right  ml-sm-4 ml-sm-0">
                     <div className="compose-content">
                       <div className="form-group">
@@ -454,7 +454,7 @@ export default function AdminSendMessage() {
           </div>
         </div>
       </div>}
-    {user=="trainer" && <div className="content-body">
+    {user=="trainer" && <div>
         <div className="container-fluid">
        
           <div className="row">
@@ -565,7 +565,7 @@ export default function AdminSendMessage() {
           </div>
         </div>
       </div>}
-    {user=="counselor" && <div className="content-body">
+    {user=="counselor" && <div>
         <div className="container-fluid">
           <div className='d-none d-lg-flex'>
            
@@ -685,8 +685,8 @@ export default function AdminSendMessage() {
          
          <>
          <div className="card-header j-c-initial">
-         <button class="btn btn-outline-dark" onClick={e => setMessageStatus("Admin-message")}>Trainer/Admin Message</button>
-         <button class="btn btn-outline-dark" onClick={e => setMessageStatus("Student-message")}>Student Message</button>
+         <button class={`btn btn-outline-${messageStatus==="Admin-message"?"dark":""}`} onClick={e => setMessageStatus("Admin-message")}>Trainer/Counselor Message</button>
+         <button class={`btn btn-outline-${messageStatus==="Student-message"?"dark":""}`} onClick={e => setMessageStatus("Student-message")}>Student Message</button>
         
        </div>
          {

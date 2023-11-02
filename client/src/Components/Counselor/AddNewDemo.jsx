@@ -25,7 +25,8 @@ function AddNewDemo() {
         Course: '',
         Date: '',
         Time: '',
-        classLink:''
+        classLink:'',
+        status:'Process'
     })
 
     useEffect(async()=>{

@@ -37,7 +37,7 @@ function FeeDetail() {
     <Header />
       <div className='sidebar-main-container'>
         <Sidebar />
-        <div className="card-body"> 
+        <div className="card-body-2"> 
           <div className="card-header">
             <h4 className="text-primary mb-4">Fee Receipt</h4>
           </div>

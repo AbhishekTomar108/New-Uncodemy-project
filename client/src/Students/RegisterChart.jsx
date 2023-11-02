@@ -25,6 +25,8 @@ const Horizontalchart = () => {
   const [demoListData, setDemoListData] = useState(demoList)
   const [filterDemoStudent, setFilterDemoStudent] = useState(demoStudentData)
   const [filterDemoList, setFilterDemoList] = useState(demoList)
+  const [counselorStatus, setCounselorStatus] = useState()
+  const [trainerStatus, setTrainerStatus] = useState()
  
 
   const navigate = useNavigate();
@@ -105,6 +107,8 @@ const Horizontalchart = () => {
     console.log('filter demo student =',filterDemo,tempStudentData)
     setDemoListData(filterDemo)
     setDemoStudent(tempStudentData)
+    setCounselorStatus(detail.counselorName)
+    setTrainerStatus(detail.trainer)
     
   }
 
@@ -263,6 +267,7 @@ const Horizontalchart = () => {
   selectRegister = await selectRegister.json()
   console.log('select register =',selectRegister)
   setFilterRegisterStudent(selectRegister)
+  
  }
     
 
@@ -271,7 +276,7 @@ const Horizontalchart = () => {
       <Header />
       <div className="sidebar-main-container">
         <Sidebar />   
-        <div>
+        <div className="right-side-container">
 
         <div className='d-none d-lg-flex flex-d-cloumn'>
           <div className="container-fluid mt-3 mb-3">
@@ -345,9 +350,9 @@ const Horizontalchart = () => {
                 <div className="d-flex flex-d-cloumn">
 
 <div className='f-bold f-25'>Total Demo : {demoListData.length}</div>
-<div className='f-bold f-25'>Date</div>
-<div className='f-bold f-25'>Counselor : {detail.counselorName}</div>
-<div className='f-bold f-25'>Trainer :  {detail.trainerName}</div>
+{rangeDate && <div className='f-bold f-25'>Date :{rangeDate.startDate} - {rangeDate.endDate} </div>}
+{counselorStatus && <div className='f-bold f-25'>Counselor : {detail.counselorName}</div>}
+{trainerStatus && <div className='f-bold f-25'>Trainer :  {detail.trainerName}</div>}
 
 </div>
 

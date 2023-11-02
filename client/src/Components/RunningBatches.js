@@ -14,10 +14,10 @@ const RunningBatches = () => {
   const navigation = useNavigate()
 
   useEffect(() => {
+    
     fetchAdminStatus()
 
   }, [])
-
   
 
   const deleteuser = async (id) => {
@@ -107,7 +107,7 @@ const RunningBatches = () => {
       <div className='sidebar-container'>
         <Sidebar />
 
-        <div className="card-body fee-detail">
+        <div className="fee-detail right-side-container">
           <div className="table-responsive recentOrderTable">
             <table id="datatable" className="table table-striped table-bordered" cellspacing="0" width="100%" >
               <thead>

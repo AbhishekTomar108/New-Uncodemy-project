@@ -1,23 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Sidebar from "../Sidebar";
 import Header from "../Header";
+import {StudentContext} from '../../context/StudentState' 
+import AddIcon from '@mui/icons-material/Add';
+import Swal from 'sweetalert2'
 
 function RunningBatchStudent() {
   const [allStudentData, setAllStudent] = useState();
   const [currentStudent, setCurrentStudent] = useState();
+  const [allRunningBatch, setAllRunningBatch] = useState();
+  let ContextValue = useContext(StudentContext);
+  let SelectedBatch = localStorage.getItem('selectedRunningBatch')
+  
+  console.log("SelectedBatch",SelectedBatch)
 
   useEffect(()=>{
-    let  SelectedBatch = localStorage.getItem('selectedRunningBatch')
 
-    console.log("SelectedBatch",SelectedBatch)
-    
-      const filterStudent = JSON.parse(localStorage.getItem('allStudent')).filter(data => {
-        return data.Batch === SelectedBatch;
-      });
-    console.log("filterStudent",filterStudent)
-    setAllStudent(filterStudent);
-    setCurrentStudent(filterStudent);
+     getBatchStudent(SelectedBatch)
+     getRunningBatch()
+      
   },[])
+
+  const getRunningBatch = async()=>{
+    const runningBatch = await ContextValue.getRunningBatch()
+
+    console.log("running batch =",runningBatch.runningBatches)
+
+    setAllRunningBatch(runningBatch.runningBatches)
+  }
+
+  const getBatchStudent = async(batch)=>{
+
+    const batchStudent = await ContextValue.getRunningBatchStudent(batch)
+    console.log("filterStudent",batchStudent)
+    setAllStudent(batchStudent);
+    setCurrentStudent(batchStudent);
+
+  }
 
   const fetchQueryData = (Query) => {
    
@@ -31,6 +50,98 @@ function RunningBatchStudent() {
     console.log('filter query - ', filterQueryData)
     setCurrentStudent(filterQueryData)
   }
+
+  let batch;
+
+  const moveToNewBatch = (id) => {
+    Swal.fire({
+      title: 'Add Student to New Batch',
+      html: `
+        <div class="preference-thumb thumb">
+          <select class="custom-select mr-sm-2" id="batchSelect" required name='status' onChange={(e) => setDetail({ status: e.target.value })}>
+            ${allRunningBatch.map(data => {
+              return `<option>${data.Batch}</option>`;
+            })}
+          </select>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Add',
+      showLoaderOnConfirm: true,
+      preConfirm: () => {
+        batch = document.getElementById('batchSelect').value;
+        // const selectedBatch = setDetail.status; // This should work if setDetail is defined
+        // Handle any pre-confirm actions if needed.
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log('batch =',batch)
+        moveStudent(batch,id)
+        Swal.fire({
+          title: `${result.value}`,
+          imageUrl: result.value.avatar_url
+        });
+      }
+    });
+  }
+  const addBatch = (id) => {
+    Swal.fire({
+      title: 'Add Student to New Batch',
+      html: `
+        <div class="preference-thumb thumb">
+          <select class="custom-select mr-sm-2" id="batchSelect" required name='status' onChange={(e) => setDetail({ status: e.target.value })}>
+            ${allRunningBatch.map(data => {
+              return `<option>${data.Batch}</option>`;
+            })}
+          </select>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Add',
+      showLoaderOnConfirm: true,
+      preConfirm: () => {
+        batch = document.getElementById('batchSelect').value;
+        // const selectedBatch = setDetail.status; // This should work if setDetail is defined
+        // Handle any pre-confirm actions if needed.
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log('batch =',batch)
+        addStudent(batch,id)
+        Swal.fire({
+          title: `${result.value}`,
+          imageUrl: result.value.avatar_url
+        });
+      }
+    });
+  }
+  
+  const moveStudent = async(batch,id)=>{
+   
+    let updateStudent = await fetch("http://localhost:8000/moveStudent", {
+    
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({"currentBatch":SelectedBatch,"newBatch":batch,"id":id})
+      });
+      console.log('select batch from func=',SelectedBatch)
+  }
+  const addStudent = async(batch,id)=>{
+   
+    let updateStudent = await fetch("http://localhost:8000/addStudent", {
+    
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({"currentBatch":SelectedBatch,"newBatch":batch,"id":id})
+      });
+      console.log('select batch from func=',SelectedBatch)
+  }
   
 
   return (
@@ -38,7 +149,7 @@ function RunningBatchStudent() {
       <Header />
       <div className='sidebar-main-container'>
           <Sidebar />
-          <div className="card-body fee-detail">
+          <div className="fee-detail right-side-container">
 
           <div class="d-flex my-2" role="search">
                     <input class="form-control me-2"
@@ -67,6 +178,8 @@ function RunningBatchStudent() {
                 <th scope="col">Trainer</th>
                 <th scope="col">Batch Time</th>
                 <th scope="col">Counselor</th>
+                <th scope="col">Move</th>
+                <th scope="col">Add</th>
               </tr>
             </thead>
             <tbody>
@@ -81,6 +194,8 @@ function RunningBatchStudent() {
                       <td>{data.TrainerName}</td>
                       <td>{data.BatchTiming}</td>
                       <td>{data.Counselor}</td>
+                      <td className="cursor-pointer" onClick={e=>moveToNewBatch(data._id)}><AddIcon /></td>
+                      <td className="cursor-pointer" onClick={e=>addBatch(data._id)}><AddIcon /></td>
                     </tr>
                   );
                 })}

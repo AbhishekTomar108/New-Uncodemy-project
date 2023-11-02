@@ -9,10 +9,10 @@ function UpcomingDemo() {
 
     const location = useLocation();
   const { demo, demoStudent } = location.state;
-  console.log('demo  counselor upcoming =',demo, demoStudent)
+  console.log('demo counselor upcoming =',demo, demoStudent)
  
     let sameDateTime = [];
-    let studentData = [];
+    let studentData  = [];
     let ContextValue = useContext(StudentContext);
 
     const navigation = useNavigate()
@@ -101,15 +101,11 @@ function UpcomingDemo() {
     console.log('same date =', sameDateTime,sameDateTime.length,studentData, studentData[0])
 
     return (
-        <>
-            <Header />
-            <div className='sidebar-main-container'>
-            <Sidebar/>
-         
-            <div className='main-container'>
+        <>         
+            <div className='main-container right-side-container'>
                 <div className="card-body w-80">
                     <div className="table-responsive recentOrderTable">
-                    <table id="datatable"  className="table table-striped table-bordered"cellspacing="0" width="100%" >
+                    <table id="datatable" className="table table-striped table-bordered"cellspacing="0" width="100%" >
                             <thead>
                                 <tr>
                                     <th scope="col">No.</th>
@@ -140,7 +136,7 @@ function UpcomingDemo() {
                     </div>
                 </div>
             </div>
-            </div>
+          
         </>
     )
 }

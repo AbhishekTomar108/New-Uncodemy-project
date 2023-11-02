@@ -90,7 +90,7 @@ function ViewFee() {
             height: 350,
         },
         xaxis: {
-            categories: chartData.labels,
+              tegories: chartData.labels,
             title: {
                 text: "Month",
             },
@@ -131,8 +131,9 @@ function ViewFee() {
         selectFees = await selectFees.json()
         console.log('selected fees =',selectFees)
         setAllFeesData(selectFees.studentFees)
-        setCurrentFeesData(selectFees.studentFees)
-        setTotalFees(selectFees.formattedFees)
+        // setCurrentFeesData(selectFees.studentFees)
+        // setTotalFees(selectFees.formattedFees)
+        filterStudent(selectFees.studentFees)
         // setFilterRegisterStudent(selectRegister)
        }
 
@@ -142,9 +143,9 @@ function ViewFee() {
         console.log('counselor all =',counsellor.counselorData)
       }
 
-      const filterStudent = () => {
+      const filterStudent = (allFeesData) => {
         console.log('all student =', feesData,detail)
-        let filterStudent = currentFeesData.filter((data, index) => {
+        let filterStudent = allFeesData.filter((data, index) => {
     
           return (detail.batch!= null ? data.Batch === detail.batch : data.Batch) && (detail.counselor != null ? data.CounselorId === detail.counselor : data.CounselorId)
     
@@ -160,7 +161,7 @@ function ViewFee() {
         setTotalFees(formattedFees)
         setCurrentFeesData(filterStudent)
         setBatchStatus(detail.batch)
-        setCounselorStatus(detail.counselor)
+        setCounselorStatus(detail.counselorName)
       }
       let counselorData ={}
 
@@ -267,7 +268,7 @@ function ViewFee() {
             <Header />
             <div className='sidebar-main-container'>
                 <Sidebar />
-                <div className="container-fluid mt-3 mb-3">
+                <div className="container-fluid right-side-container">
                     <h2 className="text-left">Fee Chart</h2>
 
                     <div className="d-flex j-c-initial c-gap-40">
@@ -328,7 +329,7 @@ function ViewFee() {
                 </select>
                 }
               </div>
-              <button className='filter-btn' onClick={filterStudent}>Filter</button>
+              <button className='filter-btn' onClick={e=>filterStudent(allFeesData)}>Filter</button>
             </div>
           </div>
 

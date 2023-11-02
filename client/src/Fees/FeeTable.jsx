@@ -21,6 +21,12 @@ function FeeTable() {
   const [runningBatch, setRunningBatch] = useState()
   const [counselor, setCounselor]  = useState()
   const [currentStudent, setCurrentStudent] = useState()
+  const [Fees, setFees] = useState({
+    totalFees:"",
+    notifyFees:"",
+    collectFees:"",
+    pendingFees:""
+  })
   let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   let currentMonth = monthName[((new Date().getMonth()))]
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
@@ -179,6 +185,31 @@ else
     console.log("student =",student)
     setAllStudent(student)
     setCurrentStudent(student)
+    calFees(student)
+    
+  }
+
+  const calFees = (student)=>{
+    let tempTotalFees  = 0;
+    let tempCollectFees = 0;
+    let tempNotifyFees  = 0;
+    let tempPendingFees  = 0;
+
+    student.map(data=>{
+      tempTotalFees = tempTotalFees + data.minimumFees
+      if(data.paymentStatus==="notification"){
+        tempNotifyFees = tempNotifyFees + data.minimumFees
+      }
+      if(data.paymentStatus==="pending"){
+        tempPendingFees = tempPendingFees + data.minimumFees
+      }
+      if(data.paymentStatus==="paid"){
+        tempCollectFees = tempCollectFees + data.minimumFees
+      }
+    })
+
+    console.log("total fees = ",tempTotalFees)
+    setFees({...Fees,["totalFees"]:tempTotalFees,["notifyFees"]:tempNotifyFees, ["collectFees"]:tempCollectFees,["pendingFees"]:tempPendingFees})
   }
 
 
@@ -216,10 +247,10 @@ else
       <div className='sidebar-main-container'>
         <Sidebar />
 
-      <div className="card-body fee-detail">
+      <div className="fee-detail right-side-container">
 
       <div className='d-none d-lg-flex flex-col'>
-            <div className='message-form'>
+            {/* <div className='message-form'>
 
             <select className="custom-select mr-sm-2" onChange={e=>setMonth(e.target.value)}>
             <option disabled selected>--Choose Month--</option>
@@ -234,8 +265,9 @@ else
 
           <button className='filter-btn' onClick={SearchStudentFees}>Search</button>
 
-          </div>
-          <div className='flex-row'>
+          </div> */}
+          <div className='flex-row j-c-space-between'>
+            <div className='flex-row'>
               <div className="batch-thumb thumb">
                 <label className="form-label"> Batch :</label>
                 {runningBatch && <select className="custom-select mr-sm-2" required name='batch' onChange={(e) => setDetail({ ...detail, [e.target.name]: e.target.value })} >
@@ -274,6 +306,23 @@ else
                 
               </div>
               <button className='filter-btn' onClick={filterStudent}>Filter</button>
+              </div>
+              <div className='d-grid col-3'>
+                <strong className='text-dark'>Total Expected Fees</strong>
+                <span>:</span>
+                <span>{Fees.totalFees}</span>
+                <strong className='text-success'>Total Collected Fees</strong>
+                <span>:</span>
+                <span>{Fees.collectFees}</span>
+                <strong className='text-danger'>Total Pending Fees</strong>
+                <span>:</span>
+                <span>{Fees.pendingFees}</span>
+                <strong className='text-warning'>Total Coming Fees</strong>
+                <span>:</span>
+                <span>{Fees.notifyFees}</span>
+              </div>
+            
+
               </div>
            
           </div>

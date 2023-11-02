@@ -83,13 +83,12 @@ const TrainerStudent = () => {
     navigate('StudentAssignment', { state: { student } });
 };
 
-
   return (
     <div>
       <Header />
       <div className="sidebar-main-container">
         <TrainerSlidebar />
-        <div className="student-data w-100">
+        <div className="student-data w-80 right-side-container">
           <div className="batch-course-filter mt-4">
             {runningBatch && (
               <select

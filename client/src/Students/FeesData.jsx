@@ -51,9 +51,9 @@ window.open(url,'_blank')
 
   return (
     <>
-      <div className="card-body fee-detail">
+      <div className="fee-detail">
         <div className="container-fluid">
-          <div className="row page-titles mx-0">
+          <div className="page-titles mx-0">
             <div className="col-sm-6 p-md-0">
               <div className="welcome-text">
                 <h4>Student Fees</h4>

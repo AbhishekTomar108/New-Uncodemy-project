@@ -5,6 +5,7 @@ import Header from '../Components/Header'
 import Sidebar from '../Components/Sidebar'
 import { StudentContext } from '../context/StudentState';
 import AddIcCallIcon from '@mui/icons-material/AddIcCall';
+import CreateIcon from '@mui/icons-material/Create';
 import EmailIcon from '@mui/icons-material/Email';
 import Swal from 'sweetalert2'
 
@@ -14,6 +15,7 @@ import Swal from 'sweetalert2'
 export default function RegisterStudent(props) {
 
   const location = useLocation();
+  const navigate = useNavigate();
   const { registerStudent } = location.state;
   console.log("all student =",registerStudent)
   const [timeValue,setTimeValue] = useState()
@@ -31,10 +33,13 @@ export default function RegisterStudent(props) {
   })
 
 
+
   useEffect(() => {
     getCounselor()
     getAllTrainer()
   }, [])
+
+  
 
   const getCounselor = async()=>{
     const counsellor = await ContextValue.getAllCounselor()
@@ -148,6 +153,30 @@ export default function RegisterStudent(props) {
     
    }
 
+   const registerStatus = {
+    Process: "warning",
+    Added: "success",
+    BackOut: "dark"
+  }
+
+  const filterRegister = (value)=>{
+
+    let filterData = registerStudent.filter(data=>{
+
+      return data.status===value
+
+    })
+
+    setFilterRegisterStudent(filterData)
+
+
+
+  }
+
+  const moveToAddRegisteredStudent = (data)=> {
+    navigate('Add-Registered-Student',{ state: { data } })
+  }
+
   return (
 
     <>
@@ -222,6 +251,18 @@ export default function RegisterStudent(props) {
           </div>
           <button className='filter-btn' onClick={filterStudent}>Filter</button>
         </div>
+        
+        <div className="preference-thumb thumb">
+            {trainer && <select className="custom-select mr-sm-2" required name='trainer' onChange={e=>filterRegister(e.target.value)}>
+              <option selected disabled>-- Status --</option>
+              <option value="Added">Added</option>
+              <option value="Process">Process</option>
+              <option value="BackOut">Back Out</option>
+             
+            </select>
+            }
+          </div>
+
               </div>
 
                  
@@ -271,6 +312,8 @@ export default function RegisterStudent(props) {
                                   <th>course</th>
                                   <th>Call</th>
                                   <th>Email</th>
+                                  <th>Action</th>
+                                  <th>Status</th>
                                  
 
                                 </tr>
@@ -293,6 +336,13 @@ export default function RegisterStudent(props) {
                                       <td>{data.Course}</td>
                                       <td><a href={`tel:${data.Number}`}><AddIcCallIcon/></a></td>
                                       <td><a href={`mailto:${data.Email}`}><EmailIcon/></a></td>
+                                     <td> <button className="btn btn-primary" disabled={data.status==="Added"?true:false} onClick={e=>moveToAddRegisteredStudent(data)}><CreateIcon /></button></td>
+                                      
+                                      <td>
+                                      <span className={`badge badge-rounded badge-${registerStatus[data.status]}`}>
+                                    {data.status}
+                                  </span>
+                                      </td>
                                       
                                     </tr>
                                   )

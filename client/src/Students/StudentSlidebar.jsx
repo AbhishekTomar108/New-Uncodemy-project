@@ -16,7 +16,7 @@ export default function StudentSlidebar() {
 
   const moveToAssignment = ()=>{
     console.log('move to message')
-    navigate('StudentAssigment', { state: { student } });
+    navigate('/student/StudentAssigment', { state: { student } });
   }
 
   async function fetchStudentStatus() {

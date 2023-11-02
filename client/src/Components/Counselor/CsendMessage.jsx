@@ -84,10 +84,10 @@ export default function SendMessage() {
   const [allStudentData, setAllStudentData] = useState()
 
   const [currentStudent, setCurrentStudent] = useState()
-  const totalItem = JSON.parse(localStorage.getItem('allStudent')).length
+  // const totalItem = JSON.parse(localStorage.getItem('allStudent')).length
   const [file, setFile] = useState()
   let tempCurrentStudent;
-  const individual = JSON.parse(localStorage.getItem('allStudent')).map(data => {
+  const individual = JSON.parse(localStorage.getItem('couselorStudent')).map(data => {
     console.log('current student')
     return (
       {

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react'
 import Header from '../Components/Header';
 import { useNavigate } from 'react-router-dom';
 import { StudentContext } from '../context/StudentState';
+import StudentSlidebar from './StudentSlidebar';
 
 
 export default function StudentMessage() {
@@ -213,9 +214,11 @@ setAdminId(adminId.id[0]._id)
   return (
     <>
    
-      <Header />
+   <Header />
+            <div className='sidebar-main-container'>
+        <StudentSlidebar />
     
-      <div className="content-body">
+      <div className="content-body w-80">
         <div className="container-fluid">
           <div className='d-none d-lg-flex'>
           <div className='message-form'>
@@ -383,6 +386,7 @@ setAdminId(adminId.id[0]._id)
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/*---- Include the above in your HEAD tag --------*/}

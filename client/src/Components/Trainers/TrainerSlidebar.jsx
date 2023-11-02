@@ -67,7 +67,7 @@ export default function TrainerSlidebar() {
               <Link className="has-arrow" to={`/trainer/student/${trainerId}`}>
                 Student
               </Link>
-              <button className="has-arrow" onClick={e=>moveToAttendance(trainerId)}>
+              <button className="btn-sidebar" onClick={e=>moveToAttendance(trainerId)}>
                 Attendance
                 </button>
               

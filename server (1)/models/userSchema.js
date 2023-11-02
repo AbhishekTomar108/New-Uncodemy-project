@@ -41,6 +41,22 @@ const userSchema = new mongoose.Schema({
         type: String,
 
     },
+    AllTrainer: {
+        type: Object,
+
+    },
+    AllTrainerId: {
+        type: Object,
+
+    },
+    OldTrainer: {
+        type: Object,
+
+    },
+    OldTrainerId: {
+        type: Object,
+
+    },
 
     BatchTiming: {
         type: String,
@@ -86,6 +102,12 @@ const userSchema = new mongoose.Schema({
     Batch: {
         type: String,
     },
+    studentRunningBatch: {
+        type: Object,
+    },
+    studentOldBatch: {
+        type: Object,
+    },
 
     RegistrationFees:
     {
@@ -108,7 +130,15 @@ const userSchema = new mongoose.Schema({
         type: Number,
 
     },
+     totalInstallment: {
+        type: Number,
+
+    },
      paidFees: {
+        type: Number,
+
+    },
+     minimumFees: {
         type: Number,
 
     },

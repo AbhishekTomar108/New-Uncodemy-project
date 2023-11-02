@@ -28,6 +28,7 @@ export default function AddTrainer() {
     bio: '',
     code: '',
     Course:[],
+    mainCourse:'',
     weekDaysBatch:[],
     WeekEndBatch:[],
     file: null, // Add a file state
@@ -40,6 +41,7 @@ export default function AddTrainer() {
 
   useEffect(()=>{
     getAllCourses()
+    getAllMainCourse()
   },[])
 
   const addinpdata = async (e) => {
@@ -69,20 +71,27 @@ export default function AddTrainer() {
 
     let allCourse = await ContextValue.getAllBatchCourse()
 
-    console.log('all course =',allCourse.batchCourse[0])
-    setAllCourse(allCourse.batchCourse[0].Course)
+    // console.log('all course =',allCourse.batchCourse[0])
+  
     setWeekDaysbatch(allCourse.batchCourse[0].WeekDaysBatch)
     setWeekEndBatch(allCourse.batchCourse[0].WeekEndBatch)
 
   }
 
- 
+const getAllMainCourse = async()=>{
+  let allCourse = await ContextValue.getAllMainCourse()
+  console.log('all main course =',allCourse.mainCourse)
+  setAllCourse(allCourse.mainCourse)
+    // setAllCourse(allCourse.mainCourse)
+} 
 
-  const addCourse = (e)=>{
-    const courses = inpval.Course
-    console.log("setinp =",inpval,courses)
-    courses.push(e.target.value)
-    setINP({...inpval, ["Course"]:courses})
+  const addCourse = (index)=>{
+
+    // const courses = inpval.Course
+    // console.log("setinp =",inpval,courses)
+    // courses.push(e.target.value)
+    setINP({...inpval, ["Course"]:allCourse[index].subCourse, ["mainCourse"]:allCourse[index].mainCourse})
+    console.log('select course =',allCourse[index].mainCourse,allCourse[index].subCourse )
 
   }
 
@@ -216,31 +225,20 @@ export default function AddTrainer() {
                                                     type="select"
                                                     class="form-control"
                                                    
-                                                    onChange={e => addCourse(e)}
+                                                    onChange={e => addCourse(e.target.value)}
                                                 >
                                                     <option disabled selected>--select Course--</option>
                                                     {allCourse.map((data, index) => {
                                                                                                            
                                                         return (
-                                                            <option value={data}  disabled={inpval.Course.includes(data)}>{data}</option>
+                                                            <option value={index}>{data.mainCourse}</option>
                                                         )
                                                     })
                                                     }
                                                 </select>
                                                 }
 
-                                                <div className="d-grid col-gap-30 grid-col-3">
-                                                {inpval.Course && inpval.Course.map((data,index)=>{
-                                                  console.log("course =",data)
-                                                  return(
-                                                    <div className="d-grid col-gap-20 grid-col-2">
-                                                 <p className="mb-0">{data}</p>
-                                                 <i class="fa-solid fa-xmark" onClick={e=>removeCourse(index)}></i>
-                                                 </div>
-                                                  )
-
-                                                })}
-                                                </div>
+  
                                             </div>
                                             </div>
                                             </div>
@@ -286,7 +284,7 @@ export default function AddTrainer() {
                       <div className="col-lg-6 col-md-6 col-sm-12">
                                              <div className="form-group">
 
-                                                <label className="form-label">Week Days Batch</label>
+                                                <label className="form-label">Week End Days Batch</label>
                                                 <div className="d-grid grid-col-2 col-gap-30">
                                                
                                                 {WeekEndBatch && <select

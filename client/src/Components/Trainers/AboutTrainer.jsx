@@ -186,12 +186,12 @@ export default function AboutTrainer() {
 
   const moveToAllDemo=()=>{
 
-    navigate('All-Trainer-Demo', { state: { demo:allDemo,demoStudent:allDemoStudent } });
+    navigate('All-Demo', { state: { demo:allDemo,demoStudent:allDemoStudent, user:"trainer" } });
   
   }
 
   const moveToNewDemo = ()=>{
-    navigate('New-Trainer-Demo', { state: { demo:newDemo,demoStudent:newDemoStudent } });
+    navigate('New-Demo', { state: { demo:newDemo,demoStudent:newDemoStudent, user:"trainer" } });
 
   }
 

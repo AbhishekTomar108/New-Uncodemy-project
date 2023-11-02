@@ -96,6 +96,7 @@ export default function AddRegisteredStudent
     Course: data.Course,
     Counselor: data.Counselor,
     Fees: '',
+    totalInstallment:4,
     RegistrationFees: data.RegistrationFees,
     TrainerName: data.TrainerName,
     BatchStartDate: '',
@@ -116,12 +117,14 @@ export default function AddRegisteredStudent
 
 
   const handleFileChange = (e) => {
-    console.log("file =", e.target.files[0])
+    // console.log("file =", e.target.files[0])
     setINP({ ...inpval, file: e.target.files[0] });
   };
 
   const addinpdata = async (e) => {
     e.preventDefault();
+
+    console.log('inpval add student =',inpval)
 
     const formData = new FormData();
 
@@ -241,11 +244,11 @@ export default function AddRegisteredStudent
           </div>
           <div className="row">
             <div className="col-xl-12 col-xxl-12 col-sm-12">
-              <div className="card">
+              <div className="card p-20">
                 <div className="card-header">
                   <h5 className="card-title">Basic Info</h5>
                 </div>
-                <div className="card-body">
+                <div>
                   <form action="#" method="post">
                     <div className="row">
                       <div className="col-lg-6 col-md-6 col-sm-12">
@@ -396,6 +399,26 @@ export default function AddRegisteredStudent
                           <input required type="text" value={inpval.Fees} onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} name="Fees" class="form-control" id="exampleInputPassword1" />
                         </div>
                       </div>
+
+                      <div className="col-lg-6 col-md-6 col-sm-12">
+                        <div className="form-group">
+                          <label className="form-label">Select No. of Installment</label>
+                          <select required
+                            id="exampleInputPassword1"
+                            type="select"
+                            name="totalInstallment"
+                            class="form-control"
+                            value={inpval.totalInstallment}
+                            onChange={e => setINP({ ...inpval, [e.target.name]: parseInt(e.target.value) })}>
+                            <option disabled>--Select Total Installment--</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                          </select>
+                        </div>
+                      </div>
+
                       <div className="col-lg-6 col-md-6 col-sm-12">
                         <div className="form-group">
                           <label className="form-label">Trainer Name </label>
@@ -428,7 +451,7 @@ export default function AddRegisteredStudent
                         </div>
                       </div>
 
-                      <div className="col-lg-12 col-md-12 col-sm-12">
+                      <div className="col-lg-6 col-md-6 col-sm-12">
                         <div className="form-group">
                           <label className="form-label">Payment Mode</label>
                           <select required
@@ -443,14 +466,15 @@ export default function AddRegisteredStudent
                           </select>
                         </div>
                       </div>
-                      <div className="col-lg-12 col-md-12 col-sm-12">
+                      <div className="col-lg-6 col-md-6 col-sm-12">
                         <div className="form-group fallback w-100">
                           <label className="form-label">Remark</label>
                           <input required type="text" onChange={handleRemarkChange} name="Remark" class="form-control" id="exampleInputPassword1" />
                         </div>
                       </div>
-                      <div className="col-lg-12 col-md-12 col-sm-12">
+                      <div className="col-lg-6 col-md-6 col-sm-12">
                         <div className="form-group fallback w-100">
+                        <label className="form-label">Attachment</label>
                           <input
                             type="file"
                             onChange={handleFileChange}
@@ -460,7 +484,7 @@ export default function AddRegisteredStudent
                           />
                         </div>
                       </div>
-                      <div className="col-lg-12 col-md-12 col-sm-12">
+                      <div className="col-lg-6 col-md-6 col-sm-12">
                         <button type="submit" onClick={addinpdata} className="btn btn-primary">
                           Submit
                         </button>

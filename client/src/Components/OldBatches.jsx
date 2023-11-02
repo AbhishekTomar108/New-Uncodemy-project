@@ -90,7 +90,7 @@ const OldBatches = () => {
       <div className='sidebar-container'>
         <Sidebar />
 
-        <div className="card-body fee-detail">
+        <div className="card-body fee-detail right-side-container">
           <div className="table-responsive recentOrderTable">
             <table id="datatable" className="table table-striped table-bordered" cellspacing="0" width="100%" >
               <thead>

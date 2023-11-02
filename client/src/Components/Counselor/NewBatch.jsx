@@ -9,7 +9,7 @@ function NewBatch() {
     const [trainer, setTrainer] = useState()
     const [batchCourse, setBatchCourse] = useState()
     const [allbatchTime, setAllBatchTime] = useState()
-    const [Days, setDays] = useState()
+    const [Days, setDays] = useState("weekDaysBatch")
     const [totalMonth, setTotalMonth] = useState()
     const [currentTrainer, setCurrentTrainer] = useState();
     const [runningbatchTrainerData, setRunningbatchTrainerData] = useState();
@@ -21,7 +21,8 @@ function NewBatch() {
         "month": '',
         "daysName": '',
         "batchTime": '',
-        "TrainerID": ''
+        "TrainerID": '',
+        "courseName":''
     })
 
     let trainerData = {}
@@ -52,83 +53,45 @@ function NewBatch() {
         }
     }
 
-    const updateTrainer = async (trainerName) => {
-        console.log('trainer update ', trainerData[trainerName])
-        let trainerCode = trainer.filter(data => {
-            return data.Name === trainerName
-        })[0].code
-        setBatchDetail({ ...batchDetail, ["trainer"]: trainerCode, ["TrainerID"]: trainerData[trainerName] })
-        getCourses(trainerName)
-        getRunningBatchTrainer(trainerName)
+    const updateTrainer = async (index) => {
+        console.log('trainer update ',index, trainer[index].code,trainer[index].Name)
+        // let trainerCode = trainer.filter(data => {
+        //     return data._id === trainerData[trainerName]
+        // })[0].code
+        setCurrentTrainer(trainer[index])
+        setBatchDetail({ ...batchDetail, ["trainer"]: trainer[index].code, ["TrainerID"]: trainer[index]._id })
+        getCourses(trainer[index])
+        getRunningBatchTrainer(trainer[index])
     }
 
 
-    const getRunningBatchTrainer = async (trainerName) => {
+    const getRunningBatchTrainer = async (trainer) => {
 
         try {
             let runningTrainer = await fetch('http://localhost:8000/getRunningBatchTrainer', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ trainerName: trainerName })
+                body: JSON.stringify({ TrainerID: trainer._id })
             })
             runningTrainer = await runningTrainer.json()
             runningTrainer = runningTrainer.runningbatchTrainer
+            
             setRunningbatchTrainerData(runningTrainer)
+            setAvailableBatchTime(runningTrainer,trainer)
 
 
-        }
+        }   
         catch (error) {
+            console.log('error =',error.message)
             alert('sorry some error occured try again later')
         }
     }
 
-    const getTrainer = async () => {
-        const res = await fetch("http://localhost:8000/trainer", {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
+    const setAvailableBatchTime = (runningbatchTrainerData,trainerData)=>{
+        console.log('current trainer =',trainerData)
+        let day = Days === "weekDaysBatch" ? "WeekDays" : "WeekEnd"
 
-        const data = await res.json();
-
-        setTrainer(data)
-    }
-
-    const getCourses = async (trainerName) => {
-        let tempcurrentTrainer = trainer.filter(data => {
-            return data.Name === trainerName
-        })
-
-        setCurrentTrainer(tempcurrentTrainer)
-
-        setBatchCourse(tempcurrentTrainer[0].Course)
-        setTrainer(tempcurrentTrainer)
-
-    }
-
-    const updateBatch = (batchName) => {
-        let course = '';
-        let splitCourse = batchName.split(' ')
-        if (splitCourse.length > 1) {
-            splitCourse.map(data => {
-                course = `${course}${data[0]}`
-            })
-        }
-
-        else {
-            course = splitCourse[0]
-        }
-
-        setTotalMonth(month)
-        setBatchDetail({ ...batchDetail, ["course"]: course })
-    }
-
-    const updateDays = (e) => {
-        setDays(e)
-        let day = e === "weekDaysBatch" ? "WeekDays" : "WeekEnd"
-        setBatchDetail({ ...batchDetail, ["daysName"]: day })
-        let batch = e === "weekDaysBatch" ? currentTrainer[0].weekDaysBatch : currentTrainer[0].WeekEndBatch
+        let batch = Days === "weekDaysBatch" ? trainerData.weekDaysBatch : trainerData.WeekEndBatch
         let daysBatchTime = runningbatchTrainerData.filter(data => {
             return data.Days === day
         }).map(element => {
@@ -146,12 +109,96 @@ function NewBatch() {
                 return runningBatchStatus === false ? { disabled: false, batchTime: data } : { disabled: true, batchTime: data }
 
             })
+            console.log('batch time =',tempBatchTime)
             setAllBatchTime(tempBatchTime)
         }
         else {
             tempBatchTime = batch.map(data=>{
                 return { disabled: false, batchTime: data }
              })
+            console.log('batch time =',tempBatchTime)
+
+             setAllBatchTime(tempBatchTime)
+        }
+
+
+    }
+
+    const getTrainer = async () => {
+        const res = await fetch("http://localhost:8000/trainer", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        const data = await res.json();
+
+        setTrainer(data)
+    }
+
+    const getCourses = async (trainerData) => {
+        // let tempcurrentTrainer = trainer.filter(data => {
+        //     return data.Name === trainerName
+        // })
+
+        setCurrentTrainer(trainerData)
+
+        setBatchCourse(trainerData.Course)
+    
+        // setTrainer(trainerData)
+
+    }
+
+    const updateBatch = (batchName) => {
+        let course = '';
+        let splitCourse = batchName.split(' ')
+        if (splitCourse.length > 1) {
+            splitCourse.map(data => {
+                course = `${course}${data[0]}`
+            })
+        }
+
+        else {
+            course = splitCourse[0]
+        }
+
+        setTotalMonth(month)
+        setBatchDetail({ ...batchDetail, ["course"]: course, ["courseName"]:batchName})
+    }
+
+    const updateDays = (e) => {
+        setDays(e)
+        let day = e === "weekDaysBatch" ? "WeekDays" : "WeekEnd"
+        setBatchDetail({ ...batchDetail, ["daysName"]: day })
+        let batch = e === "weekDaysBatch" ? currentTrainer.weekDaysBatch : currentTrainer.WeekEndBatch
+        let daysBatchTime = runningbatchTrainerData.filter(data => {
+            return data.Days === day
+        }).map(element => {
+            return element.BatchTime
+        })
+        let tempBatchTime = [];
+        if (daysBatchTime.length !== 0) {
+            tempBatchTime = batch.map(data => {
+                let runningBatchStatus = false;
+                daysBatchTime.map(element => {
+                    if (data === element) {
+                        runningBatchStatus = true;
+                    }
+                })
+                return runningBatchStatus === false ? { disabled: false, batchTime: data } : { disabled: true, batchTime: data }
+
+            })
+            
+            console.log("temp batch days =",tempBatchTime)
+            setAllBatchTime(tempBatchTime)
+        }
+        else {
+            tempBatchTime = batch.map(data=>{
+                return { disabled: false, batchTime: data }
+             })
+            console.log("temp batch days =",tempBatchTime)
+
              setAllBatchTime(tempBatchTime)
         }
 
@@ -185,7 +232,7 @@ function NewBatch() {
         let addedNewBatch = await fetch('http://localhost:8000/addNewBatch', {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ Batch: batch, Trainer: currentTrainer[0].Name, BatchTime: batchDetail.batchTime, Days: batchDetail.daysName, TrainerID: batchDetail.TrainerID })
+            body: JSON.stringify({ Batch: batch, Trainer: currentTrainer.Name, BatchTime: batchDetail.batchTime, Days: batchDetail.daysName, TrainerID: batchDetail.TrainerID, courseName:batchDetail.courseName})
         })
 
         addedNewBatch = await addedNewBatch.json()
@@ -200,9 +247,9 @@ function NewBatch() {
     return (
         <>
             <Header />
-            <div className='sidebar-main-container'>
+            <div className='sidebar-main-container c-gap-100'>
                 <Sidebar />
-                <div className="row new-batch">
+                <div className="row new-batch right-side-container">
                     <div className="col-xl-12 col-xxl-12 col-sm-12">
                         <div className="card w-80">
                             <div className="card-header batch">
@@ -211,7 +258,6 @@ function NewBatch() {
                             <div className="card-body">
                                 <form action="#" method="post">
                                     <div className="row new-batch-row">
-
 
                                         <div className="col-lg-6 col-md-6 col-sm-12">
                                             <div className="form-group">
@@ -224,10 +270,9 @@ function NewBatch() {
                                                 >
                                                     <option disabled selected>--select Trainer--</option>
                                                     {trainer.map((data, index) => {
-                                                        console.log("trainer data =", data.Name)
-                                                        trainerData[data.Name] = data._id
+                                                            trainerData[data.Name] = data._id
                                                         return (
-                                                            <option value={data.Name}>{data.Name}</option>
+                                                            <option value={index}>{data.Name}</option>
                                                         )
                                                     })
                                                     }
@@ -266,7 +311,7 @@ function NewBatch() {
                                             </div>
                                         </div>
                                         }
-                                        {totalMonth && <div className="col-lg-6 col-md-6 col-sm-12">
+                                        {<div className="col-lg-6 col-md-6 col-sm-12">
                                             <div className="form-group">
                                                 <label className="form-label">Starting Month</label>
                                                 {month && <select
@@ -304,7 +349,7 @@ function NewBatch() {
 
                                                 </select>
                                             </div>}
-                                            {Days === "weekDaysBatch" && <div className="form-group">
+                                            {allbatchTime && Days === "weekDaysBatch" && <div className="form-group">
                                                 <label className="form-label">WeekDays Batch</label>
                                                 {allbatchTime && <select
                                                     id="exampleInputPassword1"
@@ -323,7 +368,7 @@ function NewBatch() {
                                                     }
                                                 </select>}
                                             </div>}
-                                            {Days === "WeekEndBatch" && <div className="form-group">
+                                            {allbatchTime && Days === "WeekEndBatch" && <div className="form-group">
                                                 <label className="form-label">WeekEnd Batch</label>
                                                 {allbatchTime && <select
                                                     id="exampleInputPassword1"

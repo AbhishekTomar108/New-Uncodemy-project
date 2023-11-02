@@ -1,21 +1,22 @@
 import React, { useEffect, useState, useContext } from 'react'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { Link, NavLink, useParams,useNavigate, useLocation } from 'react-router-dom';
-import "./TeacherDemo"
-import Header from '../Header';
-import Sidebar from '../Sidebar';
-import TrainerSlidebar from './TrainerSlidebar';
-import { StudentContext } from '../../context/StudentState'
+import { StudentContext } from '../context/StudentState'
+import DemoTable from './DemoTable';
 
-function AllTrainerDemo() {
+function AllDemoSection() {
+
+    let {id} = useParams()
 
     const location = useLocation();
-    const { demo, demoStudent } = location.state;
+    const { demo, demoStudent,user } = location.state;
+    console.log('user id =',user, id)
     const [demoList, setDemoList] = useState(demo)
     const [demoStudentData, setDemoStudentData] = useState(demoStudent)
+    const [filterdemoList, setFilterDemoList] = useState(demo)
     let ContextValue = useContext(StudentContext);
     const [filterDemoStudent, setFilterDemoStudent] = useState(demoStudent)
-  const [filterDemoList, setFilterDemoList] = useState(demo)
+
 
     const [timeValue,setTimeValue] = useState()
   const [rangeDate, setRangeDate]=  useState({
@@ -31,25 +32,37 @@ function AllTrainerDemo() {
     const date = new Date();
 
     const day = date.getDate()<10?`0${date.getDate()}`:date.getDate();
-    console.log("day",day)
+   
     const month = date.getMonth();
     const year = date.getFullYear() 
  
     const SearchDemo = async()=>{
 
 
-        console.log('start and date from state =',rangeDate)
-      
-        let selectDemo = await fetch("http://localhost:8000/getRangeDemoes",{
+
+        let selectDemo;
+        if(user==="counselor")  
+        {    
+        selectDemo = await fetch(`http://localhost:8000/getRangeCounselorDemoes/${id}`,{
           method:"GET",
           headers:{
             "startDate":rangeDate.startDate,
             "endDate":rangeDate.endDate
           }
         })
+    }
+    else{
+        selectDemo = await fetch(`http://localhost:8000/getRangeTrainerDemoes/${id}`,{
+            method:"GET",
+            headers:{
+              "startDate":rangeDate.startDate,
+              "endDate":rangeDate.endDate
+            }
+          })
+    }
       
         selectDemo = await selectDemo.json()
-        console.log('select demo =',selectDemo)
+     
         setDemoStudentData(selectDemo.totalDemoStudent)
         setDemoList(selectDemo.Demo)
        setFilterDemoList(selectDemo.Demo)
@@ -74,14 +87,14 @@ function AllTrainerDemo() {
           startDate.setDate(endDate.getDate() - 7); // Subtract 7 days to get a week ago
         } else {
           // Handle the case when time is not recognized
-          console.error("Invalid time option");
+      
           return;
         }
       
         const startDateStr = formatDate(startDate);
         const endDateStr = formatDate(endDate);
         setRangeDate({...rangeDate, ["startDate"]:startDateStr, ["endDate"]:endDateStr})
-        console.log("start date and end date =",startDateStr, endDateStr)
+        
       
         return { startDate: startDateStr, endDate: endDateStr };
       };
@@ -96,13 +109,13 @@ function AllTrainerDemo() {
       const setFromTime =(fromTime)=>{
         const startDateStr =  formatDate(new Date(fromTime))
         setRangeDate({...rangeDate, ["startDate"]:startDateStr})
-        console.log("from time ",startDateStr)
+        
         
        }
        const setToTime =(toTime)=>{
         const endDateStr = formatDate(new Date(toTime))
         setRangeDate({...rangeDate, ["endDate"]:endDateStr})
-        console.log("to time ",endDateStr)
+       
        }
 
 
@@ -143,38 +156,7 @@ function AllTrainerDemo() {
           <button className='filter-btn' onClick={SearchDemo}>Search</button>
           </div>
                 <div className="card-body w-80">
-                    <div className="table-responsive recentOrderTable">
-                    <table id="datatable"  className="table table-striped table-bordered"cellspacing="0" width="100%" >
-                            <thead>
-                                <tr>
-                                    <th scope="col">No.</th>
-                                    <th scope="col">Date</th>
-                                    <th scope="col">Time</th>
-                                    <th scope="col">No Of Candidate</th>
-                                    <th scope="col">Counsellor</th>
-                                    <th scope="col">Trainer</th>
-                                    <th scope="col">Link</th>
-                                    <th scope="col">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {demoList && demoList.map((data, index) => {
-                                    return (
-                                        <tr>
-                                            <td>{index+1}</td>
-                                            <td>{data.Date}</td>
-                                            <td>{data.Time}</td>
-                                            <td>{demoStudentData[index].length}</td>
-                                            <td>{data.CounselorName}</td>
-                                            <td>{data.Trainer}</td>
-                                            <td><Link to={data.link}><button className='btn btn-primary'>Class Link</button></Link ></td>
-                                            <td> <NavLink to={`teacherdemo`}> <button className="btn btn-success" onClick={e=>{localStorage.setItem('demoData',JSON.stringify(demoStudentData[index]))}}  ><RemoveRedEyeIcon /></button></NavLink></td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                   {filterdemoList && <DemoTable demoList={filterdemoList} demoStudentData={filterDemoStudent}/>}
                 </div>
             </div>
             </div>
@@ -182,4 +164,4 @@ function AllTrainerDemo() {
     )
 }
 
-export default AllTrainerDemo
+export default AllDemoSection

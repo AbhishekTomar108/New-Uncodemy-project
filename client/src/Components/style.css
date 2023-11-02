@@ -12,6 +12,17 @@ top: 70px;
 /* my css end */
 
 
+.d-flex-j-c-space-between-align-items-center{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-hover:hover{
+  background-color: black;
+  color: white;
+}
+
 .sidebar-main-container{
   display: flex;
   /* justify-content: space-between; */
@@ -129,6 +140,13 @@ i{
   top: 50%;
   left: 50%;
   z-index: 9999;
+}
+
+.from-to-swal{
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+
 }
 
 .loader-section img{
@@ -432,6 +450,33 @@ textarea {
 justify-content: space-between;
 }
 
+.d-grid{
+  display: grid;
+}
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 20px;
+}
+
+.mb-20{
+  margin-bottom: 20px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(68, 68, 68);
+}
+
+
+
+.page-titles{
+  max-height: 100vh;
+  overflow: scroll;
+}
+
+.col-3{
+  grid-template-columns: auto auto auto;
+}
+
 .f-bold{
  
   font-weight: 600;
@@ -449,9 +494,14 @@ justify-content: space-between;
   display: flex;
   justify-content: space-between;
 }
-
+/* 
 .table-responsive::-webkit-scrollbar {
   display: none;
+} */
+
+.table-responsive{
+  height: 100vh;
+  overflow: scroll;
 }
 
 .sheet {
@@ -479,12 +529,16 @@ justify-content: space-between;
 
 }
 
-.new-batch {
+/* .new-batch {
   margin: 0 3rem 0 12rem;
-}
+} */
 
 .new-batch-row {
   flex-direction: column;
+}
+
+.c-gap-100{
+  column-gap: 100px;
 }
 
 .add-batch-btn {
@@ -509,6 +563,21 @@ justify-content: space-between;
     position: sticky;
     top: 0;
 } */
+
+.navbar{
+  position: fixed !important;
+}
+
+.right-side-container{
+  margin: 100px 0 0 200px;
+}
+
+.btn-sidebar{
+  background-color: #364297eb;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .nav-link {
   display: flex;
   column-gap: 3px;
@@ -524,9 +593,15 @@ justify-content: space-between;
   column-gap: 9px;
 }
 
+.card{
+  padding: 0 20px;
+}
+
 .dlabnav {
   height: 100vh !important;
-  position: static !important;
+  position: fixed !important;
+  z-index: 10;
+
 }
 
 .fee-detail {
@@ -542,6 +617,11 @@ justify-content: space-between;
   margin-left: 14rem;
 }
 
+
+.content-body{
+  margin-left: 165px !important;
+  margin-top: 100px !important;
+}
 
 
 .containers {
@@ -774,6 +854,21 @@ h3 {
 .student_list {
   display: flex;
   justify-content: space-between;
+}
+
+.card-body:hover{
+
+  opacity: 0.5;
+}
+
+.p-20{
+  padding: 20px;
+}
+
+.card-body-2{
+  flex: 1 1 auto;
+  min-height: 1px;
+  padding: 10px !important;
 }
 
 .table_upper_area {
@@ -1025,7 +1120,6 @@ img {
 
 .Assignment-section {
   width: 80vw;
-  margin-left: 1rem;
 }
 
 .fee-recipt {
@@ -1054,7 +1148,7 @@ img {
 .select-message{
   align-items: center;
   margin-top: 2rem;
-  padding-left: 11.5rem;
+  /* padding-left: 11.5rem; */
   display: flex;
   column-gap: 20px;
 }

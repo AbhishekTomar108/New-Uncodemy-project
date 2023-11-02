@@ -45,6 +45,7 @@ export default function Home() {
   const [totalAmount, setTotalAmount] = useState()
   const [totalrunningBatch, setTotalRunningBatch] = useState()
   const [register, setRegister] = useState()
+  const [currentRegister, setCurrentRegister] = useState()
   const [allDemo, setAllDemo] = useState()
   const [newDemo, setNewDemo] = useState()
   const [demoList, setDemoList] = useState()
@@ -144,6 +145,7 @@ export default function Home() {
   const getRegisteredStudent = async()=>{
     let registeredStudent = await ContextValue.getRegisterStudent()
     setRegister(registeredStudent)
+    setCurrentRegister(registeredStudent)
   }
 
  
@@ -429,6 +431,12 @@ export default function Home() {
       console.log('data name =', data, data.Name, Query)
       return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.EnrollmentNo.toLowerCase().includes(Query.toLowerCase()) )
     })
+    let filterRegisterData = register.filter(data => {
+      console.log('data name =', data, data.Name, Query)
+      return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.RegistrationNo.toLowerCase().includes(Query.toLowerCase()) )
+    })
+
+  
 
     let filterTrainerData = getuserdata.filter(data => {
       console.log('data name =', data.Name, Query)
@@ -442,6 +450,7 @@ export default function Home() {
     setCurrentStudent(filterQueryData)
     setCurrentTrainer(filterTrainerData)
     setCounselor(filterCounselorData)
+    setCurrentRegister(filterRegisterData)
     
   }
 
@@ -450,6 +459,11 @@ export default function Home() {
     backout: "dark",
     deactive: "danger",
     active: "success"
+  }
+  const registerStatus = {
+    Process: "warning",
+    Added: "success",
+    BackOut: "dark"
   }
 
   const moveToEditTrainer = (trainer)=>{
@@ -743,7 +757,7 @@ export default function Home() {
                     </span>
                     <div className="media-body text-white" onClick={moveToAllBatchTiming}>
                       <p className="mb-1">All BatchTiming</p>
-                      <h3 className="text-white">{weekDaysBatch && (weekDaysBatch.length)}</h3>
+                      <h3 className="text-white">{weekDaysBatch && (weekDaysBatch.length+weekEndBatch.length)}</h3>
                       {/* <div className="progress mb-2 bg-white">
                         <div
                           className="progress-bar progress-animated bg-light"
@@ -758,10 +772,10 @@ export default function Home() {
             </div> 
             </div>
               <div className="card-header">
-                <button class="btn btn-outline-dark" onClick={e => setUser("student")}>Student</button>
-                <button class="btn btn-outline-dark" onClick={e => setUser("register")}>Register Student</button>
-                <button class="btn btn-outline-dark" onClick={e => setUser("trainer")}>Trainer</button>
-                <button class="btn btn-outline-dark" onClick={e => setUser("counselor")}>Counselor</button>
+                <button class={`btn btn-hover btn-outline-${user==="student"?"dark":"light"}`} onClick={e => setUser("student")}>Student</button>
+                <button class={`btn btn-hover btn-outline-${user==="register"?"dark":"light"}`} onClick={e => setUser("register")}>Register Student</button>
+                <button class={`btn btn-hover btn-outline-${user==="trainer"?"dark":"light"}`} onClick={e => setUser("trainer")}>Trainer</button>
+                <button class={`btn btn-hover btn-outline-${user==="counselor"?"dark":"light"}`} onClick={e => setUser("counselor")}>Counselor</button>
               </div>
 
               {user === "student" && <div className="col-xl-12 col-xxl-12 col-lg-12 col-md-12 col-sm-12">
@@ -769,10 +783,10 @@ export default function Home() {
                   <div className="card-header">
                     <h4 className="card-title">Student List</h4>
                   </div>
-                  <div class="d-flex" role="search">
+                  <div class="d-flex mb-20" role="search">
                     <input class="form-control me-2"
                       type="search"
-                      placeholder="Search"
+                      placeholder="Search By Name or Enrollment No."
                       aria-label="Search"
                       name='search'
                       onChange={(e) => fetchQueryData(e.target.value)}
@@ -780,17 +794,17 @@ export default function Home() {
                     {/* <button class="btn btn-outline-dark" type="submit" onClick={fetchQueryData}>Search</button> */}
 
                   </div>
-                  <div className="card-body">
+                  <div>
                     <div className="table-responsive recentOrderTable">
                       <table id="datatable" className="table table-striped table-bordered" cellspacing="0" width="100%" >
                         <thead>
                           <tr>
                             <th scope="col">EnrollmentNo.</th>
                             <th scope="col">Name</th>
-                            <th scope="col">Assigned Professor</th>
-                            <th scope="col">Date Of Admit</th>
+                            <th scope="col">Trainer</th>
+                            <th scope="col">Admission Date</th>
                             <th scope="col">Status</th>
-                            <th scope="col">Subject</th>
+                            <th scope="col">Course</th>
                             <th scope="col">Fees</th>
                             <th scope="col">Action</th>
                           </tr>
@@ -799,12 +813,17 @@ export default function Home() {
                           {currentStudent && currentStudent.map((data, index) => {
 
                             index = start + index;
+                            console.log('data =',data)
 
                             return (
                               <tr>
                                 <td>{data.EnrollmentNo}</td>
                                 <td>{data.Name}</td>
-                                <td>{data.TrainerName}</td>
+                                <td className='d-flex flex-col'>{data.AllTrainer?data.AllTrainer.map(data=>{
+                                  return(
+                                    <td className='border-0'>{data}</td>
+                                  )
+                                }):data.TrainerName}</td>
                                 <td>{data.BatchStartDate}</td>
                                 <td>
                                   <span className={`badge badge-rounded badge-${badgeStatus[data.status]}`}>
@@ -839,23 +858,24 @@ export default function Home() {
                     <div className="card-header">
                       <h4 className="card-title">Trainer List</h4>
                     </div>
-                    <div class="d-flex" role="search">
+                    <div class="d-flex mb-20" role="search">
                       <input class="form-control me-2"
                         type="search"
-                        placeholder="Search"
+                        placeholder="Search By Trainer Name"
                         aria-label="Search"
                         name='search'
                         onChange={(e) => fetchQueryData(e.target.value)}
                       />
                       {/* <button class="btn btn-outline-dark" type="submit" onClick={fetchQueryData}>Search</button> */}
                     </div>
-                    <div className="card-body">
+                    <div >
                       <div className="table-responsive recentOrderTable">
                         <table id="datatable" className="table table-striped table-bordered" cellspacing="0" width="100%" >
 
                           <thead>
                             <tr>
                               <th scope="col">No.</th>
+                              <th scope="col">Trainer Code</th>
                               <th scope="col">Name</th>
                               <th scope="col">Number</th>
                               <th scope="col">Email</th>
@@ -873,8 +893,9 @@ export default function Home() {
                               return (
                                 <tr>
                                   <td>{index + 1}</td>
+                                  <td>{Trainerdata.code}</td>
                                   <td>{Trainerdata.Name}</td>
-                                  <td>{Trainerdata.Number}</td>
+                                  <td>{Trainerdata.Number}</td> 
                                   <td>{Trainerdata.Email}</td>
                                   <td>{Trainerdata.Address}</td>
                                   <td>
@@ -900,19 +921,19 @@ export default function Home() {
                 <div className="col-xl-12 col-xxl-12 col-lg-12 col-md-12 col-sm-12">
                   <div className="card">
                     <div className="card-header">
-                      <h4 className="card-title">Counselor List</h4>
+                      <h4 className="card-title">Counsellor List</h4>
                     </div>
-                    <div class="d-flex" role="search">
+                    <div class="d-flex mb-20" role="search">
                       <input class="form-control me-2"
                         type="search"
-                        placeholder="Search"
+                        placeholder="Search By Counsellor List"
                         aria-label="Search"
                         name='search'
                         onChange={(e) => fetchQueryData(e.target.value)}
                       />
                       {/* <button class="btn btn-outline-dark" type="submit" onClick={fetchQueryData}>Search</button> */}
                     </div>
-                    <div className="card-body">
+                    <div>
                       <div className="table-responsive recentOrderTable">
                         <table id="datatable" className="table table-striped table-bordered" cellspacing="0" width="100%" >
 
@@ -924,14 +945,10 @@ export default function Home() {
                               <th scope="col">Email</th>
                               <th scope="col">Address</th>
                               <th scope="col">Action</th>
-
-
                             </tr>
                           </thead>
                           <tbody>
                             {counselor && counselor.map((CounselorData, index) => {
-
-
 
                               return (
                                 <tr>
@@ -964,17 +981,17 @@ export default function Home() {
                     <div className="card-header">
                       <h4 className="card-title">Register Student List</h4>
                     </div>
-                    <div class="d-flex" role="search">
+                    <div class="d-flex mb-20" role="search">
                       <input class="form-control me-2"
                         type="search"
-                        placeholder="Search"
+                        placeholder="Search By Name or Registration No."
                         aria-label="Search"
                         name='search'
                         onChange={(e) => fetchQueryData(e.target.value)}
                       />
                       {/* <button class="btn btn-outline-dark" type="submit" onClick={fetchQueryData}>Search</button> */}
                     </div>
-                    <div className="card-body">
+                    <div>
                       <div className="table-responsive recentOrderTable">
                         <table id="datatable" className="table table-striped table-bordered" cellspacing="0" width="100%" >
 
@@ -987,13 +1004,14 @@ export default function Home() {
                               <th scope="col">Counselor</th>
                               <th scope="col">Trainer</th>
                               <th scope="col">Registration Date</th>
+                              <th scope="col">Status</th>
                               <th scope="col">Action</th>
 
 
                             </tr>
                           </thead>
                           <tbody>
-                            {register && register.map((data, index) => {
+                            {currentRegister && currentRegister.map((data, index) => {
 
 
 
@@ -1007,7 +1025,12 @@ export default function Home() {
                                   <td>{data.TrainerName}</td>
                                   <td>{data.RegistrationDate}</td>
                                   <td>
-                                      <button className="btn btn-primary" onClick={e=>moveToAddRegisteredStudent(data)}><CreateIcon /></button>
+                                  <span className={`badge badge-rounded badge-${registerStatus[data.status]}`}>
+                                    {data.status}
+                                  </span>
+                                </td>
+                                  <td>
+                                      <button className="btn btn-primary" disabled={data.status==="Added"?true:false} onClick={e=>moveToAddRegisteredStudent(data)}><CreateIcon /></button>
                                     <button className="btn btn-danger" onClick={() => deleteuser(data._id)}><DeleteOutlineIcon /></button>
                                   </td>
                                 </tr>

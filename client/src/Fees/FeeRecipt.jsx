@@ -30,7 +30,7 @@ function FeeRecipt(props) {
 
   return (
     <>
-        <div className="card-body ">
+        <div>
           <div className="card-header ">
             <h4 className="text-primary mb-4">Fee Receipt</h4>
           </div>

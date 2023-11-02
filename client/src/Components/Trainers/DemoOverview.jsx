@@ -73,11 +73,19 @@ function DemoOverview() {
 
       const getTrainerUpcomingDemo  =async(id)=>{
         console.log("trainer upcoming function",id)
-        let demo = await ContextValue.UpcomimgTrainerDemo(id)
 
-        console.log('upcoming trainer demo =',demo)
-        setDemoList(demo.demolist)
-        setDemoStudentData(demo.demoStudent)
+
+        let counselorUpcoming = await ContextValue.trainerUpcomimgDemo(id)
+
+        console.log('counselor demo upcoming =',counselorUpcoming)
+        setDemoList(counselorUpcoming.Demo)
+        setDemoStudentData(counselorUpcoming.totalDemoStudent)
+
+        // let demo = await ContextValue.UpcomimgTrainerDemo(id)
+
+        // console.log('upcoming trainer demo =',demo)
+        // setDemoList(demo.demolist)
+        // setDemoStudentData(demo.demoStudent)
       }
 
  
@@ -90,7 +98,7 @@ function DemoOverview() {
             <div className='sidebar-main-container'>
             <TrainerSlidebar/>
          
-            <div className='main-container'>
+            <div className='main-container right-side-container'>
                 <div className="card-body w-80">
                     <div className="table-responsive recentOrderTable">
                     <table id="datatable"  className="table table-striped table-bordered"cellspacing="0" width="100%" >
@@ -110,8 +118,8 @@ function DemoOverview() {
                                     return (
                                         <tr>
                                             <td>{index+1}</td>
-                                            <td>{data.date}</td>
-                                            <td>{data.time}</td>
+                                            <td>{data.Date}</td>
+                                            <td>{data.Time}</td>
                                             <td>{demoStudentData[index].length}</td>
                                             <td>{data.CounselorName}</td>
                                             <td><Link to={data.link}><button className='btn btn-primary'>Class Link</button></Link ></td>

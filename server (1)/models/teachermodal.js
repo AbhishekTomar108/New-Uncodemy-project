@@ -44,6 +44,9 @@ const userSchema = new mongoose.Schema({
      Course:{
          type:Object
      },
+     mainCourse:{
+         type:String
+     },
      weekDaysBatch:{
          type:Object
      },

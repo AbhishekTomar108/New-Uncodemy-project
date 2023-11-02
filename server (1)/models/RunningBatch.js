@@ -20,6 +20,10 @@ const runningBatchSchema = new mongoose.Schema({
         type: String,
 
     },
+    courseName: {
+        type: String,
+
+    },
     Days: {
         type: String,
     }

@@ -23,6 +23,11 @@ export default function AboutStudent() {
 
   const [message, setMessage] = useState()
   const [student, setStudent] = useState()
+  const [batchDetail, setBatchDetail] = useState({
+    batch:"",
+    batchTime:"",
+    batchTrainer:""
+  })
   const [status, setStatus] = useState("Assignment")
   const [aboutStatus, setAboutStatus] = useState(true)
 
@@ -42,6 +47,9 @@ export default function AboutStudent() {
         console.log("student =",status.data)
         localStorage.setItem('studentBatch',status.data.Batch)
         setStudent(status.data)
+        console.log('batch =',status.data.studentRunningBatch[0],status.data.studentRunningBatch)
+        setBatchDetail({...batchDetail,["batch"]:status.data.studentRunningBatch[0], ["batchTime"]:status.data.BatchTiming,["batchTrainer"]:status.data.TrainerName})
+
         if(status.data.paymentStatus==='Notification'){
           Swal.fire({
             title: 'This is to inform you that your payment due date is near',
@@ -86,15 +94,17 @@ export default function AboutStudent() {
       const status = await ContextValue.getSingleStudent(id);
 
       console.log('status of student =', status);
+
       if (status.status === "active") {
+
         console.log('activedata =', status.userIndividual)
         receivemessage(status.userIndividual._id)
         localStorage.setItem('studentData', JSON.stringify(status.userIndividual))
-        setStudent(status.userIndividual)
+        setStudent(status.userIndividual)        
         
       }
       else {
-        console.log('else fecth')
+        console.log('else fetch')
 
       }
 
@@ -109,7 +119,6 @@ export default function AboutStudent() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-
       },
     });
 
@@ -117,6 +126,12 @@ export default function AboutStudent() {
     console.log("messageData", messageData.message)
     setMessage(messageData.message)
     console.log("messageData",messageData.message)
+  }
+
+  const setStudentBatch = async(batch) =>{
+    let batchData = await ContextValue.getBatchDetail(batch)
+    setBatchDetail({batchDetail,["batch"]:batchData.Batch,["batchTime"]:batchData.BatchTime,["batchTrainer"]:batchData.Trainer})
+    console.log("batch data =",batchData)
   }
 
   const [assignment, setAssignment] = useState("pending")
@@ -132,20 +147,27 @@ export default function AboutStudent() {
                 <div className="welcome-text">
                   <h4>About Student</h4>
                 </div>
+               {student && <select
+                        id="exampleInputPassword1"
+                        type="select"
+                        name="Course"
+                        class="custom-select mr-sm-2"
+                        onChange={e=>setStudentBatch(e.target.value)}
+                      >
+                        <option disabled selected>--select Batch--</option>
+                    
+                    {student.studentRunningBatch.map(data=>{
+
+                      return(
+                          <option value={data}>{data}</option>
+                      )
+
+                    })}
+                       
+                        
+                    </select>}
               </div>
-              <div className="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
-                <ol className="breadcrumb">
-                  <li className="breadcrumb-item">
-                    <a href="index.html">Home</a>
-                  </li>
-                  <li className="breadcrumb-item active">
-                    <a href="javascript:void(0);">Students</a>
-                  </li>
-                  <li className="breadcrumb-item active">
-                    <a href="javascript:void(0);">About Student</a>
-                  </li>
-                </ol>
-              </div>
+         
             </div>
             <div className="row">
               <div className="col-xl-3 col-xxl-4 col-lg-4">
@@ -165,7 +187,7 @@ export default function AboutStudent() {
                           />
                         </div>
                         <h3 className="mt-3 mb-1 text-white">{student && student.Name}</h3>
-                        <h3 className="mt-3 mb-1 text-white">{student && student.Batch}</h3>
+                        <h3 className="mt-3 mb-1 text-white">{batchDetail && batchDetail.batch}</h3>
                       </div>
 
 
@@ -283,17 +305,17 @@ export default function AboutStudent() {
                                   </h5>
                                 </div>
                                 <div className="col-lg-9 col-md-8 col-sm-6 col-6">
-                                  <span>{student && student.TrainerName}</span>
+                                  <span>{batchDetail && batchDetail.batchTrainer}</span>
                                 </div>
                               </div>
                               <div className="row mb-4">
                                 <div className="col-lg-3 col-md-4 col-sm-6 col-6">
                                   <h5 className="f-w-500">
-                                    Batch <span className="pull-right">:</span>
+                                    Batch Time <span className="pull-right">:</span>
                                   </h5>
                                 </div>
                                 <div className="col-lg-9 col-md-8 col-sm-6 col-6">
-                                  <span>{student && student.BatchTiming}</span>
+                                  <span>{batchDetail && batchDetail.batchTime}</span>
                                 </div>
                               </div>
                               <div className="row mb-4">

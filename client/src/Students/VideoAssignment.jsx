@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 
 export default function VideoAssignment(props) {
+    const { student, batch } = props;
+    console.log("props video assignment =",student, batch )
     const [videos, setVideos] = useState([]);
     const [selectedVideo, setSelectedVideo] = useState(null);
 
@@ -10,7 +12,7 @@ export default function VideoAssignment(props) {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "Batch": localStorage.getItem('studentBatch')
+                "Batch": batch
             }
         });
         const data = await res.json();

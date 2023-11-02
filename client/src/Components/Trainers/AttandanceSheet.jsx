@@ -92,7 +92,7 @@ function AttandanceSheet() {
     
 
     let batchStudent = await ContextValue.getRunningBatchStudent(detail.batch)
-    console.log("batch student =",batchStudent)
+    console.log(" batch student =",batchStudent)
 
     setAllStudentData(batchStudent)
     setCurrentStudent(batchStudent)
@@ -264,7 +264,7 @@ else{
       <Sidebar />
 
 
-      <div className="table-responsive recentOrderTable">
+      <div className="table-responsive recentOrderTable right-side-container">
         
       <div className='select-message'>
      
