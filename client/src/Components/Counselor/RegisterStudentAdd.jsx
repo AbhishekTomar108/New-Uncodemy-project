@@ -3,6 +3,8 @@ import { StudentContext } from "../../context/StudentState";
 import Cslidebar from "./Cslidebar";
 import { useParams,useLocation } from 'react-router-dom';
 import Header from "../Header";
+import Swal from 'sweetalert2'
+import { HashLoader } from "react-spinners";
 
 const RegisterStudentAdd = () => {
   const [allcourse, setAllCourse] = useState();
@@ -27,7 +29,7 @@ const RegisterStudentAdd = () => {
   const getAllCourse = async () => {
     let allCourse = await ContextValue.getAllMainSubCourse();
     console.log("course =",allCourse , allCourse.courses);
-  setCourse(allCourse.allCourse)
+    setCourse(allCourse.allCourse)
     setAllCourse(allCourse.courses);
   };
 
@@ -53,6 +55,8 @@ const RegisterStudentAdd = () => {
   const addinpdata = async (e) => {
     e.preventDefault();
     console.log('register value =', inpval)
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     try {
       const res = await fetch('http://localhost:8000/registerStudent', {
         method: 'POST',
@@ -62,13 +66,41 @@ const RegisterStudentAdd = () => {
         body: JSON.stringify(inpval),
       });
 
+      ContextValue.updateProgress(60)
+
       const data = await res.json();
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+      ContextValue.SuccessMsg()
+      EmptyFilled()
       console.log("Data", data)
     }
     catch (error) {
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something went wrong!',
+      })
+      
       console.log('error =', error.message)
     }
   };
+
+  const EmptyFilled = ()=>{
+
+  let tempInpVal = inpval;
+
+  for (let key in inpval){
+
+      tempInpVal[key] = ""
+  }
+
+  setINP(tempInpVal)
+
+  }
+
 
   let trainerData = {}
 
@@ -107,7 +139,11 @@ const RegisterStudentAdd = () => {
 
       <Header />
       <div className='sidebar-main-container'>
+      <HashLoader color="#3c84b1" />
         <Cslidebar />
+      {/* <div className='pos-center'>
+      <HashLoader color="#3c84b1" />
+    </div> */}
         <div className="content-body">
           <div className="container-fluid">
             <div className="row page-titles mx-0">
@@ -115,6 +151,7 @@ const RegisterStudentAdd = () => {
                 <div className="welcome-text">
                   <h4>Resigster Student</h4>
                 </div>
+         
               </div>
               <div className="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
                 <ol className="breadcrumb">
@@ -136,7 +173,7 @@ const RegisterStudentAdd = () => {
                   <div className="card-header">
                     <h5 className="card-title">Basic Info</h5>
                   </div>
-                  <div className="card-body">
+                  <div>
                     <form action="#" method="post">
                       <div className="row">
                         <div className="col-lg-6 col-md-6 col-sm-12">

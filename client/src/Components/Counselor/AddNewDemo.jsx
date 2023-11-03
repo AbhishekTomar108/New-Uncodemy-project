@@ -4,6 +4,7 @@ import Sidebar from '../Sidebar';
 import { StudentContext } from '../../context/StudentState';
 import { useParams,useLocation } from 'react-router-dom';
 import Cslidebar from './Cslidebar';
+import Swal from 'sweetalert2'
 
 
 function AddNewDemo() {
@@ -93,20 +94,32 @@ function AddNewDemo() {
             }
             Time = hours + ':' + minutes + meridian;     
             
-            
+            ContextValue.updateProgress(30)
+            ContextValue.updateBarStatus(true)
 
         const res = await fetch('http://localhost:8000/demo', {
             method: 'POST',
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify({Email,Name,Background,Trainer,TrainerId,CounselorId,CounselorName,Date,Time,Course,month,year,day, classLink})
         });
-
+        ContextValue.updateProgress(60)
         const data = await res.json();
         console.log(data);
 
         if (res.status === 422 || !data) {
+            ContextValue.updateProgress(100)
+            ContextValue.updateBarStatus(false)
+            Swal.fire({   
+              icon:  'error',
+              title: 'Oops...',
+              text:  'Something went wrong!',
+            }) 
             alert('error');
-        } else {       
+        } else { 
+            ContextValue.updateProgress(100)
+            ContextValue.updateBarStatus(false)
+            ContextValue.SuccessMsg()  
+             
             console.log('data added');
         }
 
@@ -144,7 +157,7 @@ function AddNewDemo() {
                                     <div className="card-header">
                                         <h5 className="card-title">Basic Info</h5>
                                     </div>
-                                    <div className="card-body">
+                                    <div>
                                         <form action="#" method="post">
                                             <div className="row">
                                            

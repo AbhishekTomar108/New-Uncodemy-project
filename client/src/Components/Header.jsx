@@ -1,10 +1,18 @@
-import React from 'react'
+import React, { useState, useContext } from 'react'
 import logo from "./img/logo.jpg"
 import { NavLink, useNavigate } from 'react-router-dom';
+import LoadingBar from 'react-top-loading-bar'
+import { StudentContext } from '../context/StudentState';
+import { HashLoader } from "react-spinners";
+
 // import man from "../Components/img/testimonial-2.jpg"
 import { Link } from 'react-router-dom'
 export default function Header() {
+  let ContextValue = useContext(StudentContext);
   const navigation = useNavigate()
+  const [progress, setProgress] = useState(50)
+  console.log('bar Status=',ContextValue.barStatus)
+  ContextValue.barStatus && console.log('bar Status context=',ContextValue.barStatus)
 
   const logOutHandle =()=>{
     console.log('log out')
@@ -75,29 +83,42 @@ export default function Header() {
 
 
 
-
-
-
-
-
             </li>
-
-
-
-
-
-
-
-
-
-
-
 
 
           </ul>
           {/* Right elements */}
         </div>
       </nav>
+
+      <div>
+      <LoadingBar
+        color='#f11946'
+        progress={ContextValue.progress}
+        onLoaderFinished={() => setProgress(0)}
+      />
+      
+     {  ContextValue.barStatus 
+     
+     && (
+      <>
+      <div className='pos-center'>
+        <HashLoader color="#3c84b1" />
+      </div>
+      <div className='blur-background'></div>
+      </>
+    )}
+
+{/* <div className='pos-center'>
+        <HashLoader color="#3c84b1" />
+      </div> */}
+
+      {/* <button onClick={() => setProgress(progress + 10)}>Add 10%</button>
+      <button onClick={() => setProgress(progress + 20)}>Add 20%</button>
+      <button onClick={() => setProgress(100)}>Complete</button>  */}
+      {/* <br /> */}
+    </div>
+
       {/* Navbar */}
     </>
 

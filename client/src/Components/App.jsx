@@ -103,6 +103,8 @@ import NewDemoSection from './NewDemoSection'
 import { Filter } from '@mui/icons-material'
 import FilterSection from './FilterSection'
 import TotalRegistration from '../Students/TotalRegistration'
+import LoadingBar from '../Students/BarLoading'
+import BarLoading from '../Students/BarLoading'
 
 // import Navbaar from './components/Navbaar';
 export default function App() {
@@ -112,7 +114,7 @@ export default function App() {
         <StudentState>
           <Routes>
 
-            <Route exact path='/loading' element={<Loader />} />
+            <Route exact path='/loading' element={<BarLoading />} />
             <Route exact path='/filter' element={<FilterSection />} />
             <Route exact path='/googlemeet' element={<EmbedGoogleMeet />} />
             <Route exact path='/' element={<LogIn />} />

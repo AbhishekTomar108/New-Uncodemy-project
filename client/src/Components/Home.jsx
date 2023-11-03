@@ -775,7 +775,7 @@ export default function Home() {
                 <button class={`btn btn-hover btn-outline-${user==="student"?"dark":"light"}`} onClick={e => setUser("student")}>Student</button>
                 <button class={`btn btn-hover btn-outline-${user==="register"?"dark":"light"}`} onClick={e => setUser("register")}>Register Student</button>
                 <button class={`btn btn-hover btn-outline-${user==="trainer"?"dark":"light"}`} onClick={e => setUser("trainer")}>Trainer</button>
-                <button class={`btn btn-hover btn-outline-${user==="counselor"?"dark":"light"}`} onClick={e => setUser("counselor")}>Counselor</button>
+                <button class={`btn btn-hover btn-outline-${user==="counselor"?"dark":"light"}`} onClick={e => setUser("counselor")}>Counsellor</button>
               </div>
 
               {user === "student" && <div className="col-xl-12 col-xxl-12 col-lg-12 col-md-12 col-sm-12">

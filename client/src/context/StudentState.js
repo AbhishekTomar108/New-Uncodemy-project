@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 // import StudentContext from './StudentContext'
 import { createContext } from "react";
+import Swal from 'sweetalert2'
 
 export const StudentContext = createContext();
 
@@ -12,6 +13,8 @@ const StudentState = (props) => {
   const [demoStudent, setDemoStudent] = useState()
   const [allCounselor ,setAllCounselor] = useState()
   const [runningBatch,setRunningBatch] = useState()
+  const [progress, setProgress]  = useState(0)
+  const [barStatus, setBarStatus]  = useState(false)
 
   const [student, setStudent] = useState({
     Name: "",
@@ -849,11 +852,28 @@ const UpcomimgTrainerDemo = async(id)=>{
 
 }
 
+const updateProgress = (length)=>{
+  setProgress(length)
+}
+const updateBarStatus = (value)=>{
+  setBarStatus(value)
+}
 
+const SuccessMsg=()=>{
+
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'Candidate Has Been Registered',
+    showConfirmButton: false,
+    timer: 1500
+  })
+  
+}
 
   return (
     <div>
-      <StudentContext.Provider value={{ student: student, Admin: Admin, teacher: teacher, updateTeacher: updateTeacher, updateAdmin: updateAdmin, updateStudent: updateStudent, loggedInPerson: loggedInPerson, updateLoggedInPerson: updateLoggedInPerson, checkAdmin: checkAdmin, checkTrainer: checkTrainer, checkStudent: checkStudent, getAllBatchCourse: getAllBatchCourse, getRunningBatch: getRunningBatch, getAllCounselor: getAllCounselor, getAllTrainer: getAllTrainer, getSingleStudent: getSingleStudent, getSingleTrainer: getSingleTrainer, getAllStudent: getAllStudent, checkCounsellor: checkCounsellor, getPaymentStatus: getPaymentStatus, getSingleCounselor: getSingleCounselor, getBatchByTrainer: getBatchByTrainer, getFiles: getFiles, totalStudent:totalStudent,newStudent:newStudent,totalNewTrainerStudent:totalNewTrainerStudent,getTotalFees:getTotalFees,getOldStudent:getOldStudent,totalNewCounselorStudent:totalNewCounselorStudent,demoStudent:demoStudent,setDemoData:setDemoData, getTrainerDemo:getTrainerDemo,getTrainerNewDemo:getTrainerNewDemo,getTrainerRunningBatch:getTrainerRunningBatch,getCounselorRegisterStudent:getCounselorRegisterStudent,getCounselorDemo:getCounselorDemo,getCounselorNewDemo:getCounselorNewDemo,getRegisterStudent:getRegisterStudent,allCounselor:allCounselor,runningBatch:runningBatch,getAllDemo:getAllDemo,getNewDemo:getNewDemo,getReceiveMessage:getReceiveMessage,getAllCounselorStudent:getAllCounselorStudent,getPendingStudentAssignment:getPendingStudentAssignment,getSubmittedStudentAssignment:getSubmittedStudentAssignment,getTrainerAssignment:getTrainerAssignment,getTrainerNotesLink:getTrainerNotesLink,getTrainerNotesPdf:getTrainerNotesPdf,getStudentNotesLink:getStudentNotesLink,getStudentNotesPdf:getStudentNotesPdf,counselorUpcomimgDemo:counselorUpcomimgDemo,trainerUpcomimgDemo:trainerUpcomimgDemo,UpcomimgDemo:UpcomimgDemo,getAdminId:getAdminId,getStudentreceivemessage:getStudentreceivemessage,checkCounsellorById:checkCounsellorById,getDemo:getDemo,UpcomimgTrainerDemo:UpcomimgTrainerDemo,getAllDemoListCounselor:getAllDemoListCounselor,getRunningBatchStudent:getRunningBatchStudent,getAttendance:getAttendance,getAllMainCourse:getAllMainCourse,getCounselorNewRegisterStudent:getCounselorNewRegisterStudent,getCounselorTotalFees:getCounselorTotalFees,getCounselorNewTotalFees:getCounselorNewTotalFees,getAllMainSubCourse:getAllMainSubCourse, getBatchDetail:getBatchDetail}}>
+      <StudentContext.Provider value={{ student: student, Admin: Admin, teacher: teacher, updateTeacher: updateTeacher, updateAdmin: updateAdmin, updateStudent: updateStudent, loggedInPerson: loggedInPerson, updateLoggedInPerson: updateLoggedInPerson, checkAdmin: checkAdmin, checkTrainer: checkTrainer, checkStudent: checkStudent, getAllBatchCourse: getAllBatchCourse, getRunningBatch: getRunningBatch, getAllCounselor: getAllCounselor, getAllTrainer: getAllTrainer, getSingleStudent: getSingleStudent, getSingleTrainer: getSingleTrainer, getAllStudent: getAllStudent, checkCounsellor: checkCounsellor, getPaymentStatus: getPaymentStatus, getSingleCounselor: getSingleCounselor, getBatchByTrainer: getBatchByTrainer, getFiles: getFiles, totalStudent:totalStudent,newStudent:newStudent,totalNewTrainerStudent:totalNewTrainerStudent,getTotalFees:getTotalFees,getOldStudent:getOldStudent,totalNewCounselorStudent:totalNewCounselorStudent,demoStudent:demoStudent,setDemoData:setDemoData, getTrainerDemo:getTrainerDemo,getTrainerNewDemo:getTrainerNewDemo,getTrainerRunningBatch:getTrainerRunningBatch,getCounselorRegisterStudent:getCounselorRegisterStudent,getCounselorDemo:getCounselorDemo,getCounselorNewDemo:getCounselorNewDemo,getRegisterStudent:getRegisterStudent,allCounselor:allCounselor,runningBatch:runningBatch,getAllDemo:getAllDemo,getNewDemo:getNewDemo,getReceiveMessage:getReceiveMessage,getAllCounselorStudent:getAllCounselorStudent,getPendingStudentAssignment:getPendingStudentAssignment,getSubmittedStudentAssignment:getSubmittedStudentAssignment,getTrainerAssignment:getTrainerAssignment,getTrainerNotesLink:getTrainerNotesLink,getTrainerNotesPdf:getTrainerNotesPdf,getStudentNotesLink:getStudentNotesLink,getStudentNotesPdf:getStudentNotesPdf,counselorUpcomimgDemo:counselorUpcomimgDemo,trainerUpcomimgDemo:trainerUpcomimgDemo,UpcomimgDemo:UpcomimgDemo,getAdminId:getAdminId,getStudentreceivemessage:getStudentreceivemessage,checkCounsellorById:checkCounsellorById,getDemo:getDemo,UpcomimgTrainerDemo:UpcomimgTrainerDemo,getAllDemoListCounselor:getAllDemoListCounselor,getRunningBatchStudent:getRunningBatchStudent,getAttendance:getAttendance,getAllMainCourse:getAllMainCourse,getCounselorNewRegisterStudent:getCounselorNewRegisterStudent,getCounselorTotalFees:getCounselorTotalFees,getCounselorNewTotalFees:getCounselorNewTotalFees,getAllMainSubCourse:getAllMainSubCourse, getBatchDetail:getBatchDetail,progress:progress,updateProgress:updateProgress,SuccessMsg:SuccessMsg,updateBarStatus:updateBarStatus,barStatus:barStatus}}>
         {props.children}
       </StudentContext.Provider>
     </div>

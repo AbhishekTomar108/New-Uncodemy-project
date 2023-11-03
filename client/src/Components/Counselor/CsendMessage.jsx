@@ -194,8 +194,8 @@ else{
         <div className="content-body w-80">
 
         <div className="card-header">
-                <button class="btn btn-outline-dark" onClick={e => setStatus("send-message")}>Send Message</button>
-                <button class="btn btn-outline-dark" onClick={e => setStatus("receive-message")}>Receive Message</button>
+                <button class={`btn btn-hover btn-outline-${status==="send-message"?"dark":""}`} onClick={e => setStatus("send-message")}>Send Message</button>
+                <button class={`btn btn-hover btn-outline-${status==="receive-message"?"dark":""}`} onClick={e => setStatus("receive-message")}>Receive Message</button>
                
               </div>
               {status==="send-message" &&  <div className="container-fluid">
@@ -220,7 +220,7 @@ else{
            <div className="row">
              <div className="col-lg-12">
                <div className="card">
-                 <div className="card-body">
+                 <div>
                    <div className="email-right  ml-sm-4 ml-sm-0">
                      <div className="compose-content">
                        <div className="form-group">
@@ -270,9 +270,7 @@ else{
                                }
  
                              </tbody>
-                           </table>
- 
-                   
+                           </table>                  
                            
                          </div>
                        </div>
@@ -343,8 +341,8 @@ else{
          
          <>
          <div className="card-header j-c-initial">
-         <button class="btn btn-outline-dark" onClick={e => setMessageStatus("Admin-message")}>Admin Message</button>
-         <button class="btn btn-outline-dark" onClick={e => setMessageStatus("Student-message")}>Student Message</button>
+         <button class={`btn btn-hover btn-outline-${messageStatus==="Admin-message"?"dark":""}`} onClick={e => setMessageStatus("Admin-message")}>Admin Message</button>
+         <button class={`btn btn-hover btn-outline-${messageStatus==="Student-message"?"dark":""}`} onClick={e => setMessageStatus("Student-message")}>Student Message</button>
         
        </div>
          {

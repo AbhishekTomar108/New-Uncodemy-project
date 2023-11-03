@@ -610,7 +610,7 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
                     {/* <button class="btn btn-outline-dark" type="submit" onClick={fetchQueryData}>Search</button> */}
 
                   </div>
-                  <div className="card-body">
+                  <div>
                     <div className="table-responsive recentOrderTable">
                       <table id="datatable" className="table table-striped table-bordered" cellspacing="0" width="100%" >
                         <thead>
@@ -682,7 +682,7 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
                       />
                       {/* <button class="btn btn-outline-dark" type="submit" onClick={fetchQueryData}>Search</button> */}
                     </div>
-                    <div className="card-body">
+                    <div>
                       <div className="table-responsive recentOrderTable">
                         <table className="table verticle-middle table-responsive-md">
 

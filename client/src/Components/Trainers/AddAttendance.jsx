@@ -5,6 +5,8 @@ import { StudentContext } from "../../context/StudentState";
 import Header from '../Header'
 import TrainerSlidebar from './TrainerSlidebar'
 import { useLocation } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import { HashLoader } from "react-spinners";
 
 
 // import './Attendence.css'
@@ -159,14 +161,30 @@ console.log("student running batch =",student)
     }
     console.log("detail =",detail)
 
+    
     try{
     let attendance = await fetch('http://localhost:8000/addStudentAttendance',{
       method:'POST',
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(detail)
     })
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+    ContextValue.updateProgress(60)
+    // attendance = await attendance.json()
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+    ContextValue.SuccessMsg()
+
   }
   catch(error){
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+    Swal.fire({   
+      icon:  'error',
+      title: 'Oops...',
+      text:  'Something went wrong!',
+    })
     console.log("error =",error.message)
   }
 
@@ -187,15 +205,28 @@ console.log("student running batch =",student)
 
     }
     console.log("detail =",detail)
-
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     try{
     let attendance = await fetch('http://localhost:8000/updateStudentAttendance',{
       method:'POST',
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(detail)
     })
+    ContextValue.updateProgress(60)
+    // attendance = await attendance.json()
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+    ContextValue.SuccessMsg()
   }
   catch(error){
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+    Swal.fire({   
+      icon:  'error',
+      title: 'Oops...',
+      text:  'Something went wrong!',
+    })
     console.log("error =",error.message)
   }
 
@@ -313,7 +344,7 @@ console.log("student running batch =",student)
         <TrainerSlidebar />
 
 
-        <div className="card-body right-side-container">
+        <div className="right-side-container">
 
         <div className="batch-course-filter j-c-space-between w-80">
           <div>

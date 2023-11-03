@@ -23,6 +23,24 @@ top: 70px;
   color: white;
 }
 
+.pos-center{
+  height: 100vh;
+  display: flex;
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  z-index: 1000;
+}
+
+.blur-background{
+  height: 100vh;
+  position: absolute;
+  width: 100vw;
+  z-index: 1000;
+  filter: blur(1);
+  }
+
 .sidebar-main-container{
   display: flex;
   /* justify-content: space-between; */
@@ -594,7 +612,7 @@ justify-content: space-between;
 }
 
 .card{
-  padding: 0 20px;
+  padding: 20px;
 }
 
 .dlabnav {
@@ -1141,6 +1159,7 @@ img {
 
 .message-form {
   margin-left: 37px;
+  margin-bottom: 20px;
   display: flex;
   column-gap: 20px;
   align-items: end;
