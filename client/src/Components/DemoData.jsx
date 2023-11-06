@@ -65,7 +65,7 @@ function DemoData(props) {
         <>
                  
             <div className='main-container'>
-                <div className="card-body w-80">
+                <div className="w-80">
 
 
                     <div className="table-responsive recentOrderTable">

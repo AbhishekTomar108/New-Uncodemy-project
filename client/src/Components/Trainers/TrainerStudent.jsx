@@ -119,7 +119,7 @@ const TrainerStudent = () => {
             </button>
           </div>
 
-          <div className="card-body mt-4">
+          <div className="mt-4">
             <div className="table-responsive recentOrderTable">
               <table
                 id="datatable"

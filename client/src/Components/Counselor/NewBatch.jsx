@@ -255,7 +255,7 @@ function NewBatch() {
                             <div className="card-header batch">
                                 <h1 >Add New Batch</h1>
                             </div>
-                            <div className="card-body">
+                            <div>
                                 <form action="#" method="post">
                                     <div className="row new-batch-row">
 

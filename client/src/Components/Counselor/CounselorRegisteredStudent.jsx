@@ -49,11 +49,11 @@ const CounselorRegisteredStudent = () => {
   const filterRegisterStudent =()=>{
 
     console.log("detail = ",detail)
-  let filterStudent = Registerdata.filter((data, index) => {
+   let filterStudent = Registerdata.filter((data, index) => {
 
-    console.log('condition =',(detail.trainerId != null ? data.TrainerID === detail.trainerId : true) && (detail.counselorId != null ? data.CounselorID === detail.counselorId : true))
+    console.log('condition =',data,(data.TrainerId === detail.trainerId))
 
-    return (detail.trainerId != null ? data.TrainerID === detail.trainerId : true) && (detail.counselorId != null ? data.CounselorID === detail.counselorId : true)
+    return (data.TrainerId === detail.trainerId) 
   
   })
 
@@ -70,8 +70,8 @@ const CounselorRegisteredStudent = () => {
   let counselorData = {}
   
   const setTrainerDetail =(e)=>{
-    console.log("trainerid= ",trainerData[e.target.value],detail["trainerId"])
-    setDetail({...detail, ["trainerId"]: trainerData[e.target.value]});
+    console.log("trainerid= ",trainerData[e.target.selectedIndex],detail)
+    setDetail({...detail, ["trainerId"]: trainerData[e.target.selectedIndex]});
 
   }
 
@@ -99,8 +99,8 @@ const CounselorRegisteredStudent = () => {
                 <label className="form-label">Trainer Name :</label>
                {trainer && <select className="custom-select mr-sm-2" required name='trainer' onChange={e=>setTrainerDetail(e)}>
                   <option selected disabled>Choose Trainer...</option>
-                { trainer.map(data=>{
-                  trainerData[data.Name] = data._id
+                { trainer.map((data,index)=>{
+                  trainerData[index] = data._id
                   return(
                     <option value={data.Name}>{data.Name}</option>
                   )
@@ -114,7 +114,7 @@ const CounselorRegisteredStudent = () => {
             </div>
           </div>
         </div>
-        <div className="card-body Registrated-detail">
+        <div className="Registrated-detail">
           <div className="table-responsive recentOrderTable">
             <table
               id="datatable"
@@ -135,8 +135,8 @@ const CounselorRegisteredStudent = () => {
                 </tr>
               </thead>
               <tbody>
-                {Registerdata &&
-                  Registerdata.map((data, index) => {
+                {currentRegisterdata &&
+                  currentRegisterdata.map((data, index) => {
                     return (
                       <tr>
                         <td>{index + 1}</td>

@@ -9,7 +9,8 @@ export default function Sidebar() {
   let ContextValue = useContext(StudentContext);
 
   const navigation = useNavigate()
-
+  const navigate = useNavigate()
+  
   const { id } = useParams()
 
   useEffect(()=>{
@@ -33,6 +34,10 @@ export default function Sidebar() {
     } catch (error) {
       console.error('Error fetching admin status:', error);
     }
+  }
+
+  const moveToChangePasssword = ()=>{
+    navigate('/Forget-Password', { state: { user:"admin" } });
   }
 
   return (
@@ -188,7 +193,14 @@ export default function Sidebar() {
 
                 </li>
 
+                <li onClick={moveToChangePasssword} className="text-light">
+             
+             Change Password
+        
+         </li>
+
           </ul>
+
         </div>
       </div>
       {/***********************************

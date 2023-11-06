@@ -19,6 +19,10 @@ export default function StudentSlidebar() {
     navigate('/student/StudentAssigment', { state: { student } });
   }
 
+  const moveToChangePasssword = ()=>{
+    navigate('/Forget-Password', { state: { user:"student" } });
+  }
+
   async function fetchStudentStatus() {
     try {
       const status = await ContextValue.checkStudent();
@@ -65,11 +69,16 @@ export default function StudentSlidebar() {
                 Full Attendance
               </Link>
             </li>
-            <li>
+            <li onClick={moveToChangePasssword} className="text-light">
+             
+                Change Password
+           
+            </li>
+            {/* <li>
               <Link className="has-arrow" to="/SendMessage">
                 Log Out
               </Link>
-            </li>
+            </li> */}
           </ul>
         </div>
       </div>

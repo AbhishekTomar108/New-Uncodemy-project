@@ -3,6 +3,7 @@ import { StudentContext } from "../../context/StudentState";
 import Cslidebar from "./Cslidebar";
 import { useParams,useLocation } from 'react-router-dom';
 import Header from "../Header";
+import Swal from 'sweetalert2'
 
 const EditRegisteredStudent = () => {
   const [allcourse, setAllCourse] = useState();
@@ -33,7 +34,7 @@ const EditRegisteredStudent = () => {
     Course: data.Course,
     Counselor: data.Counselor,
     CounselorId: data.CounselorId,
-    RegistraionFees: data.RegistraionFees,
+    RegistraionFees: data.RegistrationFees,
     TrainerName: data.TrainerName,
     TrainerId: data.TrainerId,
     BatchMode: data.BatchMode,
@@ -45,6 +46,8 @@ const EditRegisteredStudent = () => {
     let tempInpVal = inpval
     tempInpVal.RegistrationNo = data.RegistrationNo
     console.log('register value =', inpval,tempInpVal,data._id)
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     try {
       const res = await fetch(`http://localhost:8000/updateRegisterStudent/${data._id}`, {
         method: 'POST',
@@ -53,14 +56,31 @@ const EditRegisteredStudent = () => {
         },
         body: JSON.stringify(tempInpVal),
       });
-
+     
+      ContextValue.updateProgress(60)
       const registerData = await res.json();
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+      RegistrationEdit()
+     
       console.log("Data", registerData)
     }
     catch (error) {
       console.log('error =', error.message)
     }
   };
+
+  const RegistrationEdit=()=>{
+
+    Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'Registration Edited',
+      showConfirmButton: false,
+      timer: 1500
+    })
+    
+  }
 
   let trainerData = {}
 
@@ -80,6 +100,7 @@ const EditRegisteredStudent = () => {
   }
 
   const EditClick =(e)=>{
+
     e.preventDefault()
     console.log('edit click')
     setBtnStatus('edit')
@@ -124,7 +145,7 @@ const EditRegisteredStudent = () => {
                   <div className="card-header">
                     <h5 className="card-title">Basic Info</h5>
                   </div>
-                  <div className="card-body">
+                  <div>
                     <form action="#" method="post">
                       <div className="row">
                         <div className="col-lg-6 col-md-6 col-sm-12">

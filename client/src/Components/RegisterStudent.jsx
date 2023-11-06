@@ -68,6 +68,8 @@ export default function RegisterStudent(props) {
 
   const SearchDemo = async()=>{  
   
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     let selectRegister = await fetch("http://localhost:8000/getRangeRegisteredStudent",{
       method:"GET",
       headers:{
@@ -75,8 +77,13 @@ export default function RegisterStudent(props) {
         "endDate":rangeDate.endDate
       }
     })
-  
+
+    ContextValue.updateProgress(60)
     selectRegister = await selectRegister.json()
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+  
+    
     console.log('select register =',selectRegister)
     setRegisterStudent(selectRegister)
     setFilterRegisterStudent(selectRegister)
@@ -269,7 +276,7 @@ export default function RegisterStudent(props) {
               <div className="d-flex flex-d-cloumn">
 
 <div className='f-bold f-25'>Total Register : {filterRegisterStudent.length}</div>
-<div className='f-bold f-25'>Date</div>
+<div className='f-bold f-25'>Date : {rangeDate.startDate} - {rangeDate.endDate}</div>
 <div className='f-bold f-25'>Counselor : {detail.counselorName}</div>
 <div className='f-bold f-25'>Trainer :  {detail.trainerName}</div>
 

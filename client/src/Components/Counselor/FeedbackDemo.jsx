@@ -204,7 +204,7 @@ function FeedbackDemo() {
           </div>
           <button className='filter-btn' onClick={filterStudent}>Filter</button>
           </div>
-                <div className="card-body w-80">
+                <div className="w-80">
                     <div className="table-responsive recentOrderTable">
                     <table id="datatable"  className="table table-striped table-bordered"cellspacing="0" width="100%" >
                             <thead>
@@ -288,13 +288,15 @@ function AllTrainerDemo() {
     const day = date.getDate()<10?`0${date.getDate()}`:date.getDate();
     console.log("day",day)
     const month = date.getMonth();
-    const year = date.getFullYear() 
+    const year = date.getFullYear();
  
     const SearchDemo = async()=>{
 
 
         console.log('start and date from state =',rangeDate)
-      
+        ContextValue.updateProgress(30)
+        ContextValue.updateBarStatus(true)
+
         let selectDemo = await fetch("http://localhost:8000/getRangeDemoes",{
           method:"GET",
           headers:{
@@ -302,8 +304,11 @@ function AllTrainerDemo() {
             "endDate":rangeDate.endDate
           }
         })
-      
+        
+        ContextValue.updateProgress(60)        
         selectDemo = await selectDemo.json()
+        ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
         console.log('select demo =',selectDemo)
         setDemoStudentData(selectDemo.totalDemoStudent)
         setDemoList(selectDemo.Demo)

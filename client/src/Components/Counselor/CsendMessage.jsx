@@ -7,6 +7,7 @@ import Cslidebar from './Cslidebar';
 import AllMessage from '../../Students/AllMessage';
 import CounselorAllMessage from './CounselorAllMessage';
 import StudentMessageData from '../Trainers/StudentMessageData';
+import Swal from 'sweetalert2'
 
 export default function SendMessage() {
   const [trainer, setTrainer] = useState()
@@ -167,6 +168,9 @@ else{
 
     let sender = counselor.Name
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     let data = await fetch('http://localhost:8000/sendmessage', {
       method: 'POST',
       headers: {
@@ -174,6 +178,26 @@ else{
       },
       body: JSON.stringify({ message: message, from: sender, checkid: checkedId, fileName: fileName })
     })
+
+   
+    ContextValue.updateProgress(60)
+   
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+    MessageSent()
+
+  }
+
+  const MessageSent=()=>{
+
+    Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'Message Sent',
+      showConfirmButton: false,
+      timer: 1500
+    })
+    
   }
 
   

@@ -105,6 +105,7 @@ import FilterSection from './FilterSection'
 import TotalRegistration from '../Students/TotalRegistration'
 import LoadingBar from '../Students/BarLoading'
 import BarLoading from '../Students/BarLoading'
+import ForgetPassword from './ForgetPassword'
 
 // import Navbaar from './components/Navbaar';
 export default function App() {
@@ -118,6 +119,7 @@ export default function App() {
             <Route exact path='/filter' element={<FilterSection />} />
             <Route exact path='/googlemeet' element={<EmbedGoogleMeet />} />
             <Route exact path='/' element={<LogIn />} />
+            <Route exact path='/Forget-Password' element={<ForgetPassword />} />
             <Route exact path='admin/' element={<Home />} />
             <Route exact path='admin/AllCourse' element={<AllCourse />} />
             <Route exact path='admin/AllBatchTiming' element={<AllBatchTiming />} />
@@ -515,7 +517,7 @@ export default function App() {
             <Route exact path="/counselor/AllDemo/DemoStudent/editDemoStudent" element={<EditDemoStudent />} />
             <Route exact path="RegisterStudentAdd" element={[ <RegisterStudentAdd />]} />
             <Route exact path="counselor/RegisteredStudent" element={[ <CounselorRegisteredStudent/>]} />
-            <Route exact path="counsellor/EditRegisterStudents" element={[ <EditRegisteredStudent/>]} />
+            <Route exact path="counselor/EditRegisteredStudent" element={[ <EditRegisteredStudent/>]} />
             <Route exact path="RegisteredStudent" element={[<RegisteredStudent/>]} />
             <Route exact path="admin/AddCounselor" element={ <CAddCounselor />} />
             <Route exact path="counselor/RegisterStudentAdd" element={[ <RegisterStudentAdd />]} />

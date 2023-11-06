@@ -103,7 +103,7 @@ function TeacherDemo() {
                 <button className='btn btn-primary' onClick={filterDemo}>Search</button>
                 
               </div>
-          <div className="card-body">
+          <div>
             <div className="table-responsive recentOrderTable">
               <table className="table verticle-middle table-responsive-md">
                 <thead>

@@ -118,12 +118,26 @@ function AddNewDemo() {
         } else { 
             ContextValue.updateProgress(100)
             ContextValue.updateBarStatus(false)
-            ContextValue.SuccessMsg()  
+            DemoAdded()  
              
             console.log('data added');
         }
 
     }
+
+
+    const DemoAdded=()=>{
+
+        Swal.fire({
+          position: 'center',
+          icon: 'success',
+          title: 'Demo Added',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        
+      }
+
         return (
             <>
             <Header/>

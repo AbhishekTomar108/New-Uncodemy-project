@@ -82,6 +82,10 @@ export default function Cslidebar() {
         navigate('/counselor/AllDemo', { state: { counselor } });
       }
 
+      const moveToChangePasssword = ()=>{
+        navigate('/Forget-Password', { state: { user:"counselor" } });
+      }
+
     return (
 
         <>
@@ -140,6 +144,12 @@ export default function Cslidebar() {
                         <button className='btn-sidebar' onClick={moveToFeedBack}><li>
                          <div className='light-text'> <span className="nav-text">Add Demo Feedback</span></div>
                        </li> </button>
+
+                       <li onClick={moveToChangePasssword} className="text-light">
+             
+             Change Password
+        
+         </li>
 
                     </ul>
                 </div>

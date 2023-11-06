@@ -10,7 +10,6 @@ import Sidebar from '../Components/Sidebar'
 import Swal from 'sweetalert2'
 import StudentSlidebar from './StudentSlidebar';
 
-
 export default function AboutStudent() {
 
   const { id } = useParams()
@@ -216,7 +215,7 @@ export default function AboutStudent() {
               </div>
               <div className="col-xl-9 col-xxl-8 col-lg-8 w-65">
                 <div className="card">
-                  <div className="card-body">
+                  <div>
                     <div className="profile-tab">
                       <div className="custom-tab-1">
                         {status === "Assignment" && <div>

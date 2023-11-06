@@ -1395,6 +1395,113 @@ router.post("/student", async (req, res) => {
         res.status(404).send({ "invalid Password": error.message })
     }
 })
+
+// update Student password
+
+router.post("/updatePassword/student", async (req, res) => {
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+
+        const username = await users.findOne({ email: email });
+        // // console.log('status =', username.status, username)
+
+        if (username) {
+
+            if (username.status === "active")
+             {
+            
+                let updatePassword = await users.findByIdAndUpdate({_id:username._id}, {$set:{password:password}})
+                res.send({ "status": "active" })
+
+            }
+
+            else {
+
+                res.send({ "status": "deactive" })
+
+            }
+        }
+        else {
+            res.send({ "status": "false" })
+        }
+
+    } catch (error) {
+        res.status(404).send({ "invalid Password": error.message })
+    }
+})
+
+// update trainer password
+
+router.post("/updatePassword/trainer", async (req, res) => {
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+
+        const username = await uploads.findOne({ email: email });
+        // // console.log('status =', username.status, username)
+
+        if (username) {
+
+            if (username.status === "active")
+             {
+            
+                let updatePassword = await uploads.findByIdAndUpdate({_id:username._id}, {$set:{password:password}})
+                res.send({ "status": "active" })
+
+            }
+
+            else {
+
+                res.send({ "status": "deactive" })
+
+            }
+        }
+        else {
+            res.send({ "status": "false" })
+        }
+
+    } catch (error) {
+        res.status(404).send({ "invalid Password": error.message })
+    }
+})
+
+// update counselor password
+
+router.post("/updatePassword/admin", async (req, res) => {
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+
+        const username = await admins.findOne({ email: email });
+        // // console.log('status =', username.status, username)
+
+        if (username) {
+
+            if (username.status === "active")
+             {
+            
+                let updatePassword = await admins.findByIdAndUpdate({_id:username._id}, {$set:{password:password}})
+                res.send({ "status": "active" })
+
+            }
+
+            else {
+
+                res.send({ "status": "deactive" })
+
+            }
+        }
+        else {
+            res.send({ "status": "false" })
+        }
+
+    } catch (error) {
+        res.status(404).send({ "invalid Password": error.message })
+    }
+})
+
+
 router.post("/counsellor", async (req, res) => {
     try {
         const email = req.body.email;
@@ -2353,6 +2460,7 @@ router.post('/addStudentAttendance',async(req,res)=>{
 
         let attendance = await Studentattendance.create(req.body)
 
+        res.send(attendance)
     }
     catch(error){
         console.log('error =',error.message)
@@ -2364,6 +2472,7 @@ router.post('/updateStudentAttendance',async(req,res)=>{
     try{
 
         let updateAttendance = await Studentattendance.updateOne({fullDate:req.body.fullDate, Batch:req.body.Batch}, {$set:{studentId:req.body.studentId, attendanceStatus:req.body.attendanceStatus}})
+        res.send(updateAttendance)
 
     }
     catch(error){

@@ -7,7 +7,6 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Swal from 'sweetalert2'
 
-
 function Assignment() {
   const ContextValue = useContext(StudentContext);
   const [videos, setVideos] = useState([]);
@@ -90,6 +89,8 @@ function Assignment() {
 
   const getVideo = async (batch) => {
     console.log("batch =",batch)
+
+    
     const res = await fetch(`http://localhost:8000/getuploadVideoUrl`, {
         method: "GET",
         headers: {
@@ -97,10 +98,39 @@ function Assignment() {
             "Batch": batch
         }
     });
+
+   
+    
+    
     const data = await res.json();
     console.log("Assignment Data ", data);
     setVideos(data);
 };
+
+const VideoUploaded=()=>{
+
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'Video Uploaded',
+    showConfirmButton: false,
+    timer: 1500
+  })
+  
+}
+
+
+const videoUploaded=()=>{
+
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'File Uploaded',
+    showConfirmButton: false,
+    timer: 1500
+  })
+  
+}
 
   const toggleDocument = (url) => {
     window.open(url,'_blank')
@@ -147,11 +177,18 @@ setTrainerAssignment(trainerAssignment)
 
     formData.append("batch", batch);  
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     try {
       const res = await fetch("http://localhost:8000/uploadfile", {
         method: "POST",
         body: formData,
       });
+
+    ContextValue.updateProgress(60)    
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+    videoUploaded()
 
       const data = await res.json();
       console.log("Data", data);
@@ -203,6 +240,9 @@ setTrainerAssignment(trainerAssignment)
 
     formData.append("batch", batch);
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     try {
       const res = await fetch("http://localhost:8000/uploadVideoUrl", {
         method: "POST",
@@ -212,7 +252,14 @@ setTrainerAssignment(trainerAssignment)
         body: JSON.stringify(tempvideoUrl),
       });
 
+
+      ContextValue.updateProgress(60)
       const data = await res.json();
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+      VideoUploaded()
+
+   
       console.log("Data", data);
     } catch (error) {
       console.log("error =", error.message);
@@ -371,23 +418,44 @@ console.log('upload notes pdf=',notesDetail)
       formData.append(field, notesDetail[field]);
     }
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     try {
       const res = await fetch("http://localhost:8000/uploadNotesPdf", {
         method: "POST",
         body: formData,
       });
 
+      ContextValue.updateProgress(60)
       const data = await res.json();
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+      PdfUploaded()
+     
       console.log("Data", data);
     } catch (error) {
       console.log("error =", error.message);
     }
 
 }
+
+const PdfUploaded=()=>{
+
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'Pdf Uploaded',
+    showConfirmButton: false,
+    timer: 1500
+  })
+  
+}
 const uploadLink = async(e)=>{
   console.log('upload notes link=',notesDetail)
 
   e.preventDefault();
+  ContextValue.updateProgress(30)
+  ContextValue.updateBarStatus(true)
   try {
     const res = await fetch("http://localhost:8000/uploadNotesLink", {
       method: "POST",
@@ -395,12 +463,30 @@ const uploadLink = async(e)=>{
       body: JSON.stringify(notesDetail),
     });
 
+    
+    ContextValue.updateProgress(60)
     const data = await res.json();
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+    LinkUploaded()
+    
     console.log("Data", data);
   } catch (error) {
     console.log("error =", error.message);
   }
 
+}
+
+const LinkUploaded=()=>{
+
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'Link Uploaded',
+    showConfirmButton: false,
+    timer: 1500
+  })
+  
 }
 
 const getTrainerNotesPdf =async(batch)=>{

@@ -99,7 +99,7 @@ function DemoOverview() {
             <TrainerSlidebar/>
          
             <div className='main-container right-side-container'>
-                <div className="card-body w-80">
+                <div className="w-80">
                     <div className="table-responsive recentOrderTable">
                     <table id="datatable"  className="table table-striped table-bordered"cellspacing="0" width="100%" >
                             <thead>

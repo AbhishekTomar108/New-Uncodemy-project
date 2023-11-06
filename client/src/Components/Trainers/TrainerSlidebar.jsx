@@ -8,6 +8,7 @@ import { StudentContext } from '../../context/StudentState'
 export default function TrainerSlidebar() {
 
     const { id } = useParams()
+    const navigate = useNavigate()
     let ContextValue = useContext(StudentContext);
     const navigation = useNavigate();
     const [trainerId, setTrainerId] = useState();
@@ -36,6 +37,12 @@ export default function TrainerSlidebar() {
       console.log("attendance id =",id)
       navigation('/trainer/add-attendance',{state:{id}})
     }
+
+    
+  const moveToChangePasssword = ()=>{
+    navigate('/Forget-Password', { state: { user:"trainer" } });
+  }
+
     return (
 
         <>
@@ -72,9 +79,12 @@ export default function TrainerSlidebar() {
                 </button>
               
             </li>
-                        <li>
-                            <Link className="has-arrow" to="/trainer/SendMessage"> Log Out</Link>
-                        </li>
+                       
+            <li onClick={moveToChangePasssword} className="text-light">
+             
+             Change Password
+        
+         </li>
 
                     </ul>
                 </div>

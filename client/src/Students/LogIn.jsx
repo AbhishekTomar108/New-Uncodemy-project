@@ -6,11 +6,11 @@ import { StudentContext } from '../context/StudentState';
 import { Link } from "react-router-dom";
 
 
-export default function LogIn() {
+  export default function LogIn() {
 
   document.title="StudentDashboard - Log In Panel"
 
-
+  const navigation = useNavigate()
   const [user, setUser] = useState("none")
 
   const [login, setLogin] = useState({
@@ -55,6 +55,11 @@ export default function LogIn() {
       }
     
   }
+
+  const movetoForgotPassword = ()=>{
+    navigation('/Forget-Password',{state:{user:user}})
+  }
+
   return (
     <>
       <div className='main'>
@@ -77,7 +82,7 @@ export default function LogIn() {
                   <input
                     type="email"
                     className="form-control mt-1"
-                    placeholder="Enter Phone Number"
+                    placeholder="Enter Email"
                     name="email"
                     onChange={(e) => { setLogin({ ...login, [e.target.name]: e.target.value }) }}
                     value={login.email || ""}
@@ -91,7 +96,7 @@ export default function LogIn() {
                   value={login.password || ""}
                 />
                 </div>
-                <div className="forgetpassword"><Link to='/forget'> <label className='lab'>Forgot Password?</label></Link></div>
+                <div className="forgetpassword" disabled={user === "none" ? true : false} onClick={movetoForgotPassword}> <label className='lab'>Forgot Password?</label></div>
                 <div class="d-grid gap-2 submitbutton">
                   <button class="btn btn-primary" onClick={fetchUserData} type="button" disabled={user === "none" ? true : false}>Submit</button>
 

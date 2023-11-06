@@ -171,12 +171,13 @@ console.log("student running batch =",student)
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)
     ContextValue.updateProgress(60)
-    // attendance = await attendance.json()
+    attendance = await attendance.json()
     ContextValue.updateProgress(100)
     ContextValue.updateBarStatus(false)
-    ContextValue.SuccessMsg()
+    AttendanceAdded()
 
   }
+
   catch(error){
     ContextValue.updateProgress(100)
     ContextValue.updateBarStatus(false)
@@ -189,6 +190,32 @@ console.log("student running batch =",student)
   }
 
   }
+
+
+  const AttendanceAdded=()=>{
+
+    Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'Attendance Added',
+      showConfirmButton: false,
+      timer: 1500
+    })
+    
+  }
+
+  const AttendanceUpdated=()=>{
+
+    Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'Attendance Updated',
+      showConfirmButton: false,
+      timer: 1500
+    })
+    
+  }
+
   const updateAttendance = async()=>{
 
     console.log("date =",date)
@@ -214,10 +241,10 @@ console.log("student running batch =",student)
       body:JSON.stringify(detail)
     })
     ContextValue.updateProgress(60)
-    // attendance = await attendance.json()
+    attendance = await attendance.json()
     ContextValue.updateProgress(100)
     ContextValue.updateBarStatus(false)
-    ContextValue.SuccessMsg()
+    AttendanceUpdated()
   }
   catch(error){
     ContextValue.updateProgress(100)
