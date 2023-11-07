@@ -212,8 +212,8 @@ function NewBatch() {
     }
 
     const addNewBatch = async () => {
-        console.log('add new batch =', runningbatchTrainerData, batchDetail)
 
+        console.log('add new batch =', runningbatchTrainerData, batchDetail)
 
         let count = 1;
 

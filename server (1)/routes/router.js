@@ -3751,6 +3751,46 @@ router.post("/addNewBatchTime", async (req, res) => {
     }
 })
 
+// edit running Batch
+
+router.post('/updateBatch/:id', async (req, res) => {
+
+    const {id} = req.params
+
+    const details = req.body
+    const { Batch, Trainer, TrainerID, BatchTime, courseName, Days } = details;
+ 
+   
+    try {
+    
+        let updateBatch = await runningBatch.findByIdAndUpdate({_id:id},{$set:details.tempInpVal})
+        let batchStudent = await users.find({studentRunningBatch:details.tempInpVal.previousBatch})
+
+        for(let i=0; i<batchStudent.length; i++){
+            let filterBatch = getTotalBatch(batchStudent[i],details.tempInpVal)
+            console.log('filter Batch = ',filterBatch)
+            let updateStudentBatch = await users.findByIdAndUpdate({_id:batchStudent[i]._id},{$set:{studentRunningBatch:filterBatch}})
+        }
+
+        res.send({ "status": "active", "batchCourse": updateBatch })
+
+    }
+    catch (error) {
+    
+    }
+})
+
+const getTotalBatch =(student,details)=>{
+
+    console.log('before filter =',student.studentRunningBatch)
+let filterStudentBatch = student.studentRunningBatch.filter(data=>{
+    return data!==details.previousBatch
+})
+
+filterStudentBatch.push(details.Batch)
+  return filterStudentBatch
+}
+
 router.post("/addNewCourse", async (req, res) => {
 
     let course = req.body.course
@@ -4213,11 +4253,13 @@ router.post("/moveStudent",async(req,res)=>{
 
 // router to add student to new batch
 router.post("/addStudent",async(req,res)=>{
+    console.log('current batch =',req.body.currentBatch)
     const currentBatch = req.body.currentBatch
     const newBatch = req.body.newBatch
     const id = req.body.id
     let newbatch = await runningBatches.findOne({Batch:newBatch})
     let student = await users.findById({_id:id})
+    console.log('new batch =',newbatch)
    
     // console.log('student =',student)
         

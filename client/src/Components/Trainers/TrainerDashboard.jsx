@@ -374,7 +374,7 @@ export default function TrainerDashboard() {
               </div>
               <div className="col-xl-9 col-xxl-8 col-lg-8">
                 <div className="card">
-                  <div className="card-body">
+                  <div>
                     <div className="profile-tab">
                       <div className="custom-tab-1">
                         <ul className="nav nav-tabs">

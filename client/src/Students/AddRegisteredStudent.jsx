@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Header';
+import Swal from 'sweetalert2'
 import { StudentContext } from '../context/StudentState';
 
 
@@ -135,19 +136,31 @@ export default function AddRegisteredStudent
     let remainingFees  =(inpval.Fees - inpval.RegistrationFees)
     formData.append("remainingFees", remainingFees);
     console.log('inpval ', inpval,remainingFees)
-
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     try {
       const res = await fetch('http://localhost:8000/register', {
         method: 'POST',
         body: formData,
       });
-
+      
+      ContextValue.updateProgress(60)
       const data = await res.json();
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+   
+      
       if (res.status === 422 || !data) {
+        Swal.fire({   
+          icon:  'error',
+          title: 'Oops...',
+          text:  'Something went wrong!',
+        })
 
         alert('error');
-      } else {
-        alert('student added')
+      }
+       else {
+        RegisteredSuccess()
         let tempInpval = inpval
         for (const field in inpval) {
           tempInpval[field]="";
@@ -156,9 +169,25 @@ export default function AddRegisteredStudent
       }
     }
     catch (error) {
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something went wrong!',
+      })
       console.log('error =', error.message)
     }
   };
+
+  const RegisteredSuccess= ()=>{
+
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'Student Has Been Added',
+    showConfirmButton: false,
+    timer: 1500
+  })
+}
 
   const setCourse = (name, value) => {
     setINP({ ...inpval, [name]: value })

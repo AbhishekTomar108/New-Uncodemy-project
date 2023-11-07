@@ -161,7 +161,7 @@ export default function AboutStudent() {
                       <div className="card-header">
                         <h2 className="card-title">About me</h2>
                       </div>
-                      <div className="card-body pb-0">
+                      <div className="pb-0">
 
                         <ul className="list-group list-group-flush">
 
@@ -187,7 +187,7 @@ export default function AboutStudent() {
                       <div className="card-header d-block">
                         <h4 className="card-title"> Student Remarks </h4>
                       </div>
-                      <div className="card-body">
+                      <div>
                         <div className='message-section mb-2'>
                           <strong className='justify-content-center'>remarks</strong>
                           <strong className='justify-content-center'>date</strong>
@@ -226,7 +226,7 @@ export default function AboutStudent() {
               </div>
               <div className="col-xl-9 col-xxl-8 col-lg-8">
                 <div className="card">
-                  <div className="card-body">
+                  <div>
                     <div className="profile-tab">
                       <div className="custom-tab-1">
                         {status === "Assignment" && <div>

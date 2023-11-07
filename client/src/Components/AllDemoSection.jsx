@@ -124,7 +124,7 @@ function AllDemoSection() {
        
             <div className='sidebar-main-container'>          
          
-            <div className='main-container one-col'>
+            <div className='main-container right-side-container one-col'>
             <div className="d-flex j-c-initial c-gap-40">
                   <select
                         id="exampleInputPassword1"
@@ -155,7 +155,7 @@ function AllDemoSection() {
 
           <button className='filter-btn' onClick={SearchDemo}>Search</button>
           </div>
-                <div className="card-body w-80">
+                <div className="w-80">
                    {filterdemoList && <DemoTable demoList={filterdemoList} demoStudentData={filterDemoStudent}/>}
                 </div>
             </div>

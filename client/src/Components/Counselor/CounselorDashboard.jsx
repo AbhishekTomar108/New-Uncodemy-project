@@ -16,7 +16,6 @@ export default function Home() {
 
   document.title = "StudentDashboard - Admin panel"
 
-
   useEffect(() => {
     getCounsellorStatus()
 
@@ -42,6 +41,7 @@ export default function Home() {
   const [total, setTotal] = useState()
   const [newTotal, setNewTotal] = useState()
   const [registerStudent, setRegisterStudent] = useState()
+  const [CurrentRegisterStudent, setCurrentRegisterStudent] = useState()
   const [newRegisterStudent, setNewRegisterStudent] = useState()
   const [allDemo, setAllDemo] = useState()
   const [todayDemo, setTodayDemo] = useState()
@@ -109,6 +109,7 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
 
     let registerCounselorStudent = await ContextValue.getCounselorRegisterStudent(id)
     setRegisterStudent(registerCounselorStudent)
+    setCurrentRegisterStudent(registerCounselorStudent)
     // console.log('register student =',registerCounselorStudent)
   }
 
@@ -251,10 +252,15 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
 
     let filterQueryData = allStudentData.filter(data => {
       console.log('data name =', data, data.Name, Query)
-      return data.Name.toLowerCase().includes(Query.toLowerCase())
+      return (data.EnrollmentNo.toLowerCase().includes(Query.toLowerCase()) || data.Name.toLowerCase().includes(Query.toLowerCase()))
+    })
+    let filterQueryRegisterData = registerStudent.filter(data => {
+      console.log('data name =', data, data.Name, Query)
+      return (data.RegistrationNo.toLowerCase().includes(Query.toLowerCase()) || data.Name.toLowerCase().includes(Query.toLowerCase()))
     })
     console.log('filter query - ', filterQueryData)
     setCurrentStudent(filterQueryData)
+    setCurrentRegisterStudent(filterQueryRegisterData)
   }
 
   const badgeStatus = {
@@ -589,8 +595,8 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
             <div className="row">
 
               <div className="card-header flex-in">
-                <button class="btn btn-outline-dark" onClick={e => setUser("added student")}>Added Student</button>
-                <button class="btn btn-outline-dark" onClick={e => setUser("registered student")}>Registered Student</button>
+                <button class={`btn btn-hover btn-outline-${user==="added student"?"dark":"light"}`} onClick={e => setUser("added student")}>Added Student</button>
+                <button class={`btn btn-hover btn-outline-${user==="registered student"?"dark":"light"}`} onClick={e => setUser("registered student")}>Registered Student</button>
               </div>
               {user === "added student" && <div className="col-xl-12 col-xxl-12 col-lg-12 col-md-12 col-sm-12">
               
@@ -602,7 +608,7 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
                   <div class="d-flex" role="search">
                     <input class="form-control me-2"
                       type="search"
-                      placeholder="Search"
+                      placeholder="Search By Enrollment No. or By Name"
                       aria-label="Search"
                       name='search'
                       onChange={(e) => fetchQueryData(e.target.value)}
@@ -675,7 +681,7 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
                     <div class="d-flex" role="search">
                       <input class="form-control me-2"
                         type="search"
-                        placeholder="Search"
+                        placeholder="Search By Registration No. or By Name"
                         aria-label="Search"
                         name='search'
                         onChange={(e) => fetchQueryData(e.target.value)}
@@ -698,9 +704,7 @@ setTodayDemoStudent(counselorUpcoming.totalDemoStudent)
                             </tr>
                           </thead>
                           <tbody>
-                            {registerStudent && registerStudent.map((data, index) => {
-
-
+                            {CurrentRegisterStudent && CurrentRegisterStudent.map((data, index) => {
 
                               return (
                                 <tr>

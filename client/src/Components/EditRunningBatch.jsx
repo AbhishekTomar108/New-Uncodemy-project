@@ -12,10 +12,12 @@ const EditRunningBatch = () => {
     const [allbatchTime, setAllBatchTime] = useState()
     const {runningBatch}  = location.state
     console.log("running batch =",runningBatch)
+    
     const [editStatus, setEditStatus] = useState(false)
     const [currentTrainer, setCurrentTrainer] = useState();
     const [batchCourse, setBatchCourse] = useState()
     const [runningbatchTrainerData, setRunningbatchTrainerData] = useState();
+    let month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
     const [inpval, setINP] = useState({
         Trainer: runningBatch.Trainer,    
@@ -26,17 +28,21 @@ const EditRunningBatch = () => {
       });
 
       const [batchDetail, setBatchDetail] = useState({
-        "trainer": '',
-        "course": '',
-        "month": '',
-        "daysName": '',
-        "batchTime": '',
+        'Batch':runningBatch.Batch,
+        'previousBatch':runningBatch.Batch,
+        "Trainer": '',
+        "trainerCode":'',
+        "Days": '',
+        "BatchTime": '',
         "TrainerID": '',
-        "courseName":''
+        "courseName":runningBatch.courseName,
+        "course":'',
+        "month":runningBatch.Batch.split('/')[2]
     })
 
       useEffect(()=>{
         getTrainer()
+        extractCourseCode(runningBatch.courseName)
       },[])
 
 
@@ -53,6 +59,11 @@ const EditRunningBatch = () => {
 
     }
 
+    
+    const updateMonth = (month) => {
+      setDays('true')
+      setBatchDetail({ ...batchDetail, ["month"]: month })
+  }
 
     const setAvailableBatchTime = (runningbatchTrainerData,trainerData)=>{
       console.log('current trainer =',trainerData)
@@ -101,6 +112,7 @@ const EditRunningBatch = () => {
           })
           runningTrainer = await runningTrainer.json()
           runningTrainer = runningTrainer.runningbatchTrainer
+          console.log('trainer batch =',runningTrainer)
           
           setRunningbatchTrainerData(runningTrainer)
           setAvailableBatchTime(runningTrainer,trainer)
@@ -115,6 +127,7 @@ const EditRunningBatch = () => {
 
 
       const getTrainer = async () => {
+
         const res = await fetch("http://localhost:8000/trainer", {
             method: "GET",
             headers: {
@@ -129,16 +142,115 @@ const EditRunningBatch = () => {
 
     let trainerData = []
 
-    const updateTrainer = async (index) => {
-      console.log('trainer update ',index, trainer[index].code,trainer[index].Name)
+    const updateTrainer = async (e) => {
+      console.log('trainer update ',e.target.selectedIndex-1, trainer[e.target.selectedIndex-1])
       // let trainerCode = trainer.filter(data => {
       //     return data._id === trainerData[trainerName]
       // })[0].code
-      setCurrentTrainer(trainer[index])
-      setBatchDetail({ ...batchDetail, ["trainer"]: trainer[index].code, ["TrainerID"]: trainer[index]._id })
-      getCourses(trainer[index])
-      getRunningBatchTrainer(trainer[index])
+      setCurrentTrainer(trainer[e.target.selectedIndex-1])
+      setBatchDetail({ ...batchDetail, ["Trainer"]: trainer[e.target.selectedIndex-1].Name, ["TrainerID"]: trainer[e.target.selectedIndex-1]._id,["trainerCode"]:trainer[e.target.selectedIndex-1].code})
+      getCourses(trainer[e.target.selectedIndex-1])
+      getRunningBatchTrainer(trainer[e.target.selectedIndex-1])
+      setINP({...inpval,["Trainer"]:trainer[e.target.selectedIndex-1].Trainer})
   }
+
+  
+  const updatebatchTime = (batchTime) => 
+  {
+
+    setBatchDetail({ ...batchDetail, ["BatchTime"]: batchTime })
+
+}
+
+
+const updateDays = (e) => {
+  setDays(e)
+  let day = e === "weekDaysBatch" ? "WeekDays" : "WeekEnd"
+  setBatchDetail({ ...batchDetail, ["Days"]: day })
+  let batch = e === "weekDaysBatch" ? currentTrainer.weekDaysBatch : currentTrainer.WeekEndBatch
+  let daysBatchTime = runningbatchTrainerData.filter(data => {
+      return data.Days === day
+  }).map(element => {
+      return element.BatchTime
+  })
+  let tempBatchTime = [];
+  if (daysBatchTime.length !== 0) {
+      tempBatchTime = batch.map(data => {
+          let runningBatchStatus = false;
+          daysBatchTime.map(element => {
+              if (data === element) {
+                  runningBatchStatus = true;
+              }
+          })
+          return runningBatchStatus === false ? { disabled: false, batchTime: data } : { disabled: true, batchTime: data }
+
+      })
+      
+      console.log("temp batch days =",tempBatchTime)
+      setAllBatchTime(tempBatchTime)
+  }
+  else {
+      tempBatchTime = batch.map(data=>{
+          return { disabled: false, batchTime: data }
+       })
+      console.log("temp batch days =",tempBatchTime)
+
+       setAllBatchTime(tempBatchTime)
+  }
+
+
+}
+
+
+const updateBatch = async () => {
+
+  console.log('batch detail =',batchDetail)
+  console.log('add new batch =', runningbatchTrainerData, batchDetail)
+
+  let count = 1;
+  let tempInpVal = batchDetail
+
+  runningbatchTrainerData.map(data => {
+      let dataSplit = data.Batch.split('/')
+      if (dataSplit[0] === batchDetail.course) {
+          if (dataSplit[2] === batchDetail.month) {
+              count = count + 1;
+              console.log('count= ', count)
+          }
+      }
+  })
+  let batch = `${batchDetail.course}/${new Date().getFullYear()}/${batchDetail.month}/${batchDetail.trainerCode}/${count}`
+  tempInpVal.Batch = batch
+  console.log('new batch =', batch, batchDetail, currentTrainer)
+
+  let addedNewBatch = await fetch(`http://localhost:8000/updateBatch/${runningBatch._id}`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({tempInpVal})
+  })
+
+  addedNewBatch = await addedNewBatch.json()
+  console.log('added batch =', addedNewBatch)
+
+}
+
+const extractCourseCode = (batchName) => {
+  console.log("batch Name =",batchName)
+  let course = '';
+  let splitCourse = batchName.split(' ')
+  if (splitCourse.length > 1) {
+      splitCourse.map(data => {
+          course = `${course}${data[0]}`
+      })
+  }
+
+  else {
+      course = splitCourse[0]
+  }
+  setBatchDetail({ ...batchDetail, ["course"]: course})
+}
+
+
 
   return (
     <>
@@ -152,7 +264,7 @@ const EditRunningBatch = () => {
         <div className="card-header">
           <h5 className="card-title">Basic Info</h5>
         </div>
-        <div className="card-body w-80">
+        <div className="w-80">
           <form action="#" method="post">
             <div className="row">
               <div className="col-lg-6 col-md-6 col-sm-12">
@@ -175,7 +287,7 @@ const EditRunningBatch = () => {
                                                     <option disabled = {editStatus===false?true:false} selected>--select Trainer--</option>
                                                     {trainer.map((data, index) => {
                                                         console.log("trainer data =", data.Name)
-                                                        trainerData[index+1] = data._id
+                                                      
                                                         return (
                                                             <option value={data.Name}>{data.Name}</option>
                                                         )
@@ -185,24 +297,106 @@ const EditRunningBatch = () => {
                                                 }
                                             </div>
                                         </div>
+
+                                        <div className="col-lg-6 col-md-6 col-sm-12">
+                                            <div className="form-group">
+                                                <label className="form-label">Starting Month</label>
+                                                {<select
+                                                    id="exampleInputPassword1"
+                                                    type="select"
+                                                    name="Course"
+                                                    class="form-control"
+                                                    disabled = {editStatus===false?true:false}
+                                                    value={batchDetail.month}
+                                                    onChange={e => updateMonth(e.target.value)}
+                                                >
+                                                    <option disabled selected>--select Month--</option>
+                                                    {month.map((data, index) => {
+                                                        let monthNumber = index + 1 < 10 ? `0${index + 1}` : index + 1
+                                                        return (
+                                                            <option value={monthNumber}>{data}</option>
+                                                        )
+                                                    })
+                                                    }
+                                                </select>}
+                                            </div>
+                                        </div>
               <div className="col-lg-6 col-md-6 col-sm-12">
-                <div className="form-group">
+                {!allbatchTime ? <div className="form-group">
                   <label className="form-label">Batch Time</label>
-                  <input type="email" value={inpval.BatchTime} disabled = {editStatus===false?true:false} onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} name="Email" class="form-control" id="exampleInputPassword1" />
-                </div>
+                  <input type="text" value={inpval.BatchTime} disabled = {editStatus===false?true:false} onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} name="Email" class="form-control" id="exampleInputPassword1" />
+                </div>: 
+                <>
+                  {allbatchTime && Days === "weekDaysBatch" && <div className="form-group">
+                  <label className="form-label">WeekDays Batch</label>
+                  {allbatchTime && <select
+                      id="exampleInputPassword1"
+                      type="select"
+                      name="Course"
+                      class="form-control"
+                      onChange={e => updatebatchTime(e.target.value)}
+                  >
+                      <option disabled selected>--select WeekDays Batch--</option>
+                      {allbatchTime.map((data, index) => {
+
+                          return (
+                              <option value={data.batchTime} disabled={data.disabled}>{data.batchTime}</option>
+                          )
+                      })
+                      }
+                  </select>}
+              </div>}
+              {allbatchTime && Days === "WeekEndBatch" && <div className="form-group">
+                  <label className="form-label">WeekEnd Batch</label>
+                  {allbatchTime && <select
+                      id="exampleInputPassword1"
+                      type="select"
+                      name="Course"
+                      class="form-control"
+                      onChange={e => updatebatchTime(e.target.value)}
+                  >
+                      <option disabled selected>--select WeekEnd Batch--</option>
+                      {allbatchTime.map((data, index) => {
+
+                          return (
+                              <option value={data.batchTime} disabled={data.disabled}>{data.batchTime}</option>
+                          )
+                      })
+                      }
+                  </select>}
+              </div>}
+              </>
+                }
               </div>
               <div className="col-lg-6 col-md-6 col-sm-12">
-                <div className="form-group">
+              {!allbatchTime?<div className="form-group">
                   <label className="form-label">Days</label>
                   <input type="text" value={inpval.Days} disabled = {editStatus===false?true:false} onChange={e => setINP({ ...inpval, [e.target.name]: e.target.value })} name="CompanyName" class="form-control" id="exampleInputPassword1" />
-                </div>
+                </div>:
+                 <div className="form-group">
+                 <label className="form-label">Days</label>
+                 <select
+                     id="exampleInputPassword1"
+                     type="select"
+                     name="Course"
+                     class="form-control"
+                     onChange={e => { updateDays(e.target.value) }}
+                 >
+                     <option disabled selected>--select Days--</option>
+                     <option value="weekDaysBatch">WeekDays</option>
+                     <option value="WeekEndBatch">WeekEnd</option>
+
+                 </select>
+             </div> }
+              
               </div>
               
               
-
-        <button className='btn btn-primary mx-2' onClick={e=>setEditStatus(true)}>Edit Batch</button>
-            </div>
+              </div>
           </form>
+      { editStatus!==true? <button className='btn btn-primary mx-2' onClick={e=>setEditStatus(true)}>Edit Batch</button>
+        :<button className='btn btn-primary mx-2' onClick={updateBatch}>Submit</button>}
+        
         </div>
       </div>
     </div>

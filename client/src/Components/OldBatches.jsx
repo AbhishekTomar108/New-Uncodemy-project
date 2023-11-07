@@ -8,6 +8,7 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import Swal from 'sweetalert2'
 
 const OldBatches = () => {
+
   let ContextValue = useContext(StudentContext);
   const [oldbatch, setOldBatches] = useState()
   const navigation = useNavigate()
@@ -90,7 +91,7 @@ const OldBatches = () => {
       <div className='sidebar-container'>
         <Sidebar />
 
-        <div className="card-body fee-detail right-side-container">
+        <div className="fee-detail right-side-container">
           <div className="table-responsive recentOrderTable">
             <table id="datatable" className="table table-striped table-bordered" cellspacing="0" width="100%" >
               <thead>
@@ -101,7 +102,6 @@ const OldBatches = () => {
                   <th scope="col">Batch Time</th>
                   <th scope="col">Days</th>
                   <th scope="col">View</th>
-
 
                 </tr>
               </thead>
