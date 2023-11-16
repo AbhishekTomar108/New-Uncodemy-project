@@ -2,13 +2,14 @@ import React, { useState, useEffect,useContext } from 'react'
 import Header from '../Header';
 import Sidebar from '../Sidebar';
 import { StudentContext } from '../../context/StudentState';
-import { useParams,useLocation } from 'react-router-dom';
+import { useParams,useLocation, useNavigate } from 'react-router-dom';
 import Cslidebar from './Cslidebar';
 import Swal from 'sweetalert2'
 
 
 function AddNewDemo() {
     let ContextValue = useContext(StudentContext);
+    const navigate = useNavigate()
     const [trainer, setTrainer] = useState()
     const [allCourse, setAllCourse] = useState()
     const location = useLocation();
@@ -135,7 +136,9 @@ function AddNewDemo() {
           showConfirmButton: false,
           timer: 1500
         })
+
         
+        navigate('/counsellor')
       }
 
         return (

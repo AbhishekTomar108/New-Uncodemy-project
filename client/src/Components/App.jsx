@@ -106,6 +106,7 @@ import TotalRegistration from '../Students/TotalRegistration'
 import LoadingBar from '../Students/BarLoading'
 import BarLoading from '../Students/BarLoading'
 import ForgetPassword from './ForgetPassword'
+import AddCommerceData from './Counselor/AddCommerceData'
 
 // import Navbaar from './components/Navbaar';
 export default function App() {
@@ -119,6 +120,7 @@ export default function App() {
             <Route exact path='/filter' element={<FilterSection />} />
             <Route exact path='/googlemeet' element={<EmbedGoogleMeet />} />
             <Route exact path='/' element={<LogIn />} />
+            <Route exact path='/addCommerceData' element={<AddCommerceData />} />
             <Route exact path='/Forget-Password' element={<ForgetPassword />} />
             <Route exact path='admin/' element={<Home />} />
             <Route exact path='admin/AllCourse' element={<AllCourse />} />

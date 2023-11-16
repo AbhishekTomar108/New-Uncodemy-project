@@ -1,13 +1,17 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useContext} from 'react'
 import Header from './Header'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { StudentContext } from "../context/StudentState";
 import Sidebar from './Sidebar'
+import Swal from 'sweetalert2'
 
 
 const EditRunningBatch = () => {
 
     const [trainer, setTrainer] = useState()
     const location = useLocation()
+    const navigate = useNavigate()
+    let ContextValue = useContext(StudentContext);
     const [Days, setDays] = useState("weekDaysBatch")
     const [allbatchTime, setAllBatchTime] = useState()
     const {runningBatch}  = location.state
@@ -107,8 +111,8 @@ const EditRunningBatch = () => {
       try {
           let runningTrainer = await fetch('http://localhost:8000/getRunningBatchTrainer', {
               method: 'POST',
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ TrainerID: trainer._id })
+              headers: { "Content-Type" : "application/json" },
+              body: JSON.stringify({ TrainerID : trainer._id })
           })
           runningTrainer = await runningTrainer.json()
           runningTrainer = runningTrainer.runningbatchTrainer
@@ -223,16 +227,38 @@ const updateBatch = async () => {
   tempInpVal.Batch = batch
   console.log('new batch =', batch, batchDetail, currentTrainer)
 
+  ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
   let addedNewBatch = await fetch(`http://localhost:8000/updateBatch/${runningBatch._id}`, {
       method: 'POST',
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({tempInpVal})
   })
 
-  addedNewBatch = await addedNewBatch.json()
+  
+    ContextValue.updateProgress(60)
+    addedNewBatch = await addedNewBatch.json()
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+    batchEdit()
+
+  
   console.log('added batch =', addedNewBatch)
 
 }
+
+const batchEdit=()=>{
+
+    Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'Batch Edited',
+      showConfirmButton: false,
+      timer: 1500
+    })
+    navigate('/admin/Running-batches')
+    
+  }
 
 const extractCourseCode = (batchName) => {
   console.log("batch Name =",batchName)
