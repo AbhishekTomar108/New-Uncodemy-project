@@ -7,7 +7,7 @@ import Cslidebar from './Cslidebar';
 import Swal from 'sweetalert2'
 
 
-function AddNewDemo() {
+    function AddNewDemo() {
     let ContextValue = useContext(StudentContext);
     const navigate = useNavigate()
     const [trainer, setTrainer] = useState()

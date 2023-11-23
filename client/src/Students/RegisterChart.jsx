@@ -4,6 +4,7 @@ import Sidebar from "../Components/Sidebar";
 import { StudentContext } from '../context/StudentState';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Bar } from "react-chartjs-2";
+import Swal from 'sweetalert2'
 import {
   Chart,
   Title,
@@ -83,6 +84,8 @@ const Horizontalchart = () => {
   }, []);
 
   const filterStudent = () => {
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     console.log('register student')
  
     let filterRegister = filterRegisterStudent.filter((data, index) => {
@@ -109,6 +112,8 @@ const Horizontalchart = () => {
     setDemoStudent(tempStudentData)
     setCounselorStatus(detail.counselorName)
     setTrainerStatus(detail.trainer)
+    ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
     
   }
 
@@ -141,15 +146,22 @@ const Horizontalchart = () => {
   }
 
   const fetchRegistrationData = async () => {
+
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     try {
       const registrationUrl = "http://localhost:8000/getregisterStudent";
       const labelSet = [];
       const registrationDataSet = [];
 
       const res = await fetch(registrationUrl);
+      ContextValue.updateProgress(60)
       const data = await res.json();
       setRegisterStudent(data)
       setFilterRegisterStudent(data)
+      ContextValue.updateProgress(100)
+          ContextValue.updateBarStatus(false)
       console.log("data",data)
 
       for (const val of data) {
@@ -183,6 +195,13 @@ const Horizontalchart = () => {
       }));
       console.log("setChartData", chartData)
     } catch (error) {
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something went Wrong Try Again',
+      }) 
+      ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
       console.error("Error fetching registration data", error);
     }
   };
@@ -237,10 +256,12 @@ const Horizontalchart = () => {
  }
 
  const SearchDemo = async()=>{
-
+  ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
 
   console.log('start and date from state =',rangeDate)
 
+  try{
   let selectDemo = await fetch("http://localhost:8000/getRangeDemoes",{
     method:"GET",
     headers:{
@@ -255,7 +276,20 @@ const Horizontalchart = () => {
   setDemoListData(selectDemo.Demo)
  setFilterDemoList(selectDemo.Demo)
  setFilterDemoStudent(selectDemo.totalDemoStudent)
+ ContextValue.updateProgress(60)
+}
 
+ catch(error){
+  Swal.fire({   
+    icon:  'error',
+    title: 'Oops...',
+    text:  'Something went Wrong Try Again',
+  }) 
+  ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+}
+
+ try{
   let selectRegister = await fetch("http://localhost:8000/getRangeRegisteredStudent",{
     method:"GET",
     headers:{
@@ -267,6 +301,19 @@ const Horizontalchart = () => {
   selectRegister = await selectRegister.json()
   console.log('select register =',selectRegister)
   setFilterRegisterStudent(selectRegister)
+  ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+
+}
+catch(error){
+  Swal.fire({   
+    icon:  'error',
+    title: 'Oops...',
+    text:  'Something went Wrong Try Again',
+  }) 
+  ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+}
   
  }
     

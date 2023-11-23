@@ -5,9 +5,9 @@ import Header from "../Components/Header";
 import Sidebar from "../Components/Sidebar";
 import { StudentContext } from '../context/StudentState';
 import FeesData from "../Students/FeesData";
+import Swal from 'sweetalert2'
 
-function ViewFee() {
-
+    function ViewFee() {
     
     let ContextValue = useContext(StudentContext);
     const [chartData, setChartData] = useState({ labels: [], series: [] });
@@ -116,10 +116,11 @@ function ViewFee() {
 
       const SearchDemo = async()=>{
 
-
-        console.log('start and date from state =',rangeDate)
+        console.log('start and date from state =',rangeDate)   
+        ContextValue.updateProgress(30)
+        ContextValue.updateBarStatus(true)   
       
-      
+        try{
         let selectFees = await fetch("http://localhost:8000/getRangeFees",{
           method:"GET",
           headers:{
@@ -127,6 +128,7 @@ function ViewFee() {
             "endDate":rangeDate.endDate
           }
         })
+        ContextValue.updateProgress(60)
       
         selectFees = await selectFees.json()
         console.log('selected fees =',selectFees)
@@ -134,7 +136,19 @@ function ViewFee() {
         // setCurrentFeesData(selectFees.studentFees)
         // setTotalFees(selectFees.formattedFees)
         filterStudent(selectFees.studentFees)
+        ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
         // setFilterRegisterStudent(selectRegister)
+      }
+      catch(error){
+        Swal.fire({   
+          icon:  'error',
+          title: 'Oops...',
+          text:  'Something went Wrong Try Again',
+        }) 
+        ContextValue.updateProgress(100)
+          ContextValue.updateBarStatus(false)
+      }
        }
 
       const getCounselor = async()=>{

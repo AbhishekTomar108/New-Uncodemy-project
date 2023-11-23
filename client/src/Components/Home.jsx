@@ -13,11 +13,12 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import { Link, useParams } from 'react-router-dom';
 
 export default function Home() {
+
   let ContextValue = useContext(StudentContext);
 
   document.title = "StudentDashboard - Admin panel"
 
-  const navigation = useNavigate()
+  const navigation = useNavigate();
   const navigate = useNavigate();
 
   let sameDateTime = [];
@@ -86,6 +87,8 @@ export default function Home() {
   }
 
   async function fetchAdminStatus() {
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     try {
       const status = await ContextValue.checkAdmin();
 
@@ -106,9 +109,18 @@ export default function Home() {
       else {
         navigation('/')
         alert('you are not authorized')
+        ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
       }
 
     } catch (error) {
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something went Wrong Try Again',
+      }) 
+      ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
       console.error('Error fetching admin status:', error);
     }
   }
@@ -123,6 +135,8 @@ export default function Home() {
 
 
   const getAllCourses = async()=>{
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
 
     let allCourse = await ContextValue.getAllBatchCourse()
 
@@ -131,60 +145,95 @@ export default function Home() {
     setWeekDaysbatch(allCourse.batchCourse[0].WeekDaysBatch)
     setWeekEndBatch(allCourse.batchCourse[0].WeekEndBatch)
 
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
   }
 
   const getUpcomingDemo = async()=>{
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     let upcoming = await ContextValue.UpcomimgDemo()
     setUpcomingDemoList(upcoming.Demo)
     setUpcomingDemoStudent(upcoming.totalDemoStudent)
     console.log("upcoming demo =",upcoming)
+
+    ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
 }
 
 
 
   const getRegisteredStudent = async()=>{
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     let registeredStudent = await ContextValue.getRegisterStudent()
     setRegister(registeredStudent)
     setCurrentRegister(registeredStudent)
+
+    ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
   }
 
  
 
   const getRunningBatch = async()=>{
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     const runningBatch = await ContextValue.getRunningBatch()
     console.log('running batch',runningBatch)
     setTotalRunningBatch(runningBatch.runningBatches.length)
+    ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
   }
 
   const getTotalFees = async()=>{
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     let totalFees  = await ContextValue.getTotalFees()
-    
     setTotalAmount(totalFees)
+    ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
   }
 
   const getTotalStudent = async()=>{
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
 
     let TotalStudent = await ContextValue.totalStudent()
-
+    
     setTotal(TotalStudent)
+ContextValue.updateProgress(100)
+ContextValue.updateBarStatus(false)
+
 
   }
 
   const getNewStudent = async()=>{
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
 
     let month = (new Date().getMonth() + 1).toString().padStart(2, '0');
 
     let newStudent = await ContextValue.newStudent(month)
     console.log("new student =",newStudent)
     setNewTotal(newStudent)
+    ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
     
   }
 
   const getCounselorData = async () => {
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     let counselor = await ContextValue.getAllCounselor();
     console.log('counselor =', counselor.counselorData)
     setCounselor(counselor.counselorData)
     localStorage.setItem('allCounselor', JSON.stringify(counselor.counselorData))
+    ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
     
   }
 
@@ -378,7 +427,7 @@ export default function Home() {
         icon: 'error',
         title: 'Oops...',
         text: 'Something went wrong!',
-        footer: '<a href="">Why do I have this issue?</a>'
+      
       });
 
     })
@@ -489,9 +538,14 @@ export default function Home() {
 
   const getAllDemo =async()=>{
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
     const Demo = await ContextValue.getAllDemo()
-   setAllDemoList(Demo.Demo)
+    setAllDemoList(Demo.Demo)
     setDemoStudentData(Demo.totalDemoStudent)
+
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
  
   }
 
@@ -502,11 +556,16 @@ export default function Home() {
     let month = (new Date().getMonth())
     let MonthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     const demo = await ContextValue.getNewDemo(MonthName[month])
     console.log('demo =',demo)    
 
     setNewDemoList(demo.Demo)
     setNewDemoStudentData(demo.totalDemoStudent)
+    ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
   }
 
   const moveToAllDemo = ()=>{
@@ -518,7 +577,7 @@ export default function Home() {
   navigate('New-Demo',{state:{demoList:newDemoList,demoStudentData:newDemoStudentData}})
   }
 
-  const moveToUpcomingDemo = ()=>{
+  const moveToUpcomingDemo = () => {  
     navigate('upcomingDemo', { state: { demo:upcomingDemoList,demoStudent:upcomingDemoStudent } });
   }
 
@@ -630,7 +689,7 @@ export default function Home() {
                             style={{ width: "30%" }}
                           />
                         </div> */}
-                        <small>{totalAmount && totalAmount.feesInWords} Rupees</small>
+                        
                       </div>
                     </div>
                   </div>

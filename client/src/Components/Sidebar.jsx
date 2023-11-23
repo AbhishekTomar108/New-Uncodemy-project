@@ -23,7 +23,7 @@ export default function Sidebar() {
     try {
       const status = await ContextValue.checkAdmin();
 
-      console.log('status of admin =', status);
+      console.log('status of admin =', status); 
       if (status.status === "active") {
       }
       else {

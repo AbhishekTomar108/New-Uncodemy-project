@@ -8,8 +8,8 @@ import { StudentContext } from '../../context/StudentState'
 function UpcomingDemo() {
 
     const location = useLocation();
-  const { demo, demoStudent } = location.state;
-  console.log('demo counselor upcoming =',demo, demoStudent)
+    const { demo, demoStudent } = location.state;
+    console.log('demo counselor upcoming =',demo, demoStudent)
  
     let sameDateTime = [];
     let studentData  = [];
@@ -47,27 +47,27 @@ function UpcomingDemo() {
     //     // filterDemo(data)
     // }
     useEffect(() => {
-        fetchTrainerStatus()
+        // fetchTrainerStatus()
      
     }, [])
 
-    async function fetchTrainerStatus() {
-        try {
-          const status = await ContextValue.checkTrainer();
+    // async function fetchTrainerStatus() {
+    //     try {
+    //       const status = await ContextValue.checkTrainer();
           
-      console.log('status of trainer =', status);
-      if(status.status==="active"){
+    //   console.log('status of trainer =', status);
+    //   if(status.status==="active"){
       
-      }
-      else{
-        navigation('/')
-        alert('you are not authorized')
-      }
+    //   }
+    //   else{
+    //     navigation('/')
+    //     alert('you are not authorized')
+    //   }
     
-        } catch (error) {
-          console.error('Error fetching admin status:', error);
-        }
-      }
+    //     } catch (error) {
+    //       console.error('Error fetching admin status:', error);
+    //     }
+    //   }
 
     // const filterDemo = (data) => {
     //     data.map((demoData, demoIndex) => {

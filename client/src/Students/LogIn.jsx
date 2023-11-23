@@ -4,6 +4,10 @@ import React, { useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { StudentContext } from '../context/StudentState';
 import { Link } from "react-router-dom";
+import Swal from 'sweetalert2'
+import LoadingBar from 'react-top-loading-bar'
+import { HashLoader } from "react-spinners";
+
 
 
   export default function LogIn() {
@@ -12,6 +16,8 @@ import { Link } from "react-router-dom";
 
   const navigation = useNavigate()
   const [user, setUser] = useState("none")
+  const [progress, setProgress] = useState(50)
+  
 
   const [login, setLogin] = useState({
     email: "",
@@ -21,10 +27,18 @@ import { Link } from "react-router-dom";
   let ContextValue = useContext(StudentContext);
 
   const history = useNavigate();
+
   const fetchUserData = async(e) => {
+
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     e.preventDefault()
     console.log('login', login, user)
+    
+    
 
+    try{
     let data = await fetch(`http://localhost:8000/${user}`, {
 
       method: "POST",
@@ -34,11 +48,14 @@ import { Link } from "react-router-dom";
       body: JSON.stringify({ email: login.email, password: login.password })
 
     })
-    
+      ContextValue.updateProgress(60)
       data =  await data.json()
       console.log('data of user=', data)
   
       if (data.status === "active") {
+
+        ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
 
         ContextValue.updateStudent(login.email, login.password)
 
@@ -49,9 +66,27 @@ import { Link } from "react-router-dom";
       }
 
       else {
-        alert('you are not authorized')
+
+        Swal.fire({   
+          icon:  'error',
+          title: 'Oops...',
+          text:  'You are not Authorized',
+        }) 
+        ContextValue.updateProgress(100)
+          ContextValue.updateBarStatus(false)
+        // alert('you are not authorized')
         console.log('data is false =', data)
         console.log('context ', ContextValue.student)
+      }
+    }
+      catch(error){
+        Swal.fire({   
+          icon:  'error',
+          title: 'Oops...',
+          text:  'Something went Wrong Try Again',
+        }) 
+        ContextValue.updateProgress(100)
+          ContextValue.updateBarStatus(false)
       }
     
   }
@@ -80,7 +115,7 @@ import { Link } from "react-router-dom";
               <form className='form'>
                 <div className='username' >
                   <input
-                    type="email"
+                    type = "email"
                     className="form-control mt-1"
                     placeholder="Enter Email"
                     name="email"
@@ -108,6 +143,26 @@ import { Link } from "react-router-dom";
 
 
         </div>
+        
+
+        <LoadingBar
+        color='#f11946'
+        progress={ContextValue.progress}
+        onLoaderFinished={() => setProgress(0)}
+      />
+       {  ContextValue.barStatus
+            
+     && (
+      <>
+      {console.log('bar status =',ContextValue.barStatus)}
+      <div className='pos-center'>
+        <HashLoader color="#3c84b1" />
+      </div>
+      <div className='blur-background'></div>
+      </>
+    )}
+
+
       </div>
     </>
   )

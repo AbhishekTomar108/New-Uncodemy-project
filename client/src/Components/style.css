@@ -40,7 +40,13 @@ top: 70px;
   justify-content: center;
   align-items: center;
   width: 100vw;
+  top: 0;
   z-index: 1000;
+}
+
+.pos-absolute{
+  position: absolute;
+  top: 0;
 }
 
 .blur-background{
@@ -623,6 +629,7 @@ justify-content: space-between;
 
 .card{
   padding: 20px;
+  height: fit-content;
 }
 
 .dlabnav {

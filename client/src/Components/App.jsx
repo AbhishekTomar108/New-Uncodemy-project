@@ -181,7 +181,7 @@ export default function App() {
     </>
   }
  />
-            <Route exact path="admin/New-Demo"   element={     
+            <Route exact path="admin/New-Demo"  element={     
         <RegisterChart />
   }
  />

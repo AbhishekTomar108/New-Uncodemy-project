@@ -15,10 +15,13 @@ export default function Header() {
   ContextValue.barStatus && console.log('bar Status context=',ContextValue.barStatus)
 
   const logOutHandle =()=>{
+
     console.log('log out')
     localStorage.clear()
     navigation('/')
+
   }
+
   return (
 
     <>
@@ -36,7 +39,7 @@ export default function Header() {
               <img className='uncodemy'
                 src={logo}
                 height={20}
-                alt=" Logo"
+                alt="Logo"
                 loading="lazy"
 
               />
@@ -71,20 +74,9 @@ export default function Header() {
 
                 </div>
 
-
-
-
-
-
-
-
-
               </div>
 
-
-
             </li>
-
 
           </ul>
           {/* Right elements */}
