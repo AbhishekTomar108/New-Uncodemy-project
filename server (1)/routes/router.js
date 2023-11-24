@@ -220,6 +220,33 @@ const generateEnrollment = (student, data)=>{
     return newEnrollment
 }
 
+// function to generate counselor Enrollment
+
+const generateCounselorNo = (counselor)=>{
+
+    
+    let newEnrollment;
+    let year = new Date().getFullYear()
+    let month =  (new Date().getMonth()+1)
+    month = month<10?`0${month}`:month
+
+    if(counselor){
+            
+    let count = parseInt(counselor.counselorNo.split('/')[1].split('-')[1]);
+    count = count+1
+    count = count.toString().padStart(2, '0')
+    
+    newEnrollment = `UC${year}/${month}-${count}`
+    console.log('enrollment no =',newEnrollment)
+
+        }
+        else{
+            newEnrollment = `UC${year}/${month}-01`
+        }
+
+    return newEnrollment
+}
+
 router.get('/getlastData',async(req,res)=>{
     const lastStudent = await users
     .findOne({}, {}, { sort: { _id: -1 } }) // Sort by the default ObjectId in descending order
@@ -483,15 +510,15 @@ router.get('/getStudentFeesStatus',async(req,res)=>{
 
     let current = new Date();
 
-
     for (let index = 0; index < allStudent.length; index++) {
       
-      let due = allStudent[index].DueDate;
-      console.log('condition of due and current =',current>(new Date(due)) )
+      let due = new Date(allStudent[index].DueDate);
+      console.log('condition of due and current =',due,current,current>(new Date(due)) )
     //   console.log("current and due =",current>(new Date(due)),current,due)
       const lastCollectionDate = new Date(allStudent[index].lastCollectionDate);
 
       const currentDateDiff = Math.floor((due - current) / (1000 * 60 * 60 * 24));
+      console.log('date diff =',currentDateDiff)
     //   const currentDateMonth = current.getMonth();
     //   const currentDateYear = current.getFullYear();
     //   const currentDate =   current.getDate();
@@ -508,6 +535,7 @@ router.get('/getStudentFeesStatus',async(req,res)=>{
            
             const installmentFees = getFieldFromValue(allStudent[index].InstallmentDate, allStudent[index].DueDate);
     
+            console.log('installment fees =',installmentFees)
             if(installmentFees>allStudent[index].paidFees)
             {
                 // console.log("Payment notification");
@@ -1541,31 +1569,31 @@ router.post("/addCounselor", controller.upload, async (req, res) => {
     sendmail(req, res)
 
     try {
+        console.log("add counselor =")
         const email = req.body.email;
         const password = req.body.password;
         req.body.file = req.file
         const url = req.url
         // console.log('email =',email, password)
 
-        const username = await counselors.create({ Email: email, password: password, Number: req.body.Number, Address: req.body.Address, Name: req.body.Name, url: url });
+        const lastCounselor  = await counselors.findOne({}, {}, { sort: { _id: -1 } }).exec(); // Sort by the default ObjectId in descending order
+        
+        let counselorNo = generateCounselorNo(lastCounselor)
+
+        const username = await counselors.create({ Email: email, password: password, Number: req.body.Number, Address: req.body.Address, Name: req.body.Name, url: url, counselorNo : counselorNo });
         // console.log('status =', username)
 
         if (username) {
-            const data = {
-                user: {
-                    id: username._id
-                },
-            }
-            delete username.password;
-            // // console.log('trim user =', username)
-            const authtoken = await jwt.sign(data, jwt_secret)
-            res.send({ "status": "active", "authtoken": authtoken, "username": username })
+        
+            res.send({ "status": "active", "username": username })
+
         }
         else {
             res.send({ "status": "false" })
         }
 
     } catch (error) {
+        console.log("add counselor error=",error.message)
         res.status(404).send({ "invalid Password": error.message })
     }
 })
@@ -2012,11 +2040,14 @@ router.post('/sendStudentMessage', async (req, res) => {
 router.get('/receivemessage/:id', async (req, res) => {
     let { id } = req.params
     console.log('receive message id =',id)
+    console.log('last message before=')
 
     try {
         let fetchedItem = await messagemodel.find({})
         let message = [];
         // console.log('message =',fetchedItem)
+        let data = jwt.verify(fetchedItem[(fetchedItem.length)-1].messageid, jwt_secret)
+        console.log('last message =',data.user.id[0])
         fetchedItem.map((data, index) => {
 
             const fetchData = jwt.verify(data.messageid, jwt_secret);
@@ -2044,7 +2075,9 @@ router.get('/receivemessage/:id', async (req, res) => {
         res.send({ "success": "true", "message": message })
     }
     catch (error) {
+        console.log("error from send route =",error.message)
         res.send(error.message)
+        
     }
 });
 router.get('/Studentreceivemessage/:id', async (req, res) => {

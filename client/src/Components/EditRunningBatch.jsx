@@ -108,12 +108,16 @@ const EditRunningBatch = () => {
     
     const getRunningBatchTrainer = async (trainer) => {
 
+        ContextValue.updateProgress(30)
+        ContextValue.updateBarStatus(true)
+
       try {
           let runningTrainer = await fetch('http://localhost:8000/getRunningBatchTrainer', {
               method: 'POST',
               headers: { "Content-Type" : "application/json" },
               body: JSON.stringify({ TrainerID : trainer._id })
           })
+          ContextValue.updateProgress(60)
           runningTrainer = await runningTrainer.json()
           runningTrainer = runningTrainer.runningbatchTrainer
           console.log('trainer batch =',runningTrainer)
@@ -121,9 +125,19 @@ const EditRunningBatch = () => {
           setRunningbatchTrainerData(runningTrainer)
           setAvailableBatchTime(runningTrainer,trainer)
 
+          ContextValue.updateProgress(100)
+          ContextValue.updateBarStatus(false)
 
       }   
       catch (error) {
+        
+  Swal.fire({   
+    icon:  'error',
+    title: 'Oops...',
+    text:  'Something Went Wrong Try Again',
+  }) 
+  ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
           console.log('error =',error.message)
           alert('sorry some error occured try again later')
       }

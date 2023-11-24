@@ -999,6 +999,7 @@ ContextValue.updateBarStatus(false)
                           <thead>
                             <tr>
                               <th scope="col">No.</th>
+                              <th scope="col">Counselor No.</th>
                               <th scope="col">Name</th>
                               <th scope="col">Number</th>
                               <th scope="col">Email</th>
@@ -1012,6 +1013,7 @@ ContextValue.updateBarStatus(false)
                               return (
                                 <tr>
                                   <td>{index + 1}</td>
+                                  <td>{CounselorData.counselorNo}</td>
                                   <td>{CounselorData.Name}</td>
                                   <td>{CounselorData.Number}</td>
                                   <td>{CounselorData.Email}</td>

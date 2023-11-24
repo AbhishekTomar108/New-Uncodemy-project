@@ -150,7 +150,7 @@ export default function AboutStudent() {
                           />
                         </div>
                         <h3 className="mt-3 mb-1 text-white">{student && student.Name}</h3>
-                        <h3 className="mt-3 mb-1 text-white">{batchDetail && batchDetail.batch}</h3>
+                        <h3 className="mt-3 mb-1 text-white batch-text">{batchDetail && batchDetail.batch}</h3>
                       </div>
 
 

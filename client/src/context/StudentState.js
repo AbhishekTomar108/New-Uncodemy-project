@@ -117,8 +117,7 @@ const StudentState = (props) => {
   }
 
   const getAllBatchCourse = async () => {
-    updateProgress(30)
-    updateBarStatus(true)
+  
     try{
     let allbatchCourse = await fetch("http://localhost:8000/getAllBatches", {
       method: "GET",
@@ -129,8 +128,7 @@ const StudentState = (props) => {
 
     allbatchCourse = await allbatchCourse.json()
     return allbatchCourse
-    updateProgress(100)
-        updateBarStatus(false)
+   
   }
   catch(error){
 
@@ -347,8 +345,7 @@ const StudentState = (props) => {
   }
 
   const getRegisterStudent = async()=>{
-    updateProgress(30)
-    updateBarStatus(true)
+   
     try{
     let registerStudent = await fetch('http://localhost:8000/getregisterStudent',{
       method:'GET'
@@ -357,8 +354,6 @@ const StudentState = (props) => {
     registerStudent = await registerStudent.json() 
     return registerStudent 
 
-    updateProgress(100)
-    updateBarStatus(false)
   }
   catch(error){
     Swal.fire({   
@@ -366,8 +361,7 @@ const StudentState = (props) => {
       title: 'Oops...',
       text:  'Something went Wrong Try Again',
     }) 
-    updateProgress(100)
-      updateBarStatus(false)
+  
   }   
   }
 
@@ -616,8 +610,7 @@ const getCounselorNewDemo = async(id,month)=>{
 }
 
 const getAllDemo = async()=>{
-  updateProgress(30)
-    updateBarStatus(true)
+
     try{
   let AllDemo = await fetch(`http://localhost:8000/Getdemo`,{
     method:'GET',
@@ -626,8 +619,7 @@ const getAllDemo = async()=>{
   AllDemo = await AllDemo.json()
   return AllDemo
   
-updateProgress(100)
-updateBarStatus(false)
+
 }
 catch(error){
   Swal.fire({   
@@ -635,8 +627,7 @@ catch(error){
     title: 'Oops...',
     text:  'Something went Wrong Try Again',
   }) 
-  updateProgress(100)
-    updateBarStatus(false)
+
 }
 }
 const getDemo = async()=>{
@@ -842,8 +833,7 @@ const trainerUpcomimgDemo = async(id)=>{
 }
 const UpcomimgDemo = async()=>{
 
-  updateProgress(30)
-    updateBarStatus(true)
+
   
   let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -865,8 +855,7 @@ const UpcomimgDemo = async()=>{
 
    res = await res.json()
    return res
-   updateProgress(100)
-        updateBarStatus(false)
+   
 
 }
 const UpcomimgTrainerDemo = async(id)=>{
@@ -898,8 +887,10 @@ const UpcomimgTrainerDemo = async(id)=>{
 }
 
 const updateProgress = (length)=>{
+
   setProgress(length)
   console.log('progress length =',length)
+  
 }
 const updateBarStatus = (value)=>{
   setBarStatus(value)

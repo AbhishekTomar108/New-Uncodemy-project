@@ -1,9 +1,16 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import Header from '../Header';
 import Sidebar from '../Sidebar';
+import { StudentContext } from '../../context/StudentState'
+import Swal from 'sweetalert2'
+import { Navigate, useNavigate } from 'react-router-dom';
+
 
 
 export default function CAddCounselor() {
+
+  let ContextValue = useContext(StudentContext);
+  const navigate = useNavigate()
 
   var length = 8,
     charset = "abcdefghijklmnop.,qrstuvwx$%yzABCDEF.,'908*&+GHIJKLMN@#$%!,OPQ!@RSTUVWXY0123456789",
@@ -41,18 +48,50 @@ export default function CAddCounselor() {
 
     console.log('form data =', formData)
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
+    try{
     const res = await fetch('http://localhost:8000/addCounselor', {
       method: 'POST',
       body: formData,
     });
 
+    ContextValue.updateProgress(60)
     const data = await res.json();
     let tempInpVal = { ...inpval }
+
     for (let i in inpval) {
       tempInpVal[i] = ""
     }
     setINP(tempInpVal)
+    
+  ContextValue.updateProgress(100)
+  ContextValue.updateBarStatus(false)
+  counselorAdded()
+    }
+    catch(error){
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something Went Wrong Try Again',
+      }) 
+      ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+    }
   };
+
+  const counselorAdded  =()=>{
+    Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'Counselor Added',
+      showConfirmButton: false,
+      timer: 1500
+    })
+
+    navigate('/admin')
+  }
 
 
   return (
@@ -89,7 +128,7 @@ export default function CAddCounselor() {
                 <div className="card-header">
                   <h5 className="card-title">Basic Info</h5>
                 </div>
-                <div className="card-body">
+                <div className="">
                   <form action="#" method="post">
                     <div className="row">
                       <div className="col-lg-6 col-md-6 col-sm-12">
@@ -133,7 +172,7 @@ export default function CAddCounselor() {
                           Submit
                         </button>
                         <button type="submit" className="btn btn-light">
-                          Cencel
+                          Cancel
                         </button>
                       </div>
                     </div>

@@ -120,6 +120,9 @@ function RunningBatchStudent() {
   
   const moveStudent = async(batch,id)=>{
    
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+    try{
     let updateStudent = await fetch("http://localhost:8000/moveStudent", {
     
         method: "POST",
@@ -128,11 +131,28 @@ function RunningBatchStudent() {
         },
         body: JSON.stringify({"currentBatch":SelectedBatch,"newBatch":batch,"id":id})
       });
+      ContextValue.updateProgress(60)
       console.log('select batch from func=',SelectedBatch)
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+      updateBatch()
+    }
+    catch(error){
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something Went Wrong Try Again',
+      }) 
+      ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+
+    }
   }
+
   const addStudent = async(batch,id)=>{
-   
-    let updateStudent = await fetch("http://localhost:8000/addStudent", {
+
+   try{
+    let updateStudent = await fetch("http://localhos:8000/addStudent", {
     
         method: "POST",
         headers: {
@@ -140,7 +160,31 @@ function RunningBatchStudent() {
         },
         body: JSON.stringify({"currentBatch":SelectedBatch,"newBatch":batch,"id":id})
       });
+      ContextValue.updateProgress(100)
       console.log('select batch from func=',SelectedBatch)
+
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+      updateBatch()
+    } 
+    catch(error){
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something Went Wrong Try Again',
+      }) 
+      ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+    }
+  }
+  const updateBatch = ()=>{
+    Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'Batch Updated',
+      showConfirmButton: false,
+      timer: 1500
+    })
   }
   
 

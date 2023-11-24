@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { StudentContext } from '../context/StudentState';
 import CounselorAllMessage from './Counselor/CounselorAllMessage';
 import StudentMessageData from './Trainers/StudentMessageData';
+import Swal from 'sweetalert2'
 
 export default function AdminSendMessage() {
   const [trainer, setTrainer] = useState()
@@ -129,7 +130,7 @@ export default function AdminSendMessage() {
     batch: null,
     course: null
   })
-  const [message, setMessage] = useState()
+  const [message, setMessage] = useState("")
   const handleFileChange = (event) => {
     setSelectedImage(event.target.files[0]);
     setFileName(event.target.files[0].name)
@@ -206,6 +207,7 @@ export default function AdminSendMessage() {
     let tempInd = [...individualCheck]
 
     tempInd[index] = { ...tempInd[index], status: 'on', check: event.target.checked };
+    console.log("check array =",tempInd)
     setIndividualCheck(tempInd)
   }
 
@@ -224,24 +226,22 @@ export default function AdminSendMessage() {
   }
 
   const sendMessage = async () => {
+  console.log("send message function")
     const formData = new FormData();
     formData.append('file', selectedImage);
 
-    // await fetch('http://localhost:8000/upload', {
-    //   method: 'POST',
-    //   body: formData,
-    // })
+   
+    console.log("individual check in function=",individualCheck,currentuser.length)
 
-    let checkedId = currentuser.filter((data, index) => {
+    let checkedId = allStudentData.filter((data, index) => {
 
-
-      if (individualCheck[index].check === true) {
-
+      if (individualCheck[index].check === true)
+       {
         return true;
       }
+
       return false;
-    })
-      .map((data, index) => {
+    }).map((data, index) => {
         return {
           id: data._id,
         };
@@ -249,12 +249,39 @@ export default function AdminSendMessage() {
 
     console.log('check id =', checkedId)
 
-    let data = await fetch('http://localhost:8000/sendmessage', {
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
+      try{
+      let data = await fetch('http://localhost:8000/sendmessage', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ message: message, from: "admin", checkid: checkedId, fileName: fileName })
+    })
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+    messageSent()
+  }
+  catch(error){
+    Swal.fire({   
+      icon:  'error',
+      title: 'Oops...',
+      text:  'Something went Wrong Try Again',
+    }) 
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+  }
+  }
+  
+  const messageSent = ()=>{
+    Swal.fire({
+      position: 'center',
+      icon: 'success',
+      title: 'Message Sent',
+      showConfirmButton: false,
+      timer: 1500
     })
   }
 
@@ -275,6 +302,19 @@ export default function AdminSendMessage() {
     })
     setIndividualCheck(individual)
     setCurrentUser(filterStudent)
+  }
+
+
+  const fetchQueryData = (Query) => {
+    console.log('fetch query =', Query)
+
+    let filterQueryData = allStudentData.filter(data => {
+      console.log('data name =', data, data.Name, Query)
+      return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.EnrollmentNo.toLowerCase().includes(Query.toLowerCase()) )
+    })
+
+    setCurrentUser(filterQueryData)   
+      
   }
 
   return (
@@ -344,7 +384,20 @@ export default function AdminSendMessage() {
               <button className='filter-btn' onClick={filterStudent}>Filter</button>
             </div>
           </div>
-          <div className="row">
+
+          <div class="d-flex mb-20" role="search">
+                    <input class="form-control me-2"
+                      type="search"
+                      placeholder="Search By Name or Enrollment No."
+                      aria-label="Search"
+                      name='search'
+                      onChange={(e) => fetchQueryData(e.target.value)}
+                    />
+                    {/* <button class="btn btn-outline-dark" type="submit" onClick={fetchQueryData}>Search</button> */}
+
+                  </div>
+          
+                    <div className="row">
             <div className="col-lg-12">
               <div className="card w-80">
                 <div>
@@ -412,7 +465,7 @@ export default function AdminSendMessage() {
                       <i className="fa fa-paperclip" /> Attatchment
                     </h5> */}
                     <form
-                      onSubmit={(e) => sendMessage(e)}
+                      
                       action="#"
                       className="d-flex flex-column align-items-center justify-content-center"
                     >
@@ -429,6 +482,7 @@ export default function AdminSendMessage() {
                       <button
                         className="btn btn-primary btn-sl-sm mr-3"
                         type="button"
+                        disabled={message.length===0?true:false}
                         onClick={sendMessage}
                       >
                         <span className="mr-2">
@@ -654,6 +708,7 @@ export default function AdminSendMessage() {
                         className="btn btn-primary btn-sl-sm mr-3"
                         type="button"
                         onClick={sendMessage}
+                        disabled={message===""?true:false}
                       >
                         <span className="mr-2">
                           <i className="fa fa-paper-plane" />

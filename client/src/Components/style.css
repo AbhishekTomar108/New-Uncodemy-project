@@ -57,6 +57,10 @@ top: 70px;
   filter: blur(1);
   }
 
+  .batch-text{
+    font-size: 18px;
+  }
+
 .sidebar-main-container{
   display: flex;
   /* justify-content: space-between; */

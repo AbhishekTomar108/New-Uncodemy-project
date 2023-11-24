@@ -30,6 +30,10 @@ const CounselorSchema = new mongoose.Schema({
         type: String,
 
     },
+    counselorNo: {
+        type: String,
+
+    },
     url: {
         type: String,
 
