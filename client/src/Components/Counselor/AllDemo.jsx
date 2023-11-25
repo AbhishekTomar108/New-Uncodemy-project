@@ -10,7 +10,8 @@ import CreateIcon from '@mui/icons-material/Create';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
-function AllDemo() {
+function AllDemo() 
+{
  
     let sameDateTime = [];
     let studentData = [];

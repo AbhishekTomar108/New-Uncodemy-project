@@ -476,30 +476,43 @@ ContextValue.updateBarStatus(false)
   const fetchQueryData = (Query) => {
     console.log('fetch query =', Query,allStudentData,getuserdata,)
 
+    if(user==="student"){
     let filterQueryData = allStudentData.filter(data => {
       console.log('data name =', data, data.Name, Query)
       return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.EnrollmentNo.toLowerCase().includes(Query.toLowerCase()) )
     })
+    setCurrentStudent(filterQueryData)
+  }
+  if(user==="register"){
     let filterRegisterData = register.filter(data => {
       console.log('data name =', data, data.Name, Query)
       return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.RegistrationNo.toLowerCase().includes(Query.toLowerCase()) )
     })
 
-  
+    setCurrentRegister(filterRegisterData)
 
+  }  
+
+  if(user === "trainer"){
     let filterTrainerData = getuserdata.filter(data => {
       console.log('data name =', data.Name, Query)
-      return data.Name.toLowerCase().includes(Query.toLowerCase())
+      return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.code.toLowerCase().includes(Query.toLowerCase()) )
+
     })
+    setCurrentTrainer(filterTrainerData)
+
+  }
+  if(user==="counselor"){
     let filterCounselorData = counselor.filter(data => {
       console.log('data name =', data.Name, Query)
-      return data.Name.toLowerCase().includes(Query.toLowerCase())
+      return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.counselorNo.toLowerCase().includes(Query.toLowerCase()) )
+      
     })
-    console.log('filter query - ', filterQueryData)
-    setCurrentStudent(filterQueryData)
-    setCurrentTrainer(filterTrainerData)
     setCounselor(filterCounselorData)
-    setCurrentRegister(filterRegisterData)
+
+  }
+  
+   
     
   }
 
@@ -933,7 +946,7 @@ ContextValue.updateBarStatus(false)
 
                           <thead>
                             <tr>
-                              <th scope="col">No.</th>
+                             
                               <th scope="col">Trainer Code</th>
                               <th scope="col">Name</th>
                               <th scope="col">Number</th>
@@ -951,7 +964,7 @@ ContextValue.updateBarStatus(false)
 
                               return (
                                 <tr>
-                                  <td>{index + 1}</td>
+                                  
                                   <td>{Trainerdata.code}</td>
                                   <td>{Trainerdata.Name}</td>
                                   <td>{Trainerdata.Number}</td> 
@@ -998,7 +1011,7 @@ ContextValue.updateBarStatus(false)
 
                           <thead>
                             <tr>
-                              <th scope="col">No.</th>
+                              
                               <th scope="col">Counselor No.</th>
                               <th scope="col">Name</th>
                               <th scope="col">Number</th>
@@ -1012,7 +1025,7 @@ ContextValue.updateBarStatus(false)
 
                               return (
                                 <tr>
-                                  <td>{index + 1}</td>
+                                  
                                   <td>{CounselorData.counselorNo}</td>
                                   <td>{CounselorData.Name}</td>
                                   <td>{CounselorData.Number}</td>

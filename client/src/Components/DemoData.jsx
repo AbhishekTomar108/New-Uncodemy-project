@@ -12,6 +12,12 @@ function DemoData(props) {
     let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 
+    const demoStatus = {
+        Done: "success",
+        Cancel: "dark",
+        Process:"warning"
+      }
+
     const date = new Date();
 
     const day = date.getDate()<10?`0${date.getDate()}`:date.getDate();
@@ -80,10 +86,12 @@ function DemoData(props) {
                                     <th scope="col">Trainer</th>
                                     <th scope="col">Link</th>
                                     <th scope="col">Action</th>
+                                    <th scope="col">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {demolist && demolist.map((data, index) => {
+                                    
                                     return (
                                         <tr>
                                             <td>{index+1}</td>
@@ -92,8 +100,13 @@ function DemoData(props) {
                                             <td>{demoStudent[index].length}</td>
                                             <td>{data.CounselorName}</td>
                                             <td>{data.Trainer}</td>
-                                            <td><Link to={data.link}><button className='btn btn-primary'>Class Link</button></Link ></td>
+                                            <td><Link to={data.classLink}><button className='btn btn-primary'>Class Link</button></Link ></td>
                                             <td> <NavLink to={`teacherdemo`}> <button className="btn btn-success" onClick={e=>{localStorage.setItem('demoData',JSON.stringify(demoStudent[index]))}}  ><RemoveRedEyeIcon /></button></NavLink></td>
+                                            <td>
+                                      <span className={`badge badge-rounded badge-${demoStatus[data.status]}`}>
+                                    {data.status}
+                                  </span>
+                                      </td>
                                         </tr>
                                     )
                                 })}

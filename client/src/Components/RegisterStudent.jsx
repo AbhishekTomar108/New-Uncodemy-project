@@ -21,22 +21,45 @@ export default function RegisterStudent(props) {
   const [timeValue,setTimeValue] = useState()
   const [filterRegisterStudent, setFilterRegisterStudent] = useState(registerStudent)
   const [RegisterStudent, setRegisterStudent] = useState(registerStudent)
+  
 
   let ContextValue = useContext(StudentContext);
   document.title = "StudentDashboard - All Student"
   const navigation = useNavigate()
   const [trainer, setTrainer] = useState()
+  const [status, setStatus] = useState("")
   const [counselor, setCounselor]  = useState()
   const [rangeDate, setRangeDate]=  useState({
     startDate:"",
     endDate:""
   })
+  const [detail, setDetail] = useState({
 
+    month: null,
+    trainer: null,
+    trainerName:null,
+    counselor: null,
+    counselorName: null
+  })
 
+  const filterStudent = (registerData) => {
+    console.log('register student')
+ 
+    let filterRegister = registerData.filter((data, index) => {
+  
+      return (detail.trainer!= null ? data.TrainerId === detail.trainer : true) && (detail.counselor != null ? data.CounselorId === detail.counselor : true) && (status!=="" ? data.status === status : true)
+  
+    })
+    console.log('filter register student =',filterRegister)
+    setFilterRegisterStudent(filterRegister)
+    
+  }
 
+ 
   useEffect(() => {
     getCounselor()
     getAllTrainer()
+    filterStudent(registerStudent)
   }, [])
 
   
@@ -53,18 +76,7 @@ export default function RegisterStudent(props) {
      setTrainer(allTrainer)
    }
 
-  const filterStudent = () => {
-    console.log('register student')
  
-    let filterRegister = RegisterStudent.filter((data, index) => {
-  
-      return (detail.trainer!= null ? data.TrainerId === detail.trainer : true) && (detail.counselor != null ? data.CounselorId === detail.counselor : true)
-  
-    })
-    console.log('filter register student =',filterRegister)
-    setFilterRegisterStudent(filterRegister)
-    
-  }
 
   const SearchDemo = async()=>{  
   
@@ -87,6 +99,7 @@ export default function RegisterStudent(props) {
     console.log('select register =',selectRegister)
     setRegisterStudent(selectRegister)
     setFilterRegisterStudent(selectRegister)
+    filterStudent(selectRegister)
    }
 
    let counselorData =[]
@@ -102,14 +115,7 @@ export default function RegisterStudent(props) {
      setDetail({...detail,["trainer"]:trainerData[e.target.selectedIndex],["trainerName"]:e.target.value})
    }
 
-   const [detail, setDetail] = useState({
-
-    month: null,
-    trainer: null,
-    trainerName:null,
-    counselor: null,
-    counselorName: null
-  })
+  
 
   const formatDate = (date) => {
     const day = String(date.getDate()).padStart(2, '0');
@@ -167,6 +173,8 @@ export default function RegisterStudent(props) {
   }
 
   const filterRegister = (value)=>{
+
+    setStatus(value)
 
     let filterData = registerStudent.filter(data=>{
 
@@ -256,7 +264,7 @@ export default function RegisterStudent(props) {
             </select>
             }
           </div>
-          <button className='filter-btn' onClick={filterStudent}>Filter</button>
+          <button className='filter-btn' onClick={e=>filterStudent(registerStudent)}>Filter</button>
         </div>
         
         <div className="preference-thumb thumb">

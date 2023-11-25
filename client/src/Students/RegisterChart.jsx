@@ -49,6 +49,8 @@ const Horizontalchart = () => {
     endDate:""
   })
 
+  const [currentDate, setCurrentDate] = useState()
+
   const [detail, setDetail] = useState({
 
     month: null,
@@ -57,6 +59,8 @@ const Horizontalchart = () => {
     counselor: null,
     counselorName: null
   })
+
+
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -76,19 +80,24 @@ const Horizontalchart = () => {
     ],
   });
 
+
+
   useEffect(() => {
     fetchRegistrationData();
     // fetchDemoData();   
     getCounselor()
     getAllTrainer()
+    let current = new Date().toISOString().split('T')[0];    
+    setRangeDate({...rangeDate,["endDate"]:current,["startDate"]:current})
+    setCurrentDate(current)
   }, []);
 
-  const filterStudent = () => {
+  const filterStudent = (DemoList,DemoStudent,RegisterStudent) => {
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)
-    console.log('register student')
+    console.log('register student =',RegisterStudent)
  
-    let filterRegister = filterRegisterStudent.filter((data, index) => {
+    let filterRegister = RegisterStudent.filter((data, index) => {
   
       return (detail.trainer!= null ? data.TrainerId === detail.trainer : true) && (detail.counselor != null ? data.CounselorId === detail.counselor : true)
   
@@ -96,11 +105,11 @@ const Horizontalchart = () => {
     console.log('filter register student =',filterRegister)
     let tempStudentData =[]
 
-    console.log('demo student data =',filterDemoList)
+    console.log('demo student data =',DemoList)
 
-    let filterDemo = filterDemoList.filter((data, index) => {
+    let filterDemo = DemoList.filter((data, index) => {
       if((detail.trainer!= null ? data.TrainerId == detail.trainer : true) && (detail.counselor != null ? data.CounselorId == detail.counselor : true)){
-        tempStudentData.push(filterDemoStudent[index])
+        tempStudentData.push(DemoStudent[index])
         console.log('index',index)
       }
   console.log('counselor id= ',data.CounselorId,detail.counselor, detail.trainer)
@@ -145,7 +154,8 @@ const Horizontalchart = () => {
     console.log('counselor all =',counsellor.counselorData)
   }
 
-  const fetchRegistrationData = async () => {
+  const fetchRegistrationData = async () => 
+  {
 
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)
@@ -194,7 +204,8 @@ const Horizontalchart = () => {
         ],
       }));
       console.log("setChartData", chartData)
-    } catch (error) {
+    } 
+    catch (error) {
       Swal.fire({   
         icon:  'error',
         title: 'Oops...',
@@ -204,6 +215,8 @@ const Horizontalchart = () => {
         ContextValue.updateBarStatus(false)
       console.error("Error fetching registration data", error);
     }
+
+   
   };
 
 
@@ -260,9 +273,10 @@ const Horizontalchart = () => {
     ContextValue.updateBarStatus(true)
 
   console.log('start and date from state =',rangeDate)
-
+let selectDemo;
+let selectRegister
   try{
-  let selectDemo = await fetch("http://localhost:8000/getRangeDemoes",{
+  selectDemo = await fetch("http://localhost:8000/getRangeDemoes",{
     method:"GET",
     headers:{
       "startDate":rangeDate.startDate,
@@ -290,7 +304,7 @@ const Horizontalchart = () => {
 }
 
  try{
-  let selectRegister = await fetch("http://localhost:8000/getRangeRegisteredStudent",{
+  selectRegister = await fetch("http://localhost:8000/getRangeRegisteredStudent",{
     method:"GET",
     headers:{
       "startDate":rangeDate.startDate,
@@ -314,9 +328,32 @@ catch(error){
   ContextValue.updateProgress(100)
     ContextValue.updateBarStatus(false)
 }
-  
+
+filterStudent(selectDemo.Demo,selectDemo.totalDemoStudent,selectRegister)
+
  }
-    
+
+ const filterdemoFunc =(value)=>{
+
+  let tempStudentData = []
+
+  let filterDemo = filterDemoList.filter((data, index) => {
+    if(data.status===value){
+      tempStudentData.push(filterDemoStudent[index])
+      console.log('index',index)
+    }
+console.log('counselor id= ',data.CounselorId,detail.counselor, detail.trainer)
+    return (data.status===value)
+
+  })
+  
+  setDemoListData(filterDemo)
+  setDemoStudent(tempStudentData)
+
+ 
+
+ }
+
 
   return (
     <>
@@ -350,12 +387,25 @@ catch(error){
                      {timeValue==="Select Range" && 
                      <>
                      <label>From</label>
-                      <input type="date" class="custom-select mr-sm-2" onChange={e=>setFromTime(e.target.value)}></input>
+                      <input type="date" class="custom-select mr-sm-2" max={rangeDate.endDate} onChange={e=>setFromTime(e.target.value)}></input>
                       <label>To</label>
-                      <input type="date" class="custom-select mr-sm-2" onChange={e=>setToTime(e.target.value)}></input>
+                      <input type="date" class="custom-select mr-sm-2" max={currentDate} min={rangeDate.startDate} onChange={e=>setToTime(e.target.value)}></input>
                       </>}
 
           <button className='filter-btn' onClick={SearchDemo}>Search</button>
+
+                        <select
+                        id="exampleInputPassword1"
+                        type="select"
+                        name="Course"
+                        class="custom-select mr-sm-2"
+                        onChange={e =>{ filterdemoFunc(e.target.value)}}
+                    >
+                      <option disabled selected>--Select Status--</option>
+                      <option>Done</option>
+                      <option>Cancel</option>
+                      </select>
+
           </div>
 
 
@@ -388,7 +438,7 @@ catch(error){
             </select>
             }
           </div>
-          <button className='filter-btn' onClick={filterStudent}>Filter</button>
+          <button className='filter-btn' onClick={e=>filterStudent(filterDemoList,filterDemoStudent,filterRegisterStudent)}>Filter</button>
         </div>
 
                     </div>
@@ -396,10 +446,10 @@ catch(error){
                     
                 <div className="d-flex flex-d-cloumn">
 
-<div className='f-bold f-25'>Total Demo : {demoListData.length}</div>
-{rangeDate && <div className='f-bold f-25'>Date :{rangeDate.startDate} - {rangeDate.endDate} </div>}
-{counselorStatus && <div className='f-bold f-25'>Counselor : {detail.counselorName}</div>}
-{trainerStatus && <div className='f-bold f-25'>Trainer :  {detail.trainerName}</div>}
+<div className='f-bold'>Total Demo : {demoListData.length}</div>
+{rangeDate && <div className='f-bold'>Date :{rangeDate.startDate} - {rangeDate.endDate} </div>}
+{counselorStatus && <div className='f-bold'>Counselor : {detail.counselorName}</div>}
+{trainerStatus && <div className='f-bold'>Trainer :  {detail.trainerName}</div>}
 
 </div>
 

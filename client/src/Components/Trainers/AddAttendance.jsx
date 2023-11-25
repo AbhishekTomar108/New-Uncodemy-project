@@ -47,6 +47,7 @@ function AddAttendance() {
   });
 
   const [currentMonth, setCurrentMonth] = useState(month[((new Date().getMonth()))])
+  const currentDate = new Date().toISOString().split('T')[0];
   console.log("current month =",currentMonth)
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   let tempDays = new Date(currentYear, currentMonth, 0).getDate()
@@ -113,17 +114,17 @@ console.log("student running batch =",student)
   
     setCurrentStudent(student);
     setMarkStatus("class")
-    getStudentAttendance()
+    getStudentAttendance(student)
     
   };
 
   const setAttendanceId = (value, id,index)=>{
     let tempStudentId = [...studentId]
-    console.log('index =',index,tempStudentId)
+    console.log('index of student id function=',typeof(value),index,tempStudentId,studentId)
 
-    if (!tempStudentId[index]) {
-      tempStudentId[index] = [];
-    }
+    // if (!tempStudentId[index]) {
+    //   tempStudentId[index] = [];
+    // }
 
     // Push the attendance object into the appropriate index.
     tempStudentId[index] = {
@@ -131,7 +132,7 @@ console.log("student running batch =",student)
       status: value,
     };
 
-    const filteredData = tempStudentId.filter((element) => {
+    const filteredData = tempStudentId.filter((element) => {  
       return element.status !== undefined && element.status !== '';
     });
     
@@ -265,12 +266,12 @@ console.log("student running batch =",student)
 
     setFilter({...filter, ["batch"]:e.target.value, ["batchDay"]:BatchDay[e.target.selectedIndex]})
 
-    console.log("batchday =",BatchDay,e.target.selectedIndex,BatchDay[e.target.selectedIndex])
+    // console.log("batchday =",BatchDay,e.target.selectedIndex,BatchDay[e.target.selectedIndex])
   }
-  const getStudentAttendance = async () => {
+  const getStudentAttendance = async (student) => {
 
  let attendance = await ContextValue.getAttendance(date.selectedDate, id, filter.batch)
- console.log("attendance =",attendance)
+ console.log("attendance =",attendance,date.selectedDate)
 
  if(attendance.length!==0){
   console.log("if att",attendance[0].studentId)
@@ -288,8 +289,10 @@ console.log("student running batch =",student)
   console.log("else att")
   setMarkStatus("class")
   let tempStudentId = [...studentId]
+
   tempStudentId = []
-  currentStudent.map(data=>{
+
+    student.map(data=>{
 
     tempStudentId.push({
       studentId:data._id,
@@ -306,6 +309,7 @@ console.log("student running batch =",student)
   const count = filteredData.length;
   setAttendanceCount(count)
 
+  console.log("getstudent function =",tempStudentId,currentStudent)
   setstudentId(tempStudentId)
   setAddAttendenceStatus(false)
   setAttendance(attendance)
@@ -314,18 +318,17 @@ console.log("student running batch =",student)
   }
 
 
-
-  const setHolidayStatus =(e)=>{
+  const setHolidayStatus =(e,value)=>{
     console.log("mark status =",markStatus,e.target.checked)
    if(e.target.checked){
-    setMarkStatus("holiday")
+    setMarkStatus(value)
     let tempStudentId = [...studentId]
     tempStudentId = []
     currentStudent.map(data=>{
 
       tempStudentId.push({
         studentId:data._id,
-        status:"holiday"
+        status:value
       })
 
     })
@@ -356,8 +359,7 @@ console.log("student running batch =",student)
     const count = filteredData.length;
     setAttendanceCount(count)
 
-    console.log("count =",count)
-   
+    console.log("count =",count)   
 
     setstudentId(tempStudentId)
 
@@ -404,9 +406,13 @@ console.log("student running batch =",student)
             </button>
             </div>
 
-         {filter.batch!=="" &&   <div className='d-flex align-center f-30'>
-              <input type='checkbox' className='h-f-content h-30 w-30' checked={markStatus==="holiday" && true} onClick={e=>setHolidayStatus(e)}></input>
+         {filter.batch!=="" &&   <div className='d-flex align-center f-20 attendance-status'>
+              <input type='checkbox' className='h-f-content h-20 w-20' checked={markStatus==="holiday" && true} onClick={e=>setHolidayStatus(e,"holiday")}></input>
               <label className='mb-0'>Holiday</label>
+              <input type='checkbox' className='h-f-content h-20 w-20' checked={markStatus==="present" && true} onClick={e=>setHolidayStatus(e,"present")}></input>
+              <label className='mb-0'>All Present</label>
+              <input type='checkbox' className='h-f-content h-20 w-20' checked={markStatus==="absent" && true} onClick={e=>setHolidayStatus(e,"absent")}></input>
+              <label className='mb-0'>All Absent</label>
             </div>}
         
           </div>
@@ -417,18 +423,9 @@ console.log("student running batch =",student)
                 <li _ngcontent-ng-c2587924599="" className="tbl-title">
                   <h3 _ngcontent-ng-c2587924599="">Student Attendance</h3>
                 </li>
-                <li _ngcontent-ng-c2587924599="" className="tbl-search-box">
-                  <i class="fa-solid fa-magnifying-glass"></i>
-                  <input
-                    _ngcontent-ng-c2587924599=""
-                    placeholder="Search"
-                    type="text"
-                    aria-label="Search box"
-                    className="browser-default search-field"
-                  />
-                </li>
-             <input className='btn btn-primary' type='date' onChange={e => setDateFunc(new Date(e.target.value))} />
-                <button className='btn btn-primary' onClick={getStudentAttendance}>Filter</button>
+              
+             <input className='btn btn-primary' type='date' max={currentDate} value={date.selectedDate} onChange={e => setDateFunc(new Date(e.target.value))} />
+                <button className='btn btn-primary' onClick={e=>getStudentAttendance(currentStudent)}>Filter</button>
                 <h2>{date.selectedDate && date.selectedDate}</h2>
                 <h2>{date.selectedDate && date.daysName}</h2>
               </ul>
@@ -439,7 +436,7 @@ console.log("student running batch =",student)
           <div className="table-responsive recentOrderTable">   
             <table className="table verticle-middle table-responsive-md attendence-detail-table">
               <thead>
-                <tr>
+                <tr>  
                   <th scope="col">Name</th>
                   <th scope="col">Batch Time</th>
                   {/* <th scope="col">Status</th> */}
@@ -459,7 +456,7 @@ console.log("student running batch =",student)
                       <td>{data.Batch}</td>
                       <td><input type='radio' required value="present" checked={studentId.length!==0 && studentId[index].status==="present" && true} name={`attendance-checkbox${index}`} disabled={markStatus==="holiday"?true:false} onClick={(e=>setAttendanceId(e.target.value,data._id,index))}></input></td>
 
-                      <td><input type='radio' required value="absent" checked={studentId.length!==0 && studentId[index].status==="absent" && true} name={`attendance-checkbox${index}`} disabled={markStatus==="holiday"?true:false} onClick={(e=>setAttendanceId(e.target.value,data._id,index))}></input></td>
+                      <td><input type='radio' required value="absent"  checked={studentId.length!==0 && studentId[index].status==="absent" && true} name={`attendance-checkbox${index}`} disabled={markStatus==="holiday"?true:false} onClick={(e=>setAttendanceId(e.target.value,data._id,index))}></input></td>
 
                      { markStatus==="holiday" && <td><input type='radio' required value="absent" name={`attendance-checkbox${index}`} checked={true} disabled></input></td>}
                     </tr>

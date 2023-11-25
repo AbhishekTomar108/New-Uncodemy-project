@@ -170,6 +170,7 @@ else
   const getAllStudentPaymentStatus =async()=>{
 
     let studentPaymentStatus = await fetch("http://localhost:8000/getStudentFeesStatus")
+    
     studentPaymentStatus = await studentPaymentStatus.json()
     if(studentPaymentStatus.status==="done"){
       console.log("student payment status =",studentPaymentStatus.status)

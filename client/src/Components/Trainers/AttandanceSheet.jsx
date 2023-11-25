@@ -3,11 +3,12 @@ import Header from '../Header'
 import Sidebar from '../Sidebar'
 import { useNavigate } from 'react-router-dom';
 import { StudentContext } from '../../context/StudentState'
+import Swal from 'sweetalert2'
 
 function AttandanceSheet() {
 
   let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-  let dayName = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+  let dayName =   ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
 
   const [trainer, setTrainer] = useState()
   const [runningBatch, setRunningBatch] = useState()
@@ -103,7 +104,11 @@ function AttandanceSheet() {
 
     console.log("get Attendance =",detail)
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     console.log('first last ', filteredMonth)
+    try{
     let filterStatus = await fetch('http://localhost:8000/getMonthAttendance', {
 
       method: 'POST',
@@ -111,11 +116,27 @@ function AttandanceSheet() {
       body: JSON.stringify({ year: currentYear, month: filteredMonth, batch:detail.batch})
 
     })
+    ContextValue.updateProgress(60)
     let data = await filterStatus.json()
     console.log('data =', data)
 
     setAllAttendance(data)
     extractAttendance(data, currentStudent)
+    ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+  }
+  catch(error){
+
+    
+  Swal.fire({   
+    icon:  'error',
+    title: 'Oops...',
+    text:  'Something Went Wrong Try Again',
+  }) 
+  ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+
+  }
 
   }
 
@@ -136,15 +157,16 @@ function AttandanceSheet() {
     tempAttendenceRows = []
     tempDayRows = []
 
+    console.log('extract attendace current year =',currentYear,monthName,filteredMonth,lastDay,firstDay)
+
     for (let i = firstDay; i <= lastDay; i++) {
-      let daysName = dayName[(new Date(currentYear, monthName.indexOf(filteredMonth), i).getDay())];
+
+      let daysName = dayName[(new Date(currentYear, (filteredMonth-1), i).getDay())];
 
       tempDayRows.push(
         <th className='days'>
-          <span>{i}
-          </span>
-          <span className='daysName'>{daysName}
-          </span>
+          <span>{i}</span>
+          <span className='daysName'>{daysName}</span>
         </th>
       )
     }
@@ -192,9 +214,6 @@ function AttandanceSheet() {
       }
 
     })}
-
-
-
 
     setDayRows(tempDayRows)
     setAttendanceStatus(tempAttendenceRows)

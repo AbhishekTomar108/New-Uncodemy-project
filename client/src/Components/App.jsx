@@ -494,9 +494,7 @@ export default function App() {
       </div>
     </>} />
             <Route exact path="/trainer/demooverview" element={ <DemoOverview />} />
-            <Route exact path="/trainer/teacherdemo"   element={
-    <>
-      <Header />
+            <Route exact path="/trainer/teacherdemo"   element={<><Header />
       <div style={{ display: 'flex' }}>
         <TrainerSlidebar />
         <TeacherDemo />
