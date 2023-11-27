@@ -151,6 +151,8 @@ function RunningBatchStudent() {
 
   const addStudent = async(batch,id)=>{
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
    try{
     let updateStudent = await fetch("http://localhos:8000/addStudent", {
     
@@ -160,7 +162,7 @@ function RunningBatchStudent() {
         },
         body: JSON.stringify({"currentBatch":SelectedBatch,"newBatch":batch,"id":id})
       });
-      ContextValue.updateProgress(100)
+     
       console.log('select batch from func=',SelectedBatch)
 
       ContextValue.updateProgress(100)
@@ -173,6 +175,7 @@ function RunningBatchStudent() {
         title: 'Oops...',
         text:  'Something Went Wrong Try Again',
       }) 
+      console.log("error  =",error.message)
       ContextValue.updateProgress(100)
         ContextValue.updateBarStatus(false)
     }

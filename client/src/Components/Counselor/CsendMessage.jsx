@@ -167,6 +167,7 @@ else{
     console.log('check id =', checkedId)
 
     let sender = counselor.Name
+    let fromId = counselor._id
 
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)
@@ -176,7 +177,7 @@ else{
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ message: message, from: sender, checkid: checkedId, fileName: fileName })
+      body: JSON.stringify({ message: message, from: sender, fromId:fromId,checkid: checkedId, fileName: fileName })
     })
 
    

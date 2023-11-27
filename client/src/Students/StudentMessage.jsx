@@ -3,6 +3,7 @@ import Header from '../Components/Header';
 import { useNavigate } from 'react-router-dom';
 import { StudentContext } from '../context/StudentState';
 import StudentSlidebar from './StudentSlidebar';
+import Swal from 'sweetalert2'
 
 
 export default function StudentMessage() {
@@ -175,6 +176,9 @@ setAdminId(adminId.id[0]._id)
 
   const sendMessage = async () => {
 
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     let checkedId = [{
       id: senderId,
     }]
@@ -182,6 +186,7 @@ setAdminId(adminId.id[0]._id)
     console.log('check id =', checkedId)
     let sender = student.Name
 
+    try{
     let data = await fetch('http://localhost:8000/Studentsendmessage', {
       method: 'POST',
       headers: {
@@ -189,6 +194,28 @@ setAdminId(adminId.id[0]._id)
       },
       body: JSON.stringify({ message: message, from: sender, batch:student.Batch, EnrollmentNo:student.EnrollmentNo, checkid: checkedId, fileName: fileName })
     })
+        ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+        setMessage("")
+        
+        Swal.fire({
+          position: 'center',
+          icon: 'success',
+          title: 'Message Sent',
+          showConfirmButton: false,
+          timer: 1500
+        })
+
+  }
+  catch(error){
+    Swal.fire({   
+      icon:  'error',
+      title: 'Oops...',
+      text:  'Something Went Wrong',
+    }) 
+    ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+  }
   }
 
   const filterStudent = () => {

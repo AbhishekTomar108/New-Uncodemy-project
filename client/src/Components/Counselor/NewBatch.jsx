@@ -3,6 +3,7 @@ import Header from '../Header'
 import Sidebar from '../Sidebar'
 import { StudentContext } from '../../context/StudentState';
 import { NavLink, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2'
 
 function NewBatch() {
     let ContextValue = useContext(StudentContext);
@@ -213,6 +214,10 @@ function NewBatch() {
 
     const addNewBatch = async () => {
 
+        
+ ContextValue.updateProgress(30)
+ ContextValue.updateBarStatus(true)
+
         console.log('add new batch =', runningbatchTrainerData, batchDetail)
 
         let count = 1;
@@ -229,6 +234,7 @@ function NewBatch() {
         let batch = `${batchDetail.course}/${new Date().getFullYear()}/${batchDetail.month}/${batchDetail.trainer}/${count}`
         console.log('new batch =', batch, batchDetail, currentTrainer)
 
+        try{
         let addedNewBatch = await fetch('http://localhost:8000/addNewBatch', {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
@@ -237,6 +243,26 @@ function NewBatch() {
 
         addedNewBatch = await addedNewBatch.json()
         console.log('added batch =', addedNewBatch)
+        ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+        
+ Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'Batch Added',
+    showConfirmButton: false,
+    timer: 1500
+  })
+    }
+    catch(error){
+        Swal.fire({   
+            icon:  'error',
+            title: 'Oops...',
+            text:  'Something Went Wrong',
+          }) 
+          ContextValue.updateProgress(100)
+            ContextValue.updateBarStatus(false)
+    }
 
     }
 

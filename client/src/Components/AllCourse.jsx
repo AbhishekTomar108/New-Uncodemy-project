@@ -42,9 +42,13 @@ export default function AllCourse() {
   }
 
   const addNewCourse = async(courseData)=>{
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
 
     course.push(courseData)
     console.log("course route =",course)
+
+    try{
     let newCourse = await fetch("http://localhost:8000/addNewCourse", {
         method: "POST",
         headers: {
@@ -52,6 +56,28 @@ export default function AllCourse() {
         },
         body: JSON.stringify({"course":course})
       });
+      
+      ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+        Swal.fire({
+          position: 'center',
+          icon: 'success',
+          title: 'Course Added',
+          showConfirmButton: false,
+          timer: 1500
+        })
+    }
+    catch(error){
+
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something Went Wrong',
+      }) 
+      ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+        
+    }
   }
 
   return (

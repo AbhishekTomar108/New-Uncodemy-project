@@ -28,9 +28,11 @@ function StudentAssig() {
             trainerId:"",
             batchData:""
           })
+         
 
     const setStudentBatch = async(batch) =>{
         let batchData = await ContextValue.getBatchDetail(batch)
+        console.log('batch Data =',batchData,batch)
         setBatchDetail({batchDetail,["batchData"]:batchData,["batch"]:batchData.Batch,["batchTime"]:batchData.BatchTime,["batchTrainer"]:batchData.Trainer,["trainerId"]:batchData.TrainerID})
         console.log("batch data =",batchData)
       }

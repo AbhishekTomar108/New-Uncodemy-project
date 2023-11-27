@@ -32,7 +32,8 @@ export default function AllBatchTiming() {
         showCancelButton: true,
         confirmButtonText: 'Add',
         showLoaderOnConfirm: true,
-        preConfirm: () => {
+        preConfirm: () => 
+        {
           const fromTimeInput = document.getElementById('fromTimeInput');
           const toTimeInput = document.getElementById('toTimeInput');
           fromTime = fromTimeInput.value;
@@ -45,11 +46,12 @@ export default function AllBatchTiming() {
           },
         
         allowOutsideClick: () => !Swal.isLoading()
+
       }).then((result) => {
         let time = `${fromTime} - ${toTime}`
         console.log('from and to =',fromTime,toTime,time)
-        addBatch(time)
         if (result.isConfirmed) {
+          addBatch(time)
           Swal.fire({
             title: `${result.value}`,
             
@@ -61,10 +63,14 @@ export default function AllBatchTiming() {
 
 
   const addBatch = async(time)=>{
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
     let tempBatchTime = days==="WeekDays"?weekDays:weekEnd
     tempBatchTime.push(time)
     console.log('all batch =',days,tempBatchTime)
 
+    try{
     let newBatch = await fetch("http://localhost:8000/addNewBatchTime", {
         method: "POST",
         headers: {
@@ -72,6 +78,25 @@ export default function AllBatchTiming() {
         },
         body: JSON.stringify({"days":days,"batchTime":tempBatchTime})
       });
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+      Swal.fire({
+        position: 'center',
+        icon: 'success',
+        title: 'Batch Timing Added',
+        showConfirmButton: false,
+        timer: 1500
+      })
+    }
+    catch(error){
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something Went Wrong',
+      }) 
+      ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+    }
 
   }
 

@@ -1895,6 +1895,7 @@ router.post('/sendmessage', async (req, res) => {
     // console.log("req body =",req.body)
     const message = req.body.message;
     const from = req.body.from;
+    const fromId = req.body.fromId;
     const checkid = req.body.checkid;
     const file = req.body.fileName;
     // // console.log('check id =', checkid, message, req.body)
@@ -1914,6 +1915,7 @@ router.post('/sendmessage', async (req, res) => {
         let senddata = await messagemodel.create({
             message,
             from,
+            fromId,
             messageid: messageauthtoken,
             file: file
         })
@@ -2040,25 +2042,23 @@ router.post('/sendStudentMessage', async (req, res) => {
 router.get('/receivemessage/:id', async (req, res) => {
     let { id } = req.params
     console.log('receive message id =',id)
-    console.log('last message before=')
+    
 
     try {
         let fetchedItem = await messagemodel.find({})
         let message = [];
         // console.log('message =',fetchedItem)
-        let data = jwt.verify(fetchedItem[(fetchedItem.length)-1].messageid, jwt_secret)
-        console.log('last message =',data.user.id[0])
+     
         fetchedItem.map((data, index) => {
 
             const fetchData = jwt.verify(data.messageid, jwt_secret);
 
-            // console.log('message =',fetchData, id)
-
-            // // console.log("user id type =", typeof (fetchData.user.id), index)
             fetchData.user.id.filter(element => {
 
+                console.log('id and element id =',id,element.id)
                 if (id === element.id) {
                     message.push({
+
                         message: fetchedItem[index].message,
                         from: fetchedItem[index].from,
                         date: fetchedItem[index].date
@@ -2069,9 +2069,7 @@ router.get('/receivemessage/:id', async (req, res) => {
                 }
             })
         })
-        // console.log('message 2 =', message)
-
-
+       
         res.send({ "success": "true", "message": message })
     }
     catch (error) {
@@ -2080,6 +2078,28 @@ router.get('/receivemessage/:id', async (req, res) => {
         
     }
 });
+
+// route to get receive message
+
+router.get('/receiveusermessage/:id', async (req, res) => {
+    let { id } = req.params
+    console.log('receive message id =',id)
+    
+
+    try {
+        let fetchedItem = await messagemodel.find({fromId:id})
+        // console.log('message =',fetchedItem)    
+      
+       
+        res.send({ "success": "true", "message": fetchedItem })
+    }
+    catch (error) {
+        console.log("error from send route =",error.message)
+        res.send(error.message)
+        
+    }
+});
+
 router.get('/Studentreceivemessage/:id', async (req, res) => {
     let { id } = req.params
     console.log('student receive message id in route =',id)
@@ -3871,8 +3891,11 @@ router.get('/getBatchData', async (req, res) => {
     let batch = req.header("batch")
     try {
         let batchData = await runningBatches.findOne({ Batch: batch })
+        console.log("batch data route = ",batchData,batch)
         res.send({ "status": "active", "batchData": batchData })
+    
     }
+
     catch (error) {
         res.send({ "error": error.message })
     }
@@ -4286,6 +4309,7 @@ router.post("/moveStudent",async(req,res)=>{
 
 // router to add student to new batch
 router.post("/addStudent",async(req,res)=>{
+
     console.log('current batch =',req.body.currentBatch)
     const currentBatch = req.body.currentBatch
     const newBatch = req.body.newBatch
@@ -4303,7 +4327,6 @@ router.post("/addStudent",async(req,res)=>{
     runningBatchstudent.push(newBatch)
     AllTrainer.push(newbatch.Trainer)
     AllTrainerId.push(newbatch.TrainerID)
-
 
     let updateStudent = await users.findByIdAndUpdate({_id:id}, {$set:{studentRunningBatch:runningBatchstudent, AllTrainer:AllTrainer, AllTrainerId:AllTrainerId}})
     

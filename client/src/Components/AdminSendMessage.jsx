@@ -16,6 +16,12 @@ export default function AdminSendMessage() {
   const [messageStatus, setMessageStatus] = useState("Admin-message")
   const [messageData, setMessageData] = useState()
   const [StudentMessage, setStudentMessageData] = useState()
+  const [userStatus, setUserStatus] = useState()
+  const [optionStatus, setOptionStatus] = useState()
+  const [allTrainer, setAllTrainer] = useState()
+  const [allCounselor, setAllCounselor] = useState()
+  const [currentOption, setCurrentOption] = useState()
+  const [selectedOption, setSelectedOption] = useState()
   document.title = "StudentDashboard - Send Messages"
   let ContextValue = useContext(StudentContext);
 
@@ -26,7 +32,22 @@ export default function AdminSendMessage() {
     getTrainer()
     getBatch()
     getCourse()
+    getAllTrainer()
+    getAllCounselor()
   }, [])
+
+  const getAllTrainer  =async()=>{
+    
+    let allTrainer = await ContextValue.getAllTrainer()
+    setAllTrainer(allTrainer)
+
+  }
+  const getAllCounselor  = async()=>{
+
+    let allCounselor = await ContextValue.getAllCounselor()
+    setAllCounselor(allCounselor.counselorData)
+
+  }
 
   const getTrainer = async () => {
     const trainerData = await ContextValue.getAllTrainer();
@@ -315,6 +336,70 @@ export default function AdminSendMessage() {
 
     setCurrentUser(filterQueryData)   
       
+  }
+
+  const setUserStatusOption =(value)=>{
+
+    console.log('set user status',value)
+
+    setUserStatus(value)
+    if(value==="trainer")
+    {
+
+    console.log('strainer =',allTrainer)
+
+      setCurrentOption(allTrainer)
+    }
+    else{
+
+    console.log('strainer =',allCounselor)
+
+      setCurrentOption(allCounselor)
+    }
+
+  }
+
+  const setOptionfunc = (e)=>{
+    
+    if(userStatus==="trainer")
+    {
+
+    console.log('trainer =',allTrainer,allTrainer[e.target.selectedIndex-1],e.target.selectedIndex)
+    setSelectedOption(allTrainer[e.target.selectedIndex-1])
+    
+    // setCurrentOption(allTrainer)
+
+    }
+
+    else{
+
+    console.log('counselor =',allCounselor,allCounselor[e.target.selectedIndex-1],e.target.selectedIndex)
+    setSelectedOption(allCounselor[e.target.selectedIndex-1])
+
+
+    // setCurrentOption(allCounselor)
+
+    }
+
+  }
+
+  const receivemessage = async (id) => {
+
+    console.log("message data =",messageData)
+
+    console.log('receive message',id)
+    const messageRes = await fetch(`http://localhost:8000/receiveusermessage/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+
+      },
+    });
+
+    const message = await messageRes.json();
+    console.log("messageData", message.message)
+    setMessageData(message.message)
+    
   }
 
   return (
@@ -741,13 +826,40 @@ export default function AdminSendMessage() {
          <>
          <div className="card-header j-c-initial">
          <button class={`btn btn-outline-${messageStatus==="Admin-message"?"dark":""}`} onClick={e => setMessageStatus("Admin-message")}>Trainer/Counselor Message</button>
+        {messageStatus==="Admin-message" && 
+        <select className="custom-select mr-sm-2" onClick={e=>{setUserStatusOption(e.target.value)}}>
+         <option disabled selected>Choose...</option>
+         <option value="trainer">Trainer</option>
+         <option value="counsellor">Counsellor</option>
+         </select>
+
+    }
+        { messageStatus==="Admin-message" && 
+        
+        <>  
+        <select className="custom-select mr-sm-2" onClick={e=>{setOptionfunc(e)}}>
+        <option selected disabled>-- select --</option>
+
+       { currentOption && currentOption.map((data,index)=>{
+ 
+         return(
+          <option value={data.Name}>{data.Name}</option>
+         )
+          
+         })}
+         </select>
+         <button className='btn btn-primary' onClick={e=>receivemessage(selectedOption._id)}> Filter </button>
+         </>
+}
+         
+        
          <button class={`btn btn-outline-${messageStatus==="Student-message"?"dark":""}`} onClick={e => setMessageStatus("Student-message")}>Student Message</button>
         
        </div>
          {
              messageStatus==="Admin-message"?
-
-         <CounselorAllMessage message={messageData}/>:<StudentMessageData message={StudentMessage}/>}
+             <CounselorAllMessage message={messageData}/>:<StudentMessageData message={StudentMessage}/>
+         }
          </>}
       </div>
       </div>

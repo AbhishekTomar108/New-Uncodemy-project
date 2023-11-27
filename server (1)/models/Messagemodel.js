@@ -10,6 +10,9 @@ const MessageModel = new Schema({
     from: {
         type: String
     },
+    fromId: {
+        type: String
+    },
     messageid: {
       type:String
     },

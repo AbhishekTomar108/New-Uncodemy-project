@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import TrainerSlidebar from './TrainerSlidebar';
 import TrainerAllMessage from './TrainerAllMessage';
 import StudentMessageData from './StudentMessageData';
+import Swal from 'sweetalert2'
 
 export default function TrainerMessage() {
   document.title="StudentDashboard - Send Messages"
@@ -199,7 +200,10 @@ export default function TrainerMessage() {
   }
 
   const sendMessage = async () => {
-    
+
+ ContextValue.updateProgress(30)
+ ContextValue.updateBarStatus(true)   
+
       let checkedId
     if(user==="student"){
       checkedId = currentStudent.filter((data, index) => {
@@ -223,14 +227,37 @@ else{
   }]
 }
    let sender = trainer.Name
+   let senderId  = trainer._id
 
+   try{
     let data = await fetch('http://localhost:8000/sendmessage', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ message: message, from:sender, checkid: checkedId, fileName: fileName })
+      body: JSON.stringify({ message: message, from:sender, fromId:senderId, checkid: checkedId, fileName: fileName })
     })
+
+    
+  ContextValue.updateProgress(100)
+  ContextValue.updateBarStatus(false)
+
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'Message Sent',
+    showConfirmButton: false,
+    timer: 1500
+  })
+
+  }
+  catch(error){
+    Swal.fire({   
+      icon:  'error',
+      title: 'Oops...',
+      text:  'Something Went Wrong',
+    }) 
+  }
   }
 
   const filterStudent = () => {

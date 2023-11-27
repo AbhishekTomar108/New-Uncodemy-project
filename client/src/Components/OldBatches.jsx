@@ -118,7 +118,7 @@ const OldBatches = () => {
                         <td>{data.Days}</td>
                         <td>
                           <button className="btn btn-success" onClick={e => { localStorage.setItem('selectedRunningBatch', data.Batch) }}> <NavLink to={`Student`}> <RemoveRedEyeIcon /></NavLink></button>
-                          <button className="btn btn-danger text-light" onClick={() => deleteuser(data._id)}><DeleteOutlineIcon /></button>
+                          {/* <button className="btn btn-danger text-light" onClick={() => deleteuser(data._id)}><DeleteOutlineIcon /></button> */}
 
                         </td>
 

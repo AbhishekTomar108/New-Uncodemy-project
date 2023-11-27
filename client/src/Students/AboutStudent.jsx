@@ -44,7 +44,9 @@ export default function AboutStudent() {
       const status = await ContextValue.getSingleStudent(id);
 
       console.log('status of student =', status);
+
       if (status.status === "active") {
+
         console.log('activedata =', status.userIndividual)
         receivemessage(status.userIndividual._id)
         localStorage.setItem('studentData', JSON.stringify(status.userIndividual))
@@ -64,6 +66,7 @@ export default function AboutStudent() {
   }
 
   const receivemessage = async (id) => {
+
     console.log('receive message')
     const messageRes = await fetch(`http://localhost:8000/receivemessage/${id}`, {
       method: "GET",
@@ -77,6 +80,7 @@ export default function AboutStudent() {
     console.log("messageData", messageData.message)
     setMessage(messageData.message)
     console.log("messageData",messageData.message)
+    
   }
 
   const setStudentBatch = async(batch) =>{
@@ -152,7 +156,6 @@ export default function AboutStudent() {
                         <h3 className="mt-3 mb-1 text-white">{student && student.Name}</h3>
                         <h3 className="mt-3 mb-1 text-white batch-text">{batchDetail && batchDetail.batch}</h3>
                       </div>
-
 
                     </div>
                   </div>

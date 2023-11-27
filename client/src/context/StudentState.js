@@ -258,6 +258,7 @@ const StudentState = (props) => {
   }
 
   const getReceiveMessage = async (id) => {
+
     console.log('receive message')
     const messageRes = await fetch(`http://localhost:8000/receivemessage/${id}`, {
       method: "GET",
@@ -270,6 +271,7 @@ const StudentState = (props) => {
     const messageData = await messageRes.json();
     console.log("messageData", messageData.message)
      return messageData.message
+     
   }
   const getStudentreceivemessage = async (id) => {
     console.log('student receive message')

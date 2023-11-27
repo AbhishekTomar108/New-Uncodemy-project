@@ -193,6 +193,7 @@ function AttandanceSheet() {
     
             filterAttendance[0].studentId.map(data=>{
               if(studentData._id===data.studentId){
+                
                 tempAttendenceRows[index].push(<td className={`text-${data.status==="present"?"success":"danger"}`}>{data.status}</td>)
 
               }

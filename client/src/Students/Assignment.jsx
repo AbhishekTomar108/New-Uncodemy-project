@@ -5,10 +5,12 @@ import StudentSlidebar from './StudentSlidebar';
 import SendIcon from '@mui/icons-material/Send';
 import { useLocation  } from 'react-router-dom'
 import { StudentContext } from "../context/StudentState";
+import Swal from 'sweetalert2'
 
 const Assignment = (props) => {
 
     const location = useLocation();
+    let ContextValue = useContext(StudentContext);
   const { student, batch } = props;
   console.log('assignment props =',student,batch)
 
@@ -42,6 +44,9 @@ const Assignment = (props) => {
     const sendAssignment = async (e,id,url,file) => {
         e.preventDefault();
 
+        ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
         let tempInp = {...inpval}
         tempInp.assignmentId = id
         tempInp.assignmentUrl = url
@@ -60,8 +65,25 @@ const Assignment = (props) => {
 
             const data = await res.json();
             console.log("Data", data)
+
+            ContextValue.updateProgress(100)
+            ContextValue.updateBarStatus(false)
+            Swal.fire({
+                position: 'center',
+                icon: 'success',
+                title: 'File Uploaded',
+                showConfirmButton: false,
+                timer: 1500
+              })
         }
         catch (error) {
+            Swal.fire({   
+                icon:  'error',
+                title: 'Oops...',
+                text:  'Something Went Wrong',
+              }) 
+              ContextValue.updateProgress(100)
+                ContextValue.updateBarStatus(false)
             console.log('error =', error.message)
         }
     }
