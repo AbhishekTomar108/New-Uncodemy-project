@@ -17,8 +17,8 @@ export default function Home() {
   document.title = "StudentDashboard - Admin panel"
 
   useEffect(() => {
-    getCounsellorStatus()
 
+    getCounsellorStatus()
 
   }, [])
 

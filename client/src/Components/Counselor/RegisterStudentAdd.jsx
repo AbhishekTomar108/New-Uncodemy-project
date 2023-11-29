@@ -8,8 +8,8 @@ import { HashLoader } from "react-spinners";
 
 const RegisterStudentAdd = () => {
   const [allcourse, setAllCourse] = useState();
-  const [trainer, setTrainer] = useState()
-  const [course, setCourse] = useState()
+  const [trainer, setTrainer] = useState();
+  const [course, setCourse] = useState();
   const location = useLocation();
   const { counselor } = location.state;
 

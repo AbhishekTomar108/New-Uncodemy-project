@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
         type: String,
 
     },
+    subCourse: {
+        type: String,
+
+    },
     Counselor: {
         type: String,
 

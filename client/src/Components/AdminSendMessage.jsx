@@ -22,6 +22,7 @@ export default function AdminSendMessage() {
   const [allCounselor, setAllCounselor] = useState()
   const [currentOption, setCurrentOption] = useState()
   const [selectedOption, setSelectedOption] = useState()
+  const [checkStatus, setCheckStatus] = useState(false)
   document.title = "StudentDashboard - Send Messages"
   let ContextValue = useContext(StudentContext);
 
@@ -34,6 +35,7 @@ export default function AdminSendMessage() {
     getCourse()
     getAllTrainer()
     getAllCounselor()
+    individualCheckFunc(JSON.parse(localStorage.getItem('allStudent')))    
   }, [])
 
   const getAllTrainer  =async()=>{
@@ -73,7 +75,7 @@ export default function AdminSendMessage() {
       if (status.status === "active") {
         getdata();
         let message = await ContextValue.getReceiveMessage(status.data._id)
-    console.log('cousnelor message=',message);
+    console.log('cousnelor message=',message,checkStatus);
     setMessageData(message)
         getStudentMessage(status.data._id)
       }
@@ -115,12 +117,16 @@ export default function AdminSendMessage() {
   const [end, setEnd] = useState(10)
   const [start, setStart] = useState(0)
   const [allStudentData, setAllStudentData] = useState()
+  const [individualCheck, setIndividualCheck] = useState()
 
   const [currentuser, setCurrentUser] = useState()
   const totalItem = JSON.parse(localStorage.getItem('allStudent')).length
   const [file, setFile] = useState()
   let tempCurrentStudent;
-  const individual = JSON.parse(localStorage.getItem('allStudent')).map(data => {
+
+
+  const individualCheckFunc =(allUser)=>{
+  const individual = allUser.map(data => {
     console.log('current student')
     return (
       {
@@ -129,21 +135,23 @@ export default function AdminSendMessage() {
       })
   })
   console.log('individual check =', individual)
-  const [individualCheck, setIndividualCheck] = useState(individual)
+  setIndividualCheck(allUser)
+}
+  
 
-  const setCheck = (user)=>{
-    setCurrentUser(JSON.parse(localStorage.getItem(`${user}`)))
-    const individual = JSON.parse(localStorage.getItem(`${user}`)).map(data => {
-        console.log('current student')
-        return (
-          {
-            status: "off",
-            check: false
-          })
-      })
-      console.log('individual check =', individual)
-      setIndividualCheck(individual)
-  }
+  // const setCheck = (user)=>{
+  //   setCurrentUser(JSON.parse(localStorage.getItem(`${user}`)))
+  //   const individual = JSON.parse(localStorage.getItem(`${user}`)).map(data => {
+  //       console.log('current student')
+  //       return (
+  //         {
+  //           status: "off",
+  //           check: false
+  //         })
+  //     })
+  //     console.log('individual check =', individual)
+  //     setIndividualCheck(individual)
+  // }
 
   const [detail, setDetail] = useState({
 
@@ -178,6 +186,7 @@ export default function AdminSendMessage() {
 
 
       setCurrentUser(tempCurrentStudent)
+      individualCheckFunc(tempCurrentStudent)
 
     }
     else if ((totalItem - end) > 10) {
@@ -193,6 +202,7 @@ export default function AdminSendMessage() {
 
 
       setCurrentUser(tempCurrentStudent)
+      individualCheckFunc(tempCurrentStudent)
     }
 
   }
@@ -217,22 +227,31 @@ export default function AdminSendMessage() {
 
 
       setCurrentUser(tempCurrentStudent)
+      individualCheckFunc(tempCurrentStudent)
     }
 
 
   }
 
   const IndividualChecked = (event, index) => {
+    setCheckStatus(false)
     console.log('check =', event.target.checked, index)
 
     let tempInd = [...individualCheck]
 
     tempInd[index] = { ...tempInd[index], status: 'on', check: event.target.checked };
     console.log("check array =",tempInd)
+
+    tempInd.map(data=>{
+      if(data.status==='on'){
+        setCheckStatus(true)
+      }
+    })
     setIndividualCheck(tempInd)
   }
 
   const allcheck = (event) => {
+    setCheckStatus(event.target.checked)
     setIsChecked(event.target.checked)
 
     let tempInd = individualCheck.map(data => {
@@ -254,7 +273,7 @@ export default function AdminSendMessage() {
    
     console.log("individual check in function=",individualCheck,currentuser.length)
 
-    let checkedId = allStudentData.filter((data, index) => {
+    let checkedId = currentuser.filter((data, index) => {
 
       if (individualCheck[index].check === true)
        {
@@ -327,14 +346,15 @@ export default function AdminSendMessage() {
 
 
   const fetchQueryData = (Query) => {
-    console.log('fetch query =', Query)
+    console.log('fetch query =', Query,checkStatus)
 
     let filterQueryData = allStudentData.filter(data => {
       console.log('data name =', data, data.Name, Query)
       return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.EnrollmentNo.toLowerCase().includes(Query.toLowerCase()) )
     })
 
-    setCurrentUser(filterQueryData)   
+    setCurrentUser(filterQueryData)  
+    individualCheckFunc(filterQueryData)
       
   }
 
@@ -397,7 +417,7 @@ export default function AdminSendMessage() {
     });
 
     const message = await messageRes.json();
-    console.log("messageData", message.message)
+    console.log("messageData", message.message,checkStatus)
     setMessageData(message.message)
     
   }
@@ -420,9 +440,9 @@ export default function AdminSendMessage() {
    {status==="send-message" &&  
    <>
     <div className="card-header j-c-initial">
-                <button class={`btn btn-hover btn-outline-${user==="student"?"dark":"light"}`} onClick={e => {setUser("student");setCheck("allStudent")}}>Student</button>
-                <button class={`btn btn-hover btn-outline-${user==="trainer"?"dark":"light"}`} onClick={e => {setUser("trainer");setCheck("allTrainer")}}>Trainer</button>
-                <button class={`btn btn-hover btn-outline-${user==="counselor"?"dark":"light"}`} onClick={e => {setUser("counselor");setCheck("allCounselor")}}>Counsellor</button>
+                <button class={`btn btn-hover btn-outline-${user==="student"?"dark":"light"}`} onClick={e => {setUser("student");individualCheckFunc(allStudentData);setCurrentUser(allStudentData)}}>Student</button>
+                <button class={`btn btn-hover btn-outline-${user==="trainer"?"dark":"light"}`} onClick={e => {setUser("trainer");individualCheckFunc(allTrainer);setCurrentUser(allTrainer)}}>Trainer</button>
+                <button class={`btn btn-hover btn-outline-${user==="counselor"?"dark":"light"}`} onClick={e => {setUser("counselor");individualCheckFunc(allCounselor);setCurrentUser(allCounselor)}}>Counsellor</button>
               </div>
 
     {user=="student" && <div>
@@ -493,7 +513,7 @@ export default function AdminSendMessage() {
                           id="email-compose-editor"
                           className="textarea_editor form-control bg-transparent"
                           rows={15}
-                          placeholder="Enter a Message ..."
+                          placeholder="Type Message ..."
                           value={message}
                           onChange={e => setMessage(e.target.value)}
                         />
@@ -567,7 +587,7 @@ export default function AdminSendMessage() {
                       <button
                         className="btn btn-primary btn-sl-sm mr-3"
                         type="button"
-                        disabled={message.length===0?true:false}
+                        disabled={(message.length!==0 && checkStatus===true)?false:true }
                         onClick={sendMessage}
                       >
                         <span className="mr-2">
@@ -599,7 +619,7 @@ export default function AdminSendMessage() {
           <div className="row">
             <div className="col-lg-12">
               <div className="card w-80">
-                <div className="card-body">
+                <div className="">
                   <div className="email-right  ml-sm-4 ml-sm-0">
                     <div className="compose-content">
                       <div className="form-group">
@@ -712,7 +732,7 @@ export default function AdminSendMessage() {
           <div className="row">
             <div className="col-lg-12">
               <div className="card w-80">
-                <div className="card-body">
+                <div className="">
                   <div className="email-right  ml-sm-4 ml-sm-0">
                     <div className="compose-content">
                       <div className="form-group">

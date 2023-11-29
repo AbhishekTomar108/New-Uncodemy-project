@@ -2057,7 +2057,8 @@ router.get('/receivemessage/:id', async (req, res) => {
             fetchData.user.id.filter(element => {
 
                 console.log('id and element id =',id,element.id)
-                if (id === element.id) {
+                if (id === element.id) 
+                {
                     message.push({
 
                         message: fetchedItem[index].message,

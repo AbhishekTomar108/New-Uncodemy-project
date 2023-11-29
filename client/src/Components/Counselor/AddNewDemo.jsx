@@ -98,12 +98,14 @@ import Swal from 'sweetalert2'
             ContextValue.updateProgress(30)
             ContextValue.updateBarStatus(true)
 
+            try{
         const res = await fetch('http://localhost:8000/demo', {
             method: 'POST',
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify({Email,Name,Background,Trainer,TrainerId,CounselorId,CounselorName,Date,Time,Course,month,year,day, classLink})
         });
         ContextValue.updateProgress(60)
+
         const data = await res.json();
         console.log(data);
 
@@ -115,7 +117,7 @@ import Swal from 'sweetalert2'
               title: 'Oops...',
               text:  'Something went wrong!',
             }) 
-            alert('error');
+            
         } else { 
             ContextValue.updateProgress(100)
             ContextValue.updateBarStatus(false)
@@ -123,6 +125,16 @@ import Swal from 'sweetalert2'
              
             console.log('data added');
         }
+    }
+    catch(error){
+        ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+        Swal.fire({   
+          icon:  'error',
+          title: 'Oops...',
+          text:  'Something went wrong!',
+        }) 
+    }
 
     }
 

@@ -12,6 +12,8 @@ export default function AddRegisteredStudent
     const location = useLocation();
     const { data } = location.state;
 
+    console.log("register data =",data)
+
   document.title = "StudentDashboard - Add Student"
   let ContextValue = useContext(StudentContext);
   const navigation = useNavigate()
@@ -95,6 +97,7 @@ export default function AddRegisteredStudent
     Pnumber: data.Pnumber,
     RegistrationDate: data.RegistrationDate,
     Course: data.Course,
+    subCourse:data.subCourse,
     Counselor: data.Counselor,
     Fees: '',
     totalInstallment:4,

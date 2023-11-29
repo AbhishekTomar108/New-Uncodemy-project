@@ -78,6 +78,10 @@ const RegisterStudentSchema = new mongoose.Schema({
         type: String,
 
     },
+    subCourse: {
+        type: String,
+
+    },
 
     Remark: {
         type: String,

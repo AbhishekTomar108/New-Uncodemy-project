@@ -2,15 +2,23 @@ import React, { useEffect, useState } from 'react'
 import CreateIcon from '@mui/icons-material/Create';
 import Header from '../Header';
 import Sidebar from '../Sidebar';
+import { useLocation } from 'react-router-dom';
 // import { NavLink} from "react-router-dom";
 // import CreateIcon from "@mui/icons-material/Create";
 
 function TeacherDemo() {
 
+  const location = useLocation()
+
+  const {demoStudentData} = location.state
+  const [filterDemoStudent, setFilterDemoStudent] = useState(demoStudentData)
+
+  console.log("demoStudentData =",demoStudentData)
+
     const [demo, setDemo] = useState();
-    const [demoStudent, setDemoStudent] = useState(JSON.parse(localStorage.getItem("demoData")))
-    const [filterDemoStudent, setFilterDemoStudent] = useState(JSON.parse(localStorage.getItem("demoData")))
-  let monthName = [
+    // const [demoStudent, setDemoStudent] = useState(JSON.parse(localStorage.getItem("demoData")))
+    
+    let monthName = [
     "Jan",
     "Feb",
     "Mar",
@@ -71,7 +79,7 @@ function TeacherDemo() {
 
   const filterDemo = ()=>{
 
-    const filterStudent  = demoStudent.filter(data=>{
+    const filterStudent  = demoStudentData.filter(data=>{
       return (
         data.status===detail.status
       )
@@ -122,7 +130,7 @@ function TeacherDemo() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filterDemoStudent.map(
+                  {filterDemoStudent && filterDemoStudent.map(
                     (data, index) => {
                       console.log('demo status =',data.status)
                       return (

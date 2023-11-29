@@ -63,10 +63,10 @@ function AddFeedback() {
   return (
     <>
      <Header/>
-      <div className="sidebar-main-container">
+      <div className="sidebar-main-container right-side-container">
         <Cslidebar/>
         <div className="teacher-demo-container">
-          <div className="card-body">
+          <div className="">
             <div className="table-responsive recentOrderTable">
               <table className="table verticle-middle table-responsive-md">
                 <thead>

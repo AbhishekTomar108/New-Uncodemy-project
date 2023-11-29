@@ -12,6 +12,8 @@ const EditRegisteredStudent = () => {
   const location = useLocation();
   const { data } = location.state;
 
+  console.log('data registration =',data)
+
   let ContextValue = useContext(StudentContext);
   useEffect(() => {
     getAllCourse();
@@ -346,7 +348,6 @@ const EditRegisteredStudent = () => {
                               type="select"
                               name="Course"
                               class="form-control"
-                              value={inpval.Course}
                               onChange={(e) =>
                                 setINP({
                                   ...inpval,

@@ -4,7 +4,7 @@ import Sidebar from '../Sidebar';
 import { StudentContext } from '../../context/StudentState';
 import { useParams,useLocation } from 'react-router-dom';
 import Cslidebar from './Cslidebar';
-
+import Swal from 'sweetalert2'
 
 function AddDemoStudent() {
     let ContextValue = useContext(StudentContext);
@@ -66,27 +66,55 @@ function AddDemoStudent() {
       let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   
       const addinpdata = async (e) => {
+        ContextValue.updateProgress(30)
+        ContextValue.updateBarStatus(true)
+
         console.log("demo =",inpval);
         e.preventDefault();
    let { Name, Email, Background, Trainer, Date, Time, Course, classLink,TrainerId,CounselorId,month,year,day, CounselorName, status } = { ...inpval };
   
-            
-            
-
+   try{
         const res = await fetch(`http://localhost:8000/adddemoStudent/${data._id}`, {
             method: 'POST',
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify(inpval)
         });
 
+        ContextValue.updateProgress(60)
         const demoStudent = await res.json();
         console.log(demoStudent);
 
         if (res.status === 422 || !demoStudent) {
-            alert('error');
+            Swal.fire({   
+                icon:  'error',
+                title: 'Oops...',
+                text:  'Something Went Wrong',
+              }) 
+              ContextValue.updateProgress(100)
+                ContextValue.updateBarStatus(false)
         } else {       
             console.log('data added');
+            Swal.fire({
+                position: 'center',
+                icon: 'success',
+                title: 'Demo Student Added',
+                showConfirmButton: false,
+                timer: 1500
+              })
+              
+  ContextValue.updateProgress(100)
+  ContextValue.updateBarStatus(false)
         }
+    }
+    catch(error){
+        Swal.fire({   
+            icon:  'error',
+            title: 'Oops...',
+            text:  'Something Went Wrong',
+          }) 
+          ContextValue.updateProgress(100)
+            ContextValue.updateBarStatus(false)
+    }
 
     }
         return (
@@ -110,7 +138,7 @@ function AddDemoStudent() {
                                     <div className="card-header">
                                         <h5 className="card-title">Basic Info</h5>
                                     </div>
-                                    <div className="card-body">
+                                    <div className="">
                                         <form action="#" method="post">
                                             <div className="row">
                                                 <div className="col-lg-6 col-md-6 col-sm-12">

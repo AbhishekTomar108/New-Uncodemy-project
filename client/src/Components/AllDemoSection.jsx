@@ -3,6 +3,7 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { Link, NavLink, useParams,useNavigate, useLocation } from 'react-router-dom';
 import { StudentContext } from '../context/StudentState'
 import DemoTable from './DemoTable';
+import Swal from 'sweetalert2'
 
 function AllDemoSection() {
 
@@ -38,11 +39,13 @@ function AllDemoSection() {
  
     const SearchDemo = async()=>{
 
-
+      ContextValue.updateProgress(30)
+      ContextValue.updateBarStatus(true)
 
         let selectDemo;
         if(user==="counselor")  
-        {    
+        {  
+          try{  
         selectDemo = await fetch(`http://localhost:8000/getRangeCounselorDemoes/${id}`,{
           method:"GET",
           headers:{
@@ -50,8 +53,22 @@ function AllDemoSection() {
             "endDate":rangeDate.endDate
           }
         })
+        ContextValue.updateProgress(100)
+        ContextValue.updateBarStatus(false)
+      }
+      catch(error){
+
+        Swal.fire({   
+          icon:  'error',
+          title: 'Oops...',
+          text:  'Something Went Wrong',
+        }) 
+        ContextValue.updateProgress(100)
+          ContextValue.updateBarStatus(false)
+      }
     }
     else{
+      try{
         selectDemo = await fetch(`http://localhost:8000/getRangeTrainerDemoes/${id}`,{
             method:"GET",
             headers:{
@@ -59,6 +76,18 @@ function AllDemoSection() {
               "endDate":rangeDate.endDate
             }
           })
+          ContextValue.updateProgress(100)
+          ContextValue.updateBarStatus(false)
+        }
+        catch(error){
+          Swal.fire({   
+            icon:  'error',
+            title: 'Oops...',
+            text:  'Something Went Wrong',
+          }) 
+          ContextValue.updateProgress(100)
+            ContextValue.updateBarStatus(false)
+        }
     }
       
         selectDemo = await selectDemo.json()
