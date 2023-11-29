@@ -857,7 +857,7 @@ export default function AdminSendMessage() {
         
        </div>
          {
-             messageStatus==="Admin-message"?
+              messageStatus==="Admin-message"?
              <CounselorAllMessage message={messageData}/>:<StudentMessageData message={StudentMessage}/>
          }
          </>}

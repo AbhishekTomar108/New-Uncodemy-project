@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
 
-
-
 const BatchesSchema = new mongoose.Schema({
     Course: {
         type: Object,         

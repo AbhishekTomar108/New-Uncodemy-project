@@ -318,7 +318,9 @@ router.get('/getCounselorNewTotalFees/:id',async(req,res)=>{
 
 // get all sub course and main course router
 
-router.get('/allSubMainCourse',async(req,res)=>{
+router.get('/allSubMainCourse',async(req,res)=>{  
+    
+    // console.log("all sub main course func =")
     let allCourse = await subCourse.find()
 
     let courses =[]
@@ -335,8 +337,7 @@ router.get('/allSubMainCourse',async(req,res)=>{
             maincourses.push(data.mainCourse)       
     
     })
-
-    res.send({courses:courses,mainCourse:maincourses,allCourse:allCourse})
+        res.send({courses:courses,mainCourse:maincourses,allCourse:allCourse})
 })
 
 router.get('/getMonthFees',async(req,res)=>{
@@ -3853,12 +3854,43 @@ router.post("/addNewCourse", async (req, res) => {
         let batch = await batches.find()
         console.log("batch =",batch)
         let BatchCourse = await batches.updateOne({}, {$set:{Course:course}})
+
+        let data ={
+            mainCourse:req.body.mainCourse,
+            subCourse:[]
+        }
+        
+        let addNewMainCourse = await subCourse.create(data)
+
         res.send({ "status": "active", "batchCourse": BatchCourse })
     }
     catch (error) {
         res.send({ "error": error.message })
     }
 })
+
+
+// new Course
+
+router.post("/addNewSubCourse", async (req, res) => {
+
+    try {
+       
+        let Course = await subCourse.findOne({mainCourse:req.body.mainCourse})
+
+        let mainSubcourse = Course.subCourse
+        console.log('subCourse =',Course,mainSubcourse,req.body)
+        mainSubcourse.push(req.body.subCourse)
+        let updateCourse = await subCourse.findByIdAndUpdate({_id:Course._id},{$set:{subCourse:mainSubcourse}})
+
+        res.send({ "status": "active" })
+    }
+    catch (error) {
+        console.log("error =",error.message)
+        res.send({ "error": error.message })
+    }
+})
+
 router.post("/addNewWeekDayTiming", async (req, res) => {
 
     let weekDays = req.body.weekDays
@@ -4318,7 +4350,7 @@ router.post("/addStudent",async(req,res)=>{
     let student = await users.findById({_id:id})
     console.log('new batch =',newbatch)
    
-    // console.log('student =',student)
+    // console.log('student =',student) 
         
     let runningBatchstudent = student.studentRunningBatch
     let AllTrainer = student.AllTrainer

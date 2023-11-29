@@ -326,8 +326,7 @@ const extractCourseCode = (batchName) => {
                                                 >
                                                     <option disabled = {editStatus===false?true:false} selected>--select Trainer--</option>
                                                     {trainer.map((data, index) => {
-                                                        console.log("trainer data =", data.Name)
-                                                      
+                                                                                                              
                                                         return (
                                                             <option value={data.Name}>{data.Name}</option>
                                                         )

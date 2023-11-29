@@ -57,6 +57,7 @@ export default function Home() {
   const [upcomingDemoList, setUpcomingDemoList]  = useState()
   const [upcomingDemoStudent, setUpcomingDemoStudent]  = useState()
   const [allCourse, setAllCourse] = useState()
+  const [course, setCourse] = useState()
   const [weekDaysBatch, setWeekDaysbatch] = useState()
   const [weekEndBatch, setWeekEndBatch] = useState()
 
@@ -104,7 +105,9 @@ export default function Home() {
         getRegisteredStudent()
         getAllDemo()
         getNewDemo()
+        getAllBatches()
         getUpcomingDemo()
+        getAllCourses()
       }
       else {
         navigation('/')
@@ -128,23 +131,35 @@ export default function Home() {
   useEffect(() => {
 
     fetchAdminStatus();
-    getAllCourses()
+    
    
   }, [])
 
 
 
-  const getAllCourses = async()=>{
+  const getAllBatches = async()=>{
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)
 
     let allCourse = await ContextValue.getAllBatchCourse()
 
-    console.log('all course =',allCourse.batchCourse[0].Course)
-    setAllCourse(allCourse.batchCourse[0].Course)
+ 
     setWeekDaysbatch(allCourse.batchCourse[0].WeekDaysBatch)
     setWeekEndBatch(allCourse.batchCourse[0].WeekEndBatch)
 
+    ContextValue.updateProgress(100)
+    ContextValue.updateBarStatus(false)
+  }
+  const getAllCourses = async()=>{
+    console.log('all course function')
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+
+    let allCourse = await ContextValue.getAllMainSubCourse()
+
+    console.log('all course =',allCourse)
+    setAllCourse(allCourse.allCourse)
+    setCourse(allCourse.courses)  
     ContextValue.updateProgress(100)
     ContextValue.updateBarStatus(false)
   }
@@ -156,7 +171,6 @@ export default function Home() {
     let upcoming = await ContextValue.UpcomimgDemo()
     setUpcomingDemoList(upcoming.Demo)
     setUpcomingDemoStudent(upcoming.totalDemoStudent)
-    console.log("upcoming demo =",upcoming)
 
     ContextValue.updateProgress(100)
         ContextValue.updateBarStatus(false)
@@ -183,7 +197,6 @@ export default function Home() {
     ContextValue.updateBarStatus(true)
 
     const runningBatch = await ContextValue.getRunningBatch()
-    console.log('running batch',runningBatch)
     setTotalRunningBatch(runningBatch.runningBatches.length)
     ContextValue.updateProgress(100)
         ContextValue.updateBarStatus(false)
@@ -218,7 +231,6 @@ ContextValue.updateBarStatus(false)
     let month = (new Date().getMonth() + 1).toString().padStart(2, '0');
 
     let newStudent = await ContextValue.newStudent(month)
-    console.log("new student =",newStudent)
     setNewTotal(newStudent)
     ContextValue.updateProgress(100)
         ContextValue.updateBarStatus(false)
@@ -229,7 +241,6 @@ ContextValue.updateBarStatus(false)
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)
     let counselor = await ContextValue.getAllCounselor();
-    console.log('counselor =', counselor.counselorData)
     setCounselor(counselor.counselorData)
     localStorage.setItem('allCounselor', JSON.stringify(counselor.counselorData))
     ContextValue.updateProgress(100)
@@ -257,7 +268,6 @@ ContextValue.updateBarStatus(false)
 
     let checkId = [{ id }]
 
-    console.log('value of swal =', text, checkId)
     let sendData = await fetch('http://localhost:8000/sendmessage', {
       method: 'POST',
       headers: { "Content-Type": "application/json" },
@@ -265,7 +275,6 @@ ContextValue.updateBarStatus(false)
     })
 
     let fetchData = await sendData.json();
-    console.log("data = ", fetchData)
 
 
   }
@@ -281,7 +290,6 @@ ContextValue.updateBarStatus(false)
     });
 
     const data = await res.json();
-    console.log('get data =', data)
     setTotalItem(data.length)
     localStorage.setItem('allStudent', JSON.stringify(data))
 
@@ -296,18 +304,13 @@ ContextValue.updateBarStatus(false)
     setTotalStudent(total)
     setNewStudent(newjoin)
     setPastSevenStudent(pastSevenDaysStudent)
-    console.log('current student =', currentMonthStudent)
-    console.log('past seven days =', pastSevenDaysStudent)
-    console.log('past month =', pastMonthStudent)
 
     setProcessBar(parseInt(((currentMonthStudent - pastMonthStudent) / pastMonthStudent) * 100))
     setPastSevenStudent(parseInt(((pastSevenDaysStudent - currentMonthStudent) / pastSevenDaysStudent) * 100))
     let processBar = ((currentMonthStudent - pastMonthStudent) / pastMonthStudent) * 100;
-    console.log('process bar =', processBar)
 
 
     if (res.status === 422 || !data) {
-      console.log("error ");
 
     } else {
 
@@ -373,7 +376,6 @@ ContextValue.updateBarStatus(false)
         })
       }
       else {
-        console.log("user deleted", deletedata);
         // setDLTdata(deletedata)
         Swal.fire(
           'Deleted!',
@@ -474,18 +476,15 @@ ContextValue.updateBarStatus(false)
   }
   //search
   const fetchQueryData = (Query) => {
-    console.log('fetch query =', Query,allStudentData,getuserdata,)
 
     if(user==="student"){
     let filterQueryData = allStudentData.filter(data => {
-      console.log('data name =', data, data.Name, Query)
       return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.EnrollmentNo.toLowerCase().includes(Query.toLowerCase()) )
     })
     setCurrentStudent(filterQueryData)
   }
   if(user==="register"){
     let filterRegisterData = register.filter(data => {
-      console.log('data name =', data, data.Name, Query)
       return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.RegistrationNo.toLowerCase().includes(Query.toLowerCase()) )
     })
 
@@ -495,7 +494,6 @@ ContextValue.updateBarStatus(false)
 
   if(user === "trainer"){
     let filterTrainerData = getuserdata.filter(data => {
-      console.log('data name =', data.Name, Query)
       return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.code.toLowerCase().includes(Query.toLowerCase()) )
 
     })
@@ -504,7 +502,6 @@ ContextValue.updateBarStatus(false)
   }
   if(user==="counselor"){
     let filterCounselorData = counselor.filter(data => {
-      console.log('data name =', data.Name, Query)
       return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.counselorNo.toLowerCase().includes(Query.toLowerCase()) )
       
     })
@@ -573,7 +570,6 @@ ContextValue.updateBarStatus(false)
     ContextValue.updateBarStatus(true)
 
     const demo = await ContextValue.getNewDemo(MonthName[month])
-    console.log('demo =',demo)    
 
     setNewDemoList(demo.Demo)
     setNewDemoStudentData(demo.totalDemoStudent)
@@ -596,7 +592,7 @@ ContextValue.updateBarStatus(false)
 
   const moveToAllCourses = ()=>{
      
-    navigate('AllCourse', { state: { course:allCourse } });
+    navigate('AllCourse', { state: { course:course, allCourse:allCourse } });
     
   }
   const moveToAllBatchTiming = ()=>{
@@ -885,7 +881,6 @@ ContextValue.updateBarStatus(false)
                           {currentStudent && currentStudent.map((data, index) => {
 
                             index = start + index;
-                            console.log('data =',data)
 
                             return (
                               <tr>

@@ -134,8 +134,9 @@ const StudentState = (props) => {
 
   }
   }
+ 
   const getAllMainCourse = async () => {
-    let allMainCourse = await fetch("http://localhost:8000/getAllMainCourse", {
+    let allMainCourse = await fetch("http://localhost:8000/getAllMainCourse",{
       method: "GET",
       headers: {
         "Content-Type": "application/json",
