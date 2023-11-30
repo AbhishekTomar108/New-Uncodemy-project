@@ -6,13 +6,14 @@ const StudentAssignment = () => {
 
     const location = useLocation()
     const {data} = location.state
+    console.log("data completed section=",data)
     let submittedAssignment = data
     const toggleDocument = (url) => {
         window.open(url,'_blank')
     };
   return (
 
-<div className='main-link-div w-80 ml-30 mt-30'>
+<div className='main-link-div w-80 ml-30 mt-30 right-side-container'>
                 <div className='link-container'>
                     <div className="assignment-link">
                         {/* <h1 className='first-heading'>Assignment</h1> */}

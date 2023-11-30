@@ -636,6 +636,10 @@ justify-content: space-between;
   height: fit-content;
 }
 
+.p-0{
+  padding: 0 !important;
+}
+
 .dlabnav {
   height: 100vh !important;
   position: fixed !important;
@@ -898,6 +902,11 @@ h3 {
 .card-body:hover{
 
   opacity: 0.5;
+}
+
+.sidebar-list{
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .p-20{

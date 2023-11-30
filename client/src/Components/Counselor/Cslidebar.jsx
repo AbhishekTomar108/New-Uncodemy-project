@@ -125,27 +125,27 @@ export default function Cslidebar() {
                                 href="#"
                                 aria-expanded="false"
                             >
-                                <i className="la la-users" />
+                              
                                 <span className="nav-text">Register Student</span>
                             </a>
                             <ul aria-expanded="false">
-                                <li>
-                                <div onClick={moveToRegister} className='light-text'>Add Register Student </div>
+                            
+                                <li onClick={moveToRegister} className='light-text mt-2'>Add Register Student
                                     {/* <a href="AllStudents.jsx">All Students</a> */}
                                 </li>
-                                <li>
-                                <div onClick={moveToRegisterStudent} className='light-text'>Register Student</div>
+                               
+                                <li onClick={moveToRegisterStudent} className='light-text mt-2'>Register Student
                                 </li>
                             </ul>
                         </li>
                         <li>
-                            <div onClick={moveToDemo} className='light-text'> <span className="nav-text">Demo</span></div>
+                            <div onClick={moveToDemo} className='light-text sidebar-list'> <span className="nav-text">Demo</span></div>
                         </li>
                         <button className='btn-sidebar' onClick={moveToFeedBack}><li>
-                         <div className='light-text'> <span className="nav-text">Add Demo Feedback</span></div>
+                         <div className='light-text'> <span className="nav-text sidebar-list">Add Demo Feedback</span></div>
                        </li> </button>
 
-                       <li onClick={moveToChangePasssword} className="text-light">
+                       <li onClick={moveToChangePasssword} className="text-light sidebar-list">
              
              Change Password
         

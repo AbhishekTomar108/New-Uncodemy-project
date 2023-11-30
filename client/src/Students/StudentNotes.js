@@ -18,13 +18,17 @@ const StudentNotes = (props) => {
 
 
     useEffect(()=>{
-        getSubmittedAssigment(student._id)
-        getTrainerNotesLink(batch.Batch)
-        getTrainerNotesPdf(batch.Batch)
-    },[])
+        
+        let batchDetail = ContextValue.currentBatch ? ContextValue.currentBatch.Batch : batch
 
-    const getSubmittedAssigment = async(id)=>{
-        let submittedAssignment = await ContextValue.getSubmittedStudentAssignment(id)
+
+        getSubmittedAssigment(student._id,batchDetail)
+        getTrainerNotesLink(batchDetail,batchDetail)
+        getTrainerNotesPdf(batchDetail,batchDetail)
+    },[ContextValue.currentBatch])
+
+    const getSubmittedAssigment = async(id,batch)=>{
+        let submittedAssignment = await ContextValue.getSubmittedStudentAssignment(id,batch)
         setSubmittedAssignment(submittedAssignment)
     }
 

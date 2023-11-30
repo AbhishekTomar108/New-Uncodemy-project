@@ -56,10 +56,12 @@ export default function StudentSlidebar() {
                 Message
               </Link>
             </li>
-            <li>
+            <li className="sidebar-list">
+              
               <div className="arrow" onClick={moveToAssignment}>
                 Assignment
               </div>
+             
             </li>
             <li>
               <Link
@@ -69,7 +71,7 @@ export default function StudentSlidebar() {
                 Full Attendance
               </Link>
             </li>
-            <li onClick={moveToChangePasssword} className="text-light">
+            <li onClick={moveToChangePasssword} className="text-light sidebar-list">
              
                 Change Password
            

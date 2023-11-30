@@ -193,7 +193,7 @@ export default function Sidebar() {
 
                 </li>
 
-                <li onClick={moveToChangePasssword} className="text-light">
+                <li onClick={moveToChangePasssword} className="text-light sidebar-list">
              
              Change Password
         

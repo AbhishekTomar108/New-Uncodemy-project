@@ -7,7 +7,9 @@ const AssignmentStatus = (props) => {
     // const { student, batch } = props;
 
     const location = useLocation()
-    const { student, batch } = location.state;
+    const { student } = location.state;
+
+    const batch = props.batch
   
   console.log('student assignment status =',student,batch)
 
@@ -17,11 +19,14 @@ const AssignmentStatus = (props) => {
 
 
     useEffect(()=>{
-        getSubmittedAssigment(student._id)
-    },[])
 
-    const getSubmittedAssigment = async(id)=>{
-        let submittedAssignment = await ContextValue.getSubmittedStudentAssignment(id)
+        let batchDetail = ContextValue.currentBatch ? ContextValue.currentBatch.Batch : batch
+        getSubmittedAssigment(student._id,batchDetail)
+
+    },[ContextValue.currentBatch])
+
+    const getSubmittedAssigment = async(id,batch)=>{
+        let submittedAssignment = await ContextValue.getSubmittedStudentAssignment(id,batch)
         setSubmittedAssignment(submittedAssignment)
     }
 

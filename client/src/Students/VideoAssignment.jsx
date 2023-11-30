@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import { StudentContext } from '../context/StudentState';
 
 export default function VideoAssignment(props) {
     const { student, batch } = props;
     console.log("props video assignment =",student, batch )
     const [videos, setVideos] = useState([]);
     const [selectedVideo, setSelectedVideo] = useState(null);
+    let ContextValue = useContext(StudentContext);
 
-    const getTrainerdata = async () => {
+    const getTrainerdata = async (batch) => {
+        console.log('video get func =',batch)
         const res = await fetch(`http://localhost:8000/getuploadVideoUrl`, {
             method: "GET",
             headers: {
@@ -21,9 +24,11 @@ export default function VideoAssignment(props) {
     };
 
     useEffect(() => {
-        console.log('video assignment   ')
-        getTrainerdata();
-    }, []);
+        console.log('video assignment')
+        let batchDetail = ContextValue.currentBatch ? ContextValue.currentBatch.Batch : batch
+
+        getTrainerdata(batchDetail);
+    }, [ContextValue.currentBatch]);
 
     const handleClick = (video) => {
         console.log('video url =',video)

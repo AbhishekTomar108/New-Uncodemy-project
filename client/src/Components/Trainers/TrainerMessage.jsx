@@ -260,18 +260,31 @@ else{
   }
   }
 
+  
+  const checkBatch = (studentBatch,batch) =>{
+    let batchStatus = false;
+    studentBatch.map(data=>{
+      if(data===batch && batchStatus===false){
+        batchStatus = true
+      }
+    })
+    return batchStatus
+  }
+
   const filterStudent = () => {
     console.log('all student =', allStudentData)
     let filterStudent = allStudentData.filter((data, index) => {
-      console.log('student data filter =',data.Batch,data.Course, detail.batch, detail.course)
+      // console.log('student data filter =',data.Batch,data.Course, detail.batch, detail.course)
 
-      console.log('condition =',(detail.batch != null ? data.Batch === detail.batch : true) && (detail.course != null ? data.Course === detail.course : true))
+      // console.log('condition =',(detail.batch != null ? data.Batch === detail.batch : true) && (detail.course != null ? data.Course === detail.course : true))
 
-      return (detail.batch != null ? data.Batch === detail.batch : true) && (detail.course != null ? data.Course === detail.course : true)
+      return (detail.batch != null ? checkBatch(data.studentRunningBatch,detail.batch) : true) && (detail.course != null ? data.Course === detail.course : true)
     
-
     }) 
-    console.log('all student after filter =', filterStudent)
+    
+    // console.log('all student after filter =', filterStudent)
+
+
 
     const individual = filterStudent.map(data => {
       console.log('current student')
@@ -378,6 +391,7 @@ else{
                             <thead>
                               <tr>
                                 <th scope="col"><input type='checkbox' onClick={event => allcheck(event)}></input></th>
+                                <th scope="col">Enrollment No.</th>
                                 <th scope="col">Name</th>
                                 <th scope="col">Counselor</th>
                                 <th scope="col">Batch</th>
@@ -395,6 +409,7 @@ else{
                                         onClick={(event) => IndividualChecked(event, index)}
                                       />
                                     </td>
+                                    <td>{data.EnrollmentNo}</td>
                                     <td>{data.Name}</td>
                                     <td>{data.Counselor}</td>
                                     <td>{data.Batch}</td>

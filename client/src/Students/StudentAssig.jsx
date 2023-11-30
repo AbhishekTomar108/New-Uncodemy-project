@@ -19,6 +19,7 @@ function StudentAssig() {
 
     useEffect(()=>{
         setStudentBatch(student.studentRunningBatch[0])
+        ContextValue.updateBatch(student.studentRunningBatch[0])
     },[])
     
           const [batchDetail, setBatchDetail] = useState({
@@ -30,11 +31,12 @@ function StudentAssig() {
           })
          
 
-    const setStudentBatch = async(batch) =>{
+        const setStudentBatch = async(batch) =>{
         let batchData = await ContextValue.getBatchDetail(batch)
         console.log('batch Data =',batchData,batch)
         setBatchDetail({batchDetail,["batchData"]:batchData,["batch"]:batchData.Batch,["batchTime"]:batchData.BatchTime,["batchTrainer"]:batchData.Trainer,["trainerId"]:batchData.TrainerID})
         console.log("batch data =",batchData)
+        ContextValue.updateBatch(batchData)
       }
 
      

@@ -11513,6 +11513,8 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
   .dlabnav .metismenu {
     display: flex;
     flex-direction: column;
+    row-gap:20px;
+    margin-top:10px;
      }
     .dlabnav .metismenu.fixed {
       position: fixed;
@@ -12499,7 +12501,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
   [data-sidebar-style="modern"] .dlabnav .metismenu > li {
     text-align: center; }
     [data-sidebar-style="modern"] .dlabnav .metismenu > li > a {
-      padding: 20px 15px 20px 15px !important; }
+      padding: 0 !important; }
       [data-sidebar-style="modern"] .dlabnav .metismenu > li > a::after {
         display: none; }
       [data-sidebar-style="modern"] .dlabnav .metismenu > li > a:hover > a, [data-sidebar-style="modern"] .dlabnav .metismenu > li > a:focus > a, [data-sidebar-style="modern"] .dlabnav .metismenu > li > a:active > a, [data-sidebar-style="modern"] .dlabnav .metismenu > li > a.mm-active > a {
@@ -12543,7 +12545,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
       font-size: 20px; }
     [data-sidebar-style="modern"][data-layout="vertical"] .dlabnav .metismenu > li > ul {
       display: none;
-      padding: 1.875rem 0.9375rem; 
+      padding: 20px; 
     }
     [data-sidebar-style="modern"][data-layout="vertical"] .dlabnav .metismenu li {
       position: relative; }

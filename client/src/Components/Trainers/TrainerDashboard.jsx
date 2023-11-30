@@ -168,7 +168,7 @@ export default function TrainerDashboard() {
 
         <div className='detail-card my-2'>
               <div className="col-xl-3 col-xxl-3 col-sm-6">
-                <div className="widget-stat card bg-primary">
+                <div className="widget-stat card p-0 bg-primary">
                   <div className="card-body">
                     <div className="media">
                       <span className="mr-3">
@@ -190,7 +190,7 @@ export default function TrainerDashboard() {
                 </div>
               </div>
               <div className="col-xl-3 col-xxl-3 col-sm-6">
-                <div className="widget-stat card bg-warning">
+                <div className="widget-stat card p-0 bg-warning">
                   <div className="card-body">
                     <div className="media">
                       <span className="mr-3">
@@ -214,7 +214,7 @@ export default function TrainerDashboard() {
                 </div>
               </div>
               <div className="col-xl-3 col-xxl-3 col-sm-6">
-                <div className="widget-stat card bg-secondary">
+                <div className="widget-stat card p-0 bg-secondary">
                   <div className="card-body">
                     <div className="media">
                       <span className="mr-3">
@@ -236,7 +236,7 @@ export default function TrainerDashboard() {
                 </div>
               </div>
               <div className="col-xl-3 col-xxl-3 col-sm-6">
-              <div className="widget-stat card bg-danger">
+              <div className="widget-stat card p-0 bg-danger">
                 <div className="card-body">
                   <div className="media">
                     <span className="mr-3">
@@ -258,7 +258,7 @@ export default function TrainerDashboard() {
               </div>
             </div> 
               <div className="col-xl-3 col-xxl-3 col-sm-6">
-                <div className="widget-stat card bg-danger">
+                <div className="widget-stat card p-0 bg-danger">
                   <div className="card-body">
                     <div className="media">
                       <span className="mr-3">

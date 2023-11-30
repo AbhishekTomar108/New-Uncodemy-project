@@ -161,6 +161,8 @@ setTrainerAssignment(trainerAssignment)
   const handleFileChange = (e) => {
     console.log("file =", e.target.files[0]);
     setINP({ ...inpval, file: e.target.files[0] });
+    setNotesDetail({ ...notesDetail, file: e.target.files[0] });
+
   };
   const handleNotesFileChange = (e) => {
     console.log("file =", e.target.files[0]);
@@ -168,14 +170,12 @@ setTrainerAssignment(trainerAssignment)
   };
 
   const uploadAssignment = async (e) => {
-    console.log('upload assignment =',inpval)
+    console.log('upload assignment =',notesDetail)
     e.preventDefault();
     const formData = new FormData();
-    for (const field in inpval) {
-      formData.append(field, inpval[field]);
-    }
-
-    formData.append("batch", batch);  
+    for (const field in notesDetail) {
+      formData.append(field, notesDetail[field]);
+    } 
 
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)

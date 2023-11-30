@@ -42,7 +42,7 @@ const subCourse = require("../models/Subcourse");
 const runningBatch = require("../models/RunningBatch");
 const registerStudent = require("../models/RegisteredStudent");
 const counselors = require("../models/Counselor")
-const uploadfiles = require('../models/UploadedItem')
+// const uploadfiles = require('../models/UploadedItem')
 const uploadclassurl = require('../models/UploadClassUrl')
 const uploadvideourl = require('../models/VideoUrl')
 const Notes = require('../models/Notes')
@@ -1045,13 +1045,13 @@ router.post("/uploadfile", controller.upload, async (req, res) => {
     try {
         console.log('try block')
         // const newUser = new document(req.body);
-        const savedUser = await uploadfiles.create(req.body);
+        const savedUser = await uploaditem.create(req.body);
         // console.log("Fee Data",savedUser);
         res.status(200).json(savedUser);
     } catch (error) {
           console.log('else block')
         // console.log(error.message);
-        res.status(500).json({ error: "Something went wrong" });
+        res.status(500).json({ error: error.message });
     }
 });
 router.post("/uploadNotesPdf", controller.upload, async (req, res) => {
@@ -1761,7 +1761,7 @@ router.post('/submititem', controller.upload, async (req, res) => {
 });
 
 
-router.get('/getStudentPendingAssignment/:id',async(req,res)=>{
+router.get('/getStudentPendingAssignment/:id',async(req,res)=>{ 
     const {id} = req.params
     const Batch = req.header('batch')
     console.log('batch =',Batch)
@@ -1769,6 +1769,7 @@ router.get('/getStudentPendingAssignment/:id',async(req,res)=>{
     let submittedAssigment = await submititem.find({studentId:id})
 
     let pendingAssignment = await uploaditem.find({batch:Batch})
+    console.log('pending assignmnet before =',pendingAssignment,submittedAssigment)
 
     // console.log('pending assignment before filter=',pendingAssignment)
     // console.log('submit assignment before filter=',submittedAssigment)
@@ -1792,9 +1793,10 @@ router.get('/getStudentPendingAssignment/:id',async(req,res)=>{
     res.send(Assignment)
 
 })
+
 router.get('/getStudentAssignment/:id',async(req,res)=>{
     const {id} = req.params
-
+    console.log('id =',id)
     let submittedAssigment = await submititem.find({assignmentId:id})
 
     console.log('submitted assignment student=',submittedAssigment)
@@ -1806,13 +1808,15 @@ router.get('/getStudentAssignment/:id',async(req,res)=>{
 
 router.get('/getStudentSubmittedAssignment/:id',async(req,res)=>{
     const {id} = req.params
-    let submittedAssigment = await submititem.find({studentId:id})
-    console.log("submit student =",id,submittedAssigment)
+    const batch = req.header("batch")
+    let submittedAssigment = await submititem.find({studentId:id, batch:batch})
+    console.log("submit student =",id,submittedAssigment,batch)
     res.send(submittedAssigment)
 
 })
 router.get('/getTrainerAssignment',async(req,res)=>{
     const batch = req.header("batch")
+    console.log("get trainer Assignment =",batch)
     let submittedAssigment = await uploaditem.find({batch:batch})
     
     res.send(submittedAssigment)

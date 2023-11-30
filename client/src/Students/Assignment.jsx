@@ -11,7 +11,7 @@ const Assignment = (props) => {
 
     const location = useLocation();
     let ContextValue = useContext(StudentContext);
-  const { student, batch } = props;
+  const {student, batch} = props;
   console.log('assignment props =',student,batch)
 
   let contextValue = useContext(StudentContext);
@@ -38,14 +38,11 @@ const Assignment = (props) => {
         setINP({ ...inpval, file: e.target.files[0] });
     };
 
-
-
-
     const sendAssignment = async (e,id,url,file) => {
         e.preventDefault();
 
         ContextValue.updateProgress(30)
-    ContextValue.updateBarStatus(true)
+        ContextValue.updateBarStatus(true)
 
         let tempInp = {...inpval}
         tempInp.assignmentId = id
@@ -120,9 +117,10 @@ const Assignment = (props) => {
 
     useEffect(() => {
         getTrainerdata()
-        console.log('use effect id batch',student, student._id,student.Batch)
-        getPendingAssignment(student._id,batch.Batch)
-    }, [])
+        let batchDetail = contextValue.currentBatch ? contextValue.currentBatch.Batch : batch
+        console.log('use effect id batch assignment component',student, student._id,student.Batch,contextValue.currentBatch ,batchDetail)
+        getPendingAssignment(student._id,batchDetail)
+    }, [contextValue.currentBatch])
 
     const getPendingAssignment = async(id,batch)=>{
         console.log('get pending assignment',id,batch)
