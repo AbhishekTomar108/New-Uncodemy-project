@@ -83,7 +83,7 @@ export default function TrainerSlidebar() {
               
          
                        
-            <li onClick={moveToChangePasssword} className="text-light sidebar-list">
+            <li onClick={moveToChangePasssword} className="text-light sidebar-list cursor-pointer">
              
              Change Password
         

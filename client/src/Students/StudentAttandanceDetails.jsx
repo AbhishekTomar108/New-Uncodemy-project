@@ -131,10 +131,11 @@ function StudentAttandanceDetails() {
 
   const extractAttendance = (data, currentStudent) => {
     let tempDayRows = [];
+    // console.log('filter month =',filteredMonth,monthName.indexOf(filteredMonth))
     for (let i = firstDay; i <= lastDay; i++) {
       let daysName =
         dayName[
-          new Date(currentYear, monthName.indexOf(filteredMonth), i).getDay()
+          new Date(currentYear, (filteredMonth-1), i).getDay()
         ];
 
       tempDayRows.push(
@@ -436,21 +437,21 @@ function StudentAttandanceDetails() {
                 <div className="col-md-12">
                   <div className="table-responsive">
                     <div className="sheet">
-                      <div className="Full-atta">
-                        <h3>Name:</h3>
-                        <h4>{student && student.Name}</h4>
+                      <div className="full-data">
+                        <h3 className="attendance-data">Name:</h3>
+                        <h4 className="attendance-data-h4">{student && student.Name}</h4>
                       </div>
-                      <div className="Full-atta">
-                        <h3>Course:</h3>
-                        <h4>{student && student.Course}</h4>
+                      <div className="full-data">
+                        <h3 className="attendance-data">Course:</h3>
+                        <h4 className="attendance-data-h4">{student && student.Course}</h4>
                       </div>
-                      <div className="Full-atta">
-                        <h3>Trainer Name:</h3>
-                        <h4>{batchDetail && batchDetail.batchTrainer}</h4>
+                      <div className="full-data">
+                        <h3 className="attendance-data">Trainer Name:</h3>
+                        <h4 className="attendance-data-h4">{batchDetail && batchDetail.batchTrainer}</h4>
                       </div>
-                      <div className="Full-atta">
-                        <h3>Batch Time:</h3>
-                        <h4>{batchDetail && batchDetail.batchTime}</h4>
+                      <div className="full-data">
+                        <h3 className="attendance-data">Batch Time:</h3>
+                        <h4 className="attendance-data-h4">{batchDetail && batchDetail.batchTime}</h4>
                       </div>
                     </div>
 

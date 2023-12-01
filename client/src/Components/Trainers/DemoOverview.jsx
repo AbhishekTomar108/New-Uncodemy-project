@@ -123,7 +123,7 @@ function DemoOverview() {
                                             <td>{demoStudentData[index].length}</td>
                                             <td>{data.CounselorName}</td>
                                             <td><Link to={data.link}><button className='btn btn-primary'>Class Link</button></Link ></td>
-                                            <td> <NavLink to={`/trainer/teacherdemo`}> <button className="btn btn-success" onClick={e=>{localStorage.setItem('demoData',JSON.stringify(demoStudentData[index]))}}  ><RemoveRedEyeIcon /></button></NavLink></td>
+                                            <td>  <button className="btn btn-success" onClick={e=>{navigation('/trainer/teacherdemo',{state:{demoStudentData:demoStudentData[index]}})}}  ><RemoveRedEyeIcon /></button></td>
                                         </tr>
                                     )
                                 })}

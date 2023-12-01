@@ -4,7 +4,7 @@ import Sidebar from '../Sidebar';
 import { StudentContext } from '../../context/StudentState';
 import { useParams,useLocation } from 'react-router-dom';
 import Cslidebar from './Cslidebar';
-
+import Swal from 'sweetalert2'
 
 function EditDemo() {
     let ContextValue = useContext(StudentContext);
@@ -59,6 +59,10 @@ function EditDemo() {
       let monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   
       const addinpdata = async (e) => {
+
+        ContextValue.updateProgress(30)
+        ContextValue.updateBarStatus(true)
+
         console.log("demo =",inpval);
         e.preventDefault();
    let { Trainer, Date, Time, Course, classLink,TrainerId,CounselorId, CounselorName } = { ...inpval };
@@ -92,6 +96,7 @@ function EditDemo() {
             
             
 
+            try{
         const res = await fetch(`http://localhost:8000/updatedemo/${data._id}`, {
             method: 'POST',
             headers:{"Content-Type":"application/json"},
@@ -100,12 +105,40 @@ function EditDemo() {
 
         const updateData = await res.json();
         console.log(updateData);
+     
 
         if (res.status === 422 || !updateData) {
+            Swal.fire({   
+                icon:  'error',
+                title: 'Oops...',
+                text:  'Something Went Wrong',
+              }) 
+              ContextValue.updateProgress(100)
+                ContextValue.updateBarStatus(false)
             alert('error');
-        } else {       
+        } else {   
+            Swal.fire({
+                position: 'center',
+                icon: 'success',
+                title: 'Demo Updated',
+                showConfirmButton: false,
+                timer: 1500
+              })  
+              ContextValue.updateProgress(100)
+              ContextValue.updateBarStatus(false)  
             console.log('data added');
         }
+    }
+    catch(error){
+
+        Swal.fire({   
+            icon:  'error',
+            title: 'Oops...',
+            text:  'Something Went Wrong',
+          }) 
+          ContextValue.updateProgress(100)
+            ContextValue.updateBarStatus(false)
+    }
 
     }
 
@@ -153,7 +186,7 @@ function EditDemo() {
                                     <div className="card-header">
                                         <h5 className="card-title">Basic Info</h5>
                                     </div>
-                                    <div className="card-body">
+                                    <div className="">
                                         <form action="#" method="post">
                                             <div className="row">
                                               

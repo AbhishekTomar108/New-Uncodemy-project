@@ -1805,7 +1805,6 @@ router.get('/getStudentAssignment/:id',async(req,res)=>{
 })
 
 
-
 router.get('/getStudentSubmittedAssignment/:id',async(req,res)=>{
     const {id} = req.params
     const batch = req.header("batch")
@@ -3761,7 +3760,8 @@ console.log('batch = ',batch)
     catch (error) {
         res.send({ "error": error.message })
     }
-})
+}
+)
 
 router.get("/getAllBatches", async (req, res) => {
 

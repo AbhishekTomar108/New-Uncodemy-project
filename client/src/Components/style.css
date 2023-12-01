@@ -545,12 +545,24 @@ justify-content: space-between;
 .sheet {
   margin-top: 4rem;
   display: flex;
-  column-gap: 13rem;
+  justify-content: space-between;
   margin-bottom: 7rem;
 }
 
-.Full-atta {
-  display: block;
+.full-data {
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
+  height: fit-content;
+}
+
+.attendance-data{
+  font-size: 18px;
+  margin: 0;
+}
+
+.attendance-data-h4{
+  font-size: 18px !important;
 }
 
 .attendance-row {
@@ -834,6 +846,8 @@ justify-content: space-between;
   position: relative;
   border: 1px solid #f2f4f9;
   border-radius: 10px;
+  height: 100vh;
+  overflow: scroll;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
   -webkit-box-shadow: 0 0 10px 0 rgba(183, 192, 206, .2);
 

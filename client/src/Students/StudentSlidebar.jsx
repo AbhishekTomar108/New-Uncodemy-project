@@ -58,7 +58,7 @@ export default function StudentSlidebar() {
             </li>
             <li className="sidebar-list">
               
-              <div className="arrow" onClick={moveToAssignment}>
+              <div className="arrow cursor-pointer" onClick={moveToAssignment}>
                 Assignment
               </div>
              
@@ -71,7 +71,7 @@ export default function StudentSlidebar() {
                 Full Attendance
               </Link>
             </li>
-            <li onClick={moveToChangePasssword} className="text-light sidebar-list">
+            <li onClick={moveToChangePasssword} className="text-light sidebar-list cursor-pointer">
              
                 Change Password
            

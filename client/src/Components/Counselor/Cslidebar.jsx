@@ -145,7 +145,7 @@ export default function Cslidebar() {
                          <div className='light-text'> <span className="nav-text sidebar-list">Add Demo Feedback</span></div>
                        </li> </button>
 
-                       <li onClick={moveToChangePasssword} className="text-light sidebar-list">
+                       <li onClick={moveToChangePasssword} className="text-light sidebar-list cursor-pointer">
              
              Change Password
         
