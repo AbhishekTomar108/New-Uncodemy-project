@@ -12499,7 +12499,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
     [data-sidebar-style="modern"] .nav-header .brand-logo {
       justify-content: center; }
   [data-sidebar-style="modern"] .dlabnav .metismenu > li {
-    text-align: center; }
+    padding: 0 10px; }
     [data-sidebar-style="modern"] .dlabnav .metismenu > li > a {
       padding: 0 !important; }
       [data-sidebar-style="modern"] .dlabnav .metismenu > li > a::after {
@@ -22645,7 +22645,7 @@ button {
     background: transparent;
     padding: 1.25rem 1.25rem 5px;
     display: flex;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     align-items: center;
     border: 0px; }
     [data-theme-version="dark"] .card-header {

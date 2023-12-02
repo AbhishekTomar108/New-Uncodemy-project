@@ -75,10 +75,10 @@ export default function TrainerSlidebar() {
                 Student
               </Link>
               </li>
-              <li>
-              <button className="btn-sidebar sidebar-list" onClick={e=>moveToAttendance(trainerId)}>
+              <li className='text-light sidebar-list cursor-pointer' onClick={e=>moveToAttendance(trainerId)}>
+                
                 Attendance
-                </button>
+              
                 </li>
               
          

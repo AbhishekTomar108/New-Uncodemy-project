@@ -59,7 +59,7 @@ export default function Sidebar() {
 
             </li>
             <li>
-              <Link className="has-arrow" to={`/admin/SendMessage`}>Send Message</Link>
+              <Link className="has-arrow" to={`/admin/SendMessage`}>Message</Link>
             </li>
 
             <li>

@@ -21,6 +21,7 @@ export default function TrainerMessage() {
   const [adminId, setAdminId] = useState()
   const [user, setUser] = useState("student")
   const [trainer, setTrainer]  =useState()
+  const [checkStatus, setCheckStatus] = useState(false)
 
 
   const navigation = useNavigate()
@@ -105,7 +106,7 @@ export default function TrainerMessage() {
     batch: null,
     course: null
   })
-  const [message, setMessage] = useState()
+  const [message, setMessage] = useState("")
   const handleFileChange = (event) => {
     setSelectedImage(event.target.files[0]);
     setFileName(event.target.files[0].name)
@@ -177,15 +178,22 @@ export default function TrainerMessage() {
   }
 
   const IndividualChecked = (event, index) => {
+    setCheckStatus(false)
     console.log('check =', event.target.checked, index)
 
     let tempInd = [...individualCheck]
 
     tempInd[index] = { ...tempInd[index], status: 'on', check: event.target.checked };
+    tempInd.map(data=>{
+      if(data.status==='on'){
+        setCheckStatus(true)
+      }
+    })
     setIndividualCheck(tempInd)
   }
 
   const allcheck = (event) => {
+    setCheckStatus(event.target.checked)
     setIsChecked(event.target.checked)
 
     let tempInd = individualCheck.map(data => {
@@ -311,6 +319,28 @@ else{
     
       }
 
+      const fetchQueryData = (Query) => {
+        console.log('fetch query =', Query)
+    
+        let filterQueryData = allStudentData.filter(data => {
+          console.log('data name =', data, data.Name, Query)
+          return (data.Name.toLowerCase().includes(Query.toLowerCase()))||(data.EnrollmentNo.toLowerCase().includes(Query.toLowerCase()) )
+        })
+    
+        setCurrentStudent(filterQueryData)  
+        const individual = filterQueryData.map(data => {
+          console.log('current student')
+          return (
+            {
+              status: "off",
+              check: false
+            })
+        })
+        console.log('individual check =', individual)
+        setIndividualCheck(individual)
+          
+      }
+
   return (
     <>
    
@@ -365,6 +395,18 @@ else{
               <button className='filter-btn' onClick={filterStudent}>Filter</button>
             </div>
           </div>
+
+          <div class="d-flex mb-20" role="search">
+                    <input class="form-control me-2"
+                      type="search"
+                      placeholder="Search By Name or Enrollment No."
+                      aria-label="Search"
+                      name='search'
+                      onChange={(e) => fetchQueryData(e.target.value)}
+                    />
+                    {/* <button class="btn btn-outline-dark" type="submit" onClick={fetchQueryData}>Search</button> */}
+
+                  </div>
           <div className="row">
             <div className="col-lg-12">
               <div className="card">
@@ -436,6 +478,8 @@ else{
                         className="btn btn-primary btn-sl-sm mr-3"
                         type="button"
                         onClick={sendMessage}
+                        disabled={(message.length!==0 && checkStatus===true)?false:true }
+                        // disabled={(message.length!==0 && checkStatus===true)?false:true }
                       >
                         <span className="mr-2">
                           <i className="fa fa-paper-plane" />
@@ -477,6 +521,8 @@ else{
 className="btn btn-primary btn-sl-sm mr-3"
 type="button"
 onClick={sendMessage}
+disabled={(message.length!==0 && checkStatus===true)?false:true }
+
 >
 <span className="mr-2">
   <i className="fa fa-paper-plane" />

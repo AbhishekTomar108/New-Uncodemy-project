@@ -31,6 +31,7 @@ import { StudentContext } from '../context/StudentState';
 import StudentState from '../context/StudentState'
 import Assignment from '../Students/Assignment'
 import './style.css'
+import './responsive.css'
 import LogIn from '../Students/LogIn'
 import Forget from '../Students/Forget'
 import Newpassword from '../Students/NewPassword'
